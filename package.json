@@ -1,0 +1,14 @@
+{
+  "name": "motor-insurance-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Zimnat Motor Insurance API Gateway wrapping IceCash/ZINARA, with a de-mocked customer portal",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

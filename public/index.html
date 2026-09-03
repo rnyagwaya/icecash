@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Zimnat Motor Insurance</title>
+<style>
+:root{
+  --g:#00622F;--gd:#004A24;--gl:#EAF6EF;--gm:#1D9E75;--gs:#BFE0CC;--gtext:#00401D;
+  --amber:#B25E00;--amberBg:#FFF6E9;--amberBorder:#F1D3A0;--amberText:#6B4A00;
+  --red:#A32D2D;--redBg:#FDF0F0;--redBorder:#EEB9B9;
+  --border:#E1E7E3;--border2:#CFDAD3;
+  --text:#141A17;--text2:#4B564F;--text3:#7C8880;
+  --surface:#F6F8F6;--white:#FFFFFF;
+  --mono:'SF Mono',Consolas,'Courier New',Courier,monospace;
+  --radius:10px;--radiusSm:7px;--radiusLg:14px;
+  --shadow:0 10px 32px rgba(10,40,25,.08);
+  --gold:#B8974E;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;font-size:14.5px;color:var(--text);background:var(--surface);line-height:1.5}
+button,input,select{font:inherit}
+
+/* ── Header ── */
+header{background:var(--white);border-bottom:1px solid var(--border);padding:0 28px;position:sticky;top:0;z-index:100}
+.head{max-width:900px;margin:auto;display:flex;justify-content:space-between;align-items:center;height:60px}
+.brand{display:flex;gap:11px;align-items:center}
+.logo{width:34px;height:34px;border-radius:8px;background:var(--gd);color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px;letter-spacing:.02em}
+.brand-text h1{margin:0;font-size:15px;font-weight:700;color:var(--text)}
+.brand-text p{margin:0;font-size:11px;color:var(--text3)}
+.head-actions{display:flex;align-items:center;gap:14px}
+.help-link{font-size:12.5px;color:var(--text2);text-decoration:none;font-weight:600}
+.icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--white);display:grid;place-items:center;cursor:pointer;color:var(--text2);transition:all .12s}
+.icon-btn:hover{background:var(--surface);color:var(--text)}
+.icon-btn svg{width:17px;height:17px}
+
+/* ── Shell / stepper ── */
+.wizard-shell{max-width:980px;margin:32px auto 60px;padding:0 20px}
+.wizard-inner{max-width:640px}
+.progress-track{display:flex;align-items:center;gap:0;margin-bottom:26px}
+.progress-step{flex:1;height:3px;background:var(--border);border-radius:3px;position:relative}
+.progress-step+.progress-step{margin-left:5px}
+.progress-step.done,.progress-step.active{background:var(--g)}
+.progress-labels{display:flex;justify-content:space-between;font-size:10.5px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:9px}
+.progress-labels span.on{color:var(--gd)}
+
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radiusLg);box-shadow:var(--shadow);padding:32px 34px}
+.view{display:none}.view.active{display:block}
+
+.step-eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gm);margin-bottom:6px}
+.step-title{font-size:23px;font-weight:700;color:var(--text);margin:0 0 6px;letter-spacing:-.2px}
+.step-sub{font-size:13.5px;color:var(--text2);margin:0 0 24px}
+
+/* ── Fields ── */
+.field-label{font-size:12px;font-weight:700;color:var(--text2);display:flex;align-items:center;gap:5px;margin-bottom:7px}
+.big-input{width:100%;border:1.5px solid var(--border2);border-radius:var(--radius);padding:12px 14px;font-size:15px;font-weight:500;outline:none;color:var(--text);background:var(--white);transition:border-color .12s}
+.big-input:focus{border-color:var(--g);box-shadow:0 0 0 3px var(--gl)}
+.big-input::placeholder{color:#9FAFA6;font-weight:400}
+.big-select{width:100%;border:1.5px solid var(--border2);border-radius:var(--radius);padding:11px 14px;font-size:14.5px;font-weight:500;outline:none;color:var(--text);background:var(--white);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237C8880' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;transition:border-color .12s}
+.big-select:focus{border-color:var(--g)}
+.select-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field-block{margin-bottom:18px}
+
+.tip-wrap{position:relative;display:inline-flex;align-items:center}
+.tip-icon{width:13px;height:13px;border-radius:50%;background:var(--text3);color:#fff;font-size:8px;font-weight:900;display:grid;place-items:center;cursor:help;font-style:normal}
+.tip-box{position:absolute;bottom:calc(100% + 7px);left:0;background:#1a231d;color:#fff;font-size:11.5px;line-height:1.5;padding:8px 11px;border-radius:8px;white-space:normal;max-width:230px;z-index:200;opacity:0;pointer-events:none;transition:opacity .15s;font-weight:400}
+.tip-wrap:hover .tip-box{opacity:1}
+
+.summ-bar{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:22px}
+.summ-chip{background:var(--gl);border:1px solid var(--gs);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--gtext);display:flex;align-items:center;gap:5px}
+.summ-chip .s-tick{color:var(--g);font-size:10px}
+.code-tag{display:inline-block;font-family:var(--mono);font-size:11px;background:var(--gl);border:1px solid var(--gs);color:var(--gd);border-radius:5px;padding:1px 6px}
+
+/* ── Choice ── */
+.question{display:none;animation:qup .2s ease}
+.question.show{display:block}
+@keyframes qup{from{opacity:.2;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.seg{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:4px;gap:3px;margin-bottom:4px}
+.seg-opt{flex:1;padding:10px 8px;border-radius:7px;text-align:center;font-size:12.5px;font-weight:600;color:var(--text2);cursor:pointer;border:none;background:transparent;transition:all .12s}
+.seg-opt.active{background:var(--white);color:var(--gd);box-shadow:0 1px 4px rgba(0,0,0,.08);font-weight:700;border:1px solid var(--gs)}
+
+.pill-stack{display:flex;flex-direction:column;gap:8px}
+.pill-opt{width:100%;padding:14px 16px;border-radius:var(--radius);border:1.5px solid var(--border2);background:var(--white);font-size:13.5px;font-weight:600;color:var(--text);cursor:pointer;text-align:left;display:flex;align-items:center;justify-content:space-between;transition:all .12s;gap:10px}
+.pill-opt:hover{border-color:var(--g)}
+.pill-opt.active{border-color:var(--g);background:var(--gl);color:var(--gd)}
+.pill-badges{display:flex;gap:5px;flex-shrink:0}
+.cbadge{display:inline-block;font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:999px}
+.cbadge-code{background:var(--white);color:var(--gd);border:1px solid var(--gs)}
+.cbadge-rec{background:var(--g);color:#fff}
+.cbadge-min{background:var(--surface);color:var(--text3);border:1px solid var(--border)}
+.cbadge-pending{background:var(--amberBg);color:var(--amberText);border:1px solid var(--amberBorder)}
+.cbadge-ok{background:var(--gl);color:var(--gtext);border:1px solid var(--gs)}
+.cbadge-fail{background:var(--redBg);color:var(--red);border:1px solid var(--redBorder)}
+
+.tv-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1.5px solid var(--border2);border-radius:var(--radius);background:var(--white);margin:14px 0}
+.tv-row.on{border-color:var(--g);background:var(--gl)}
+.tv-label{font-size:13px;font-weight:600}
+.sw{width:38px;height:22px;border-radius:999px;background:#d1d5cf;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.sw.on{background:var(--g)}
+.sw::after{content:'';width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.sw.on::after{left:19px}
+
+.value-reveal{border:1.5px solid var(--border2);border-radius:var(--radius);padding:15px 16px;background:var(--white);margin-top:14px}
+.value-reveal label{font-size:12px;font-weight:700;color:var(--text2);display:flex;align-items:center;gap:5px;margin-bottom:9px}
+.val-wrap{display:flex;align-items:center;border:1.5px solid var(--g);border-radius:9px;overflow:hidden}
+.val-pre{padding:11px 13px;background:var(--gl);font-weight:700;color:var(--gd);font-size:14px;border-right:1.5px solid var(--g)}
+.val-inp{border:none;outline:none;padding:11px 13px;font-size:15px;font-weight:600;width:100%;background:var(--white)}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--radiusSm);font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .12s;padding:11px 18px}
+.btn-primary{background:var(--g);color:#fff}.btn-primary:hover{background:var(--gd)}
+.btn-ghost{background:var(--white);border:1px solid var(--border2);color:var(--text2)}.btn-ghost:hover{background:var(--surface)}
+.btn-full{width:100%;padding:14px;font-size:15px;font-weight:700;border-radius:var(--radius);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;background:var(--g);color:#fff}
+.btn-full:hover{background:var(--gd)}
+.btn-full:disabled{opacity:.4;cursor:not-allowed}
+.btn-row{display:flex;gap:10px;margin-top:22px}
+.btn-row .btn-full{flex:1;margin:0}
+
+/* ── Duration / extras ── */
+.dur-row{display:flex;gap:8px;margin-bottom:18px}
+.dur-btn{flex:1;padding:11px;border:1.5px solid var(--border2);border-radius:9px;background:var(--white);font-weight:700;font-size:13px;cursor:pointer;text-align:center;transition:all .12s;line-height:1.3}
+.dur-btn.active{border-color:var(--g);background:var(--gl);color:var(--gd)}
+.dur-btn span{font-weight:400}
+.sec-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:10px;margin-top:20px}
+.extra-row{border:1.5px solid var(--border2);border-radius:var(--radius);padding:11px 14px;background:var(--white);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all .12s;margin-bottom:8px}
+.extra-row:hover{border-color:var(--g)}.extra-row.checked{border-color:var(--g);background:var(--gl)}
+.extra-name{font-size:13.5px;font-weight:600}.extra-price{font-size:13px;font-weight:700;color:var(--gd)}
+.chk{width:18px;height:18px;border-radius:5px;border:2px solid var(--border2);background:var(--white);display:grid;place-items:center;flex-shrink:0;font-size:10px}
+.chk.on{background:var(--g);border-color:var(--g);color:#fff}
+
+/* ── Notices ── */
+.notice{display:flex;align-items:flex-start;gap:9px;border-radius:var(--radiusSm);padding:12px 14px;font-size:12.5px;margin-bottom:14px}
+.notice.ok{background:var(--gl);border:1px solid var(--gs);color:var(--gtext)}
+.notice.amber{background:var(--amberBg);border:1px solid var(--amberBorder);color:var(--amberText)}
+.notice.red{background:var(--redBg);border:1px solid var(--redBorder);color:var(--red)}
+
+/* ── Details ── */
+.det-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:16px}
+.det-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:13.5px}
+.det-row:last-child{border-bottom:0}
+.det-lbl{color:var(--text3);font-size:11.5px}
+
+/* ── Quote card ── */
+.quote-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
+.qc-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:var(--surface);border-bottom:1px solid var(--border)}
+.qc-ref{font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--gd)}
+.qc-valid{font-size:11px;color:var(--gm);font-weight:600}
+.qc-body{display:grid;grid-template-columns:1fr 190px}
+.qc-details{padding:18px 20px;display:flex;flex-direction:column;gap:12px;border-right:1px solid var(--border)}
+.detail-row{display:flex;flex-direction:column;gap:2px}
+.detail-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)}
+.detail-val{font-size:13.5px;font-weight:600;color:var(--text)}
+.detail-divider{height:1px;background:var(--border);margin:1px 0}
+.qc-amount{background:var(--gl);padding:18px 16px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end}
+.qa-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gtext)}
+.qa-currency{font-size:11px;font-weight:700;color:var(--gtext);margin-bottom:2px;margin-top:auto}
+.qa-figure{font-size:28px;font-weight:800;color:var(--gd);line-height:1;text-align:right}
+.qa-valid{font-size:10px;color:var(--gm);text-align:right;margin-top:6px;font-weight:600}
+
+.breakdown{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px}
+.bk-section-hdr{padding:9px 16px;background:var(--surface);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);border-bottom:1px solid var(--border)}
+.bk-row{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border);font-size:13.5px}
+.bk-row:last-child{border-bottom:none}
+.bk-label{color:var(--text2)}.bk-val{font-weight:600;color:var(--text)}
+.bk-row.sub-total{background:var(--surface)}
+.bk-row.sub-total .bk-label{font-weight:700;color:var(--text)}
+.bk-row.sub-total .bk-val{color:var(--gd)}
+.bk-row.grand{background:var(--gd);border:none}
+.bk-row.grand .bk-label{color:#fff;font-size:14px;font-weight:700}
+.bk-row.grand .bk-val{color:#fff;font-size:18px;font-weight:800}
+
+.ref-row{display:flex;gap:8px;flex-wrap:wrap;padding:11px 16px;background:var(--surface);border-top:1px solid var(--border)}
+.ref-chip{display:flex;flex-direction:column;gap:2px}
+.ref-chip-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3)}
+.ref-chip-val{font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--gd)}
+
+/* ── Payment ── */
+.payment-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
+.pc-section{padding:16px 18px;border-bottom:1px solid var(--border)}
+.pc-section:last-child{border-bottom:none}
+.pc-section.locked{opacity:.4;pointer-events:none}
+.pc-step-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.pc-step-num{width:21px;height:21px;border-radius:50%;background:var(--gd);color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center;flex-shrink:0}
+.pc-step-title{font-size:13px;font-weight:700;color:var(--text)}
+
+.provider-list{display:flex;gap:8px;flex-wrap:wrap}
+.provider-badge{display:flex;align-items:center;gap:6px;padding:9px 15px;border-radius:var(--radiusSm);border:1.5px solid var(--border2);background:var(--white);cursor:pointer;font-size:12.5px;font-weight:700;transition:all .12s;user-select:none}
+.provider-badge:hover{border-color:var(--text3)}
+.provider-badge.selected{color:#fff}
+.provider-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pb-ecocash{color:var(--g)}.pb-ecocash .provider-dot{background:var(--g)}
+.pb-ecocash.selected{background:var(--g);border-color:var(--g)}.pb-ecocash.selected .provider-dot{background:#fff}
+.pb-innbucks{color:#1A3A6A}.pb-innbucks .provider-dot{background:#1A3A6A}
+.pb-innbucks.selected{background:#1A3A6A;border-color:#1A3A6A}.pb-innbucks.selected .provider-dot{background:#fff}
+.pb-onemoney{color:#B25E00}.pb-onemoney .provider-dot{background:#B25E00}
+.pb-onemoney.selected{background:#B25E00;border-color:#B25E00}.pb-onemoney.selected .provider-dot{background:#fff}
+.pb-cash{color:var(--gd)}.pb-cash .provider-dot{background:var(--gd)}
+.pb-cash.selected{background:var(--gd);border-color:var(--gd)}.pb-cash.selected .provider-dot{background:#fff}
+.pb-card{color:#4A4A8A}.pb-card .provider-dot{background:#4A4A8A}
+.pb-card.selected{background:#4A4A8A;border-color:#4A4A8A}.pb-card.selected .provider-dot{background:#fff}
+
+.mob-wrap{position:relative}
+.mob-flag{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none}
+.mob-input{width:100%;height:42px;border:1.5px solid var(--border2);border-radius:var(--radiusSm);padding:0 12px 0 33px;font-size:14px;font-family:var(--mono);font-weight:600;color:var(--text);background:var(--white);outline:none}
+.mob-input:focus{border-color:var(--g);box-shadow:0 0 0 3px var(--gl)}
+.field-hint{font-size:11.5px;color:var(--text3);margin-top:7px}
+
+.consent-row{display:flex;align-items:flex-start;gap:9px}
+.consent-cb{width:16px;height:16px;margin-top:2px;accent-color:var(--g);flex-shrink:0;cursor:pointer}
+.consent-text{font-size:12.5px;color:var(--text2);line-height:1.5;cursor:pointer}
+.consent-amount{font-weight:800;color:var(--gd)}
+
+.pay-btn-wrap{padding:16px 18px;border-top:1px solid var(--border)}
+.btn-pay{width:100%;height:48px;background:var(--g);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .12s}
+.btn-pay:hover{background:var(--gd)}.btn-pay:disabled{opacity:.4;cursor:not-allowed}
+.lock-icon{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+.pay-status{text-align:center;padding:28px 10px}
+.pay-spinner{width:44px;height:44px;border-radius:50%;border:3px solid var(--gs);border-top-color:var(--g);margin:0 auto 16px;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pay-status-title{font-weight:700;font-size:15px;margin-bottom:4px}
+.pay-status-sub{font-size:12.5px;color:var(--text3);margin-bottom:14px}
+.poll-item{font-size:11.5px;color:var(--text3);padding:2px 0}
+
+/* ── Policy ── */
+.policy-hero{text-align:center;padding:6px 0 20px}
+.policy-hero .check-circle{width:52px;height:52px;border-radius:50%;background:var(--gl);border:2px solid var(--gs);display:grid;place-items:center;margin:0 auto 14px}
+.policy-hero .check-circle svg{width:24px;height:24px;stroke:var(--g);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.policy-hero h2{font-size:20px;font-weight:800;color:var(--text);margin:0 0 4px}
+.policy-hero p{font-size:13px;color:var(--text3);margin:0}
+
+.policy-summary{border:1px solid var(--gs);border-radius:var(--radius);padding:16px 18px;background:var(--gl);margin-bottom:16px}
+.policy-summary-head{display:flex;align-items:center;gap:11px;margin-bottom:12px}
+.veh-icon{width:38px;height:38px;border-radius:9px;background:var(--white);display:grid;place-items:center;color:var(--gd)}
+.veh-icon svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8}
+
+.receipt-panel{background:var(--white);border:1px solid var(--gs);border-radius:var(--radius);padding:15px 16px;margin-top:2px;margin-bottom:16px}
+.receipt-panel h4{margin:0 0 6px;color:var(--gtext);font-size:13px;font-weight:700}
+.ref-num{font-family:var(--mono);font-size:14px;font-weight:800;color:var(--gd);background:var(--gl);padding:6px 11px;border-radius:7px;display:inline-block;margin:3px 0}
+
+.doc-box{border:1px solid var(--border);border-radius:9px;padding:12px 14px;background:var(--white);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.doc-icon{width:32px;height:32px;border-radius:8px;background:var(--surface);display:grid;place-items:center;flex-shrink:0}
+.doc-icon svg{width:16px;height:16px;stroke:var(--text2);fill:none;stroke-width:1.8}
+.doc-name{font-size:13px;font-weight:700}.doc-sub{font-size:11px;color:var(--text3)}
+
+/* ── Modal (Settings) ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,25,17,.5);display:none;align-items:flex-start;justify-content:center;z-index:500;padding:60px 20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:var(--radiusLg);max-width:480px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.25);overflow:hidden}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border)}
+.modal-head h3{margin:0;font-size:15px;font-weight:700}
+.modal-body{padding:20px 22px}
+.modal-close{width:28px;height:28px;border-radius:7px;border:none;background:var(--surface);cursor:pointer;display:grid;place-items:center;color:var(--text2)}
+.settings-form{display:flex;flex-direction:column;gap:13px}
+.settings-row{display:flex;flex-direction:column;gap:5px}
+.settings-row label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text3)}
+.settings-row input,.settings-row select{border:1.5px solid var(--border2);border-radius:9px;padding:10px 12px;font-size:13.5px}
+.settings-status{font-size:12px;padding:9px 12px;border-radius:8px;margin-top:2px}
+
+.small{font-size:12px}.text2{color:var(--text2)}.text3{color:var(--text3)}
+
+/* ── Tap targets: everything interactive is >=48px on the axis that matters ── */
+.btn,.btn-full,.btn-pay,.big-input,.big-select,.mob-input,.seg-opt,.dur-btn,.extra-row,.provider-badge,.icon-btn{min-height:48px}
+.pill-opt{min-height:52px}
+.chk,.consent-cb{width:22px;height:22px}
+.sw{width:44px;height:26px}.sw::after{width:20px;height:20px}.sw.on::after{left:21px}
+
+/* ── Inline validation ── */
+.field-error{font-size:11.5px;color:var(--red);margin-top:6px;display:none;align-items:center;gap:5px}
+.field-error.show{display:flex}
+.field-ok{font-size:11.5px;color:var(--g);margin-top:6px;display:none;align-items:center;gap:5px}
+.field-ok.show{display:flex}
+.big-input.invalid,.mob-input.invalid{border-color:var(--red)}
+.big-input.valid,.mob-input.valid{border-color:var(--g)}
+
+/* ── Resume banner ── */
+.resume-banner{display:none;align-items:center;gap:12px;background:var(--gl);border:1px solid var(--gs);border-radius:var(--radius);padding:14px 16px;margin-bottom:18px;font-size:13px;color:var(--gtext)}
+.resume-banner.show{display:flex}
+.resume-banner strong{display:block;margin-bottom:2px}
+.save-note{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--text3);margin-top:14px}
+.save-note svg{width:13px;height:13px;stroke:var(--gm);fill:none;stroke-width:2}
+.save-note.saved{color:var(--gm);font-weight:600}
+
+/* ── Wizard + sticky summary layout ── */
+.wizard-layout{display:grid;grid-template-columns:1fr 300px;gap:26px;align-items:start}
+.summary-panel{position:sticky;top:76px;background:var(--white);border:1px solid var(--border);border-radius:var(--radiusLg);box-shadow:var(--shadow);padding:20px;display:flex;flex-direction:column;gap:14px}
+.summary-panel h4{margin:0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3)}
+.summary-line{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;font-size:12.5px;padding:8px 0;border-bottom:1px solid var(--border)}
+.summary-line:last-of-type{border-bottom:none}
+.summary-line .sl-label{color:var(--text3)}
+.summary-line .sl-val{font-weight:600;color:var(--text);text-align:right}
+.summary-total{background:var(--gl);border:1px solid var(--gs);border-radius:var(--radius);padding:14px 16px;margin-top:2px}
+.summary-total .st-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--gtext)}
+.summary-total .st-figure{font-size:24px;font-weight:800;color:var(--gd);line-height:1.3}
+.summary-total .st-note{font-size:10.5px;color:var(--gm);font-weight:600}
+.summary-empty{font-size:12.5px;color:var(--text3);text-align:center;padding:10px 0}
+
+/* Mobile bottom sheet variant of the summary panel */
+.summary-sheet{display:none}
+.summary-panel.force-hide,.summary-sheet.force-hide{display:none!important}
+@media(max-width:900px){
+  .wizard-layout{grid-template-columns:1fr}
+  .summary-panel{display:none}
+  .summary-sheet{display:block;position:fixed;left:0;right:0;bottom:0;z-index:200;background:var(--white);border-top:1px solid var(--border);border-radius:16px 16px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.12);max-height:70vh;overflow:auto;transition:transform .2s ease}
+  .summary-sheet.collapsed .sheet-body{display:none}
+  .sheet-handle{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;min-height:48px}
+  .sheet-handle-bar{width:36px;height:4px;background:var(--border2);border-radius:99px;position:absolute;left:50%;top:8px;transform:translateX(-50%)}
+  .sheet-handle-figure{font-size:18px;font-weight:800;color:var(--gd)}
+  .sheet-handle-figure.pending{font-size:12px;font-weight:600;color:var(--text3)}
+  .sheet-handle-label{font-size:11px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .sheet-body{padding:0 18px 20px}
+  main.wizard-shell{padding-bottom:90px}
+}
+
+/* ── Card-based cover-type selection (replaces pill list) ── */
+.cover-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.cover-card{border:1.5px solid var(--border2);border-radius:var(--radius);background:var(--white);padding:16px 14px;text-align:left;cursor:pointer;transition:all .12s;display:flex;flex-direction:column;gap:8px;min-height:120px}
+.cover-card:hover{border-color:var(--g)}
+.cover-card.active{border-color:var(--g);background:var(--gl);box-shadow:0 0 0 1px var(--g)}
+.cover-card .cc-icon{width:30px;height:30px;border-radius:8px;background:var(--surface);display:grid;place-items:center;color:var(--gd)}
+.cover-card.active .cc-icon{background:var(--white)}
+.cover-card .cc-icon svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+.cover-card .cc-title{font-size:13px;font-weight:700;color:var(--text)}
+.cover-card .cc-desc{font-size:11px;color:var(--text3);line-height:1.4}
+@media(max-width:640px){.cover-grid{grid-template-columns:1fr}}
+
+@media(max-width:640px){.select-row,.qc-body{grid-template-columns:1fr}.card{padding:24px 18px}}
+@media(max-width:480px){.progress-labels{display:none}.head{flex-wrap:wrap;height:auto;padding:12px 0}.brand-text p{display:none}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head">
+    <div class="brand">
+      <div class="logo">ZGI</div>
+      <div class="brand-text"><h1>Zimnat Motor Insurance</h1><p>Quote, pay and get covered in minutes</p></div>
+    </div>
+    <div class="head-actions">
+      <button class="btn btn-ghost" style="padding:8px 14px;font-size:12.5px;min-height:36px" onclick="startNewQuote()">+ New quote</button>
+      <a class="help-link" href="#">Need help?</a>
+      <button class="icon-btn" title="Connection settings" onclick="openSettings()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════ SETTINGS MODAL ══════════ -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>IceCash connection settings</h3>
+      <button class="modal-close" onclick="closeSettings()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="small text3" style="margin:0 0 16px">Runs against a local IceCash simulator by default. Add real IceCash test-API credentials and switch mode to "real" to use the live API instead — takes effect immediately.</p>
+      <div class="settings-form">
+        <div class="settings-row">
+          <label>IceCash mode</label>
+          <select id="set-mode">
+            <option value="mock">Mock simulator (default)</option>
+            <option value="real">Real IceCash test API</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <label>IceCash base URL</label>
+          <input id="set-baseUrl" placeholder="https://test-api.icecash.mobi">
+        </div>
+        <div class="settings-row">
+          <label>Partner key</label>
+          <input id="set-partnerKey" type="password" placeholder="Leave blank to keep the currently saved key">
+        </div>
+        <div class="settings-row">
+          <label>LocationID</label>
+          <input id="set-locationId" placeholder="ZINARA-assigned, environment-specific">
+        </div>
+        <div class="settings-row">
+          <label>InsuranceCompanyID</label>
+          <input id="set-insuranceCompanyId" placeholder="24">
+        </div>
+        <div style="display:flex;gap:10px;margin-top:2px">
+          <button class="btn btn-primary" onclick="saveSettings()">Save settings</button>
+          <button class="btn btn-ghost" onclick="closeSettings()">Close</button>
+        </div>
+        <div id="settingsStatus"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main class="wizard-shell">
+
+  <div class="resume-banner" id="resumeBanner">
+    <span style="font-size:20px">👋</span>
+    <div><strong id="resumeBannerTitle">Welcome back</strong><span id="resumeBannerSub">We've restored your saved quote.</span></div>
+  </div>
+
+<div class="wizard-layout">
+<div class="wizard-inner">
+  <div class="progress-labels" id="progressLabels">
+    <span>Vehicle</span><span>Cover</span><span>Duration</span><span>Details</span><span>Quote</span><span>Payment</span><span>Policy</span>
+  </div>
+  <div class="progress-track" id="progressTrack">
+    <div class="progress-step"></div><div class="progress-step"></div><div class="progress-step"></div><div class="progress-step"></div><div class="progress-step"></div><div class="progress-step"></div><div class="progress-step"></div>
+  </div>
+
+  <div class="card">
+
+    <!-- STEP 1: Vehicle -->
+    <div id="v-vehicle" class="view active">
+      <div class="step-eyebrow">Step 1 of 7</div>
+      <div class="step-title">Your vehicle</div>
+      <div class="step-sub">Tell us what you're insuring and how it's used.</div>
+
+      <div class="field-block">
+        <div class="field-label">Registration number <div class="tip-wrap"><i class="tip-icon">i</i><div class="tip-box">Your vehicle's registration plate as shown on the logbook.</div></div></div>
+        <input class="big-input" id="inpVRN" placeholder="e.g. ADA0010" oninput="onVRNType()" onblur="onVRNType()">
+        <div class="field-error" id="err-vrn"><span>⚠</span><span>Enter at least 4 characters, letters and numbers only.</span></div>
+      </div>
+
+      <div class="select-row">
+        <div class="field-block">
+          <div class="field-label">Vehicle type</div>
+          <select class="big-select" id="selType" onchange="onTypeChange()">
+            <option value="">Select type…</option>
+            <option>Private Car</option><option>Trailer</option><option>Commercial Vehicle</option>
+            <option>Taxis</option><option>Commercial Trailers</option><option>Motor Cycles</option>
+            <option>Omnibus and Commuters</option><option>School Bus</option><option>Staff Bus</option>
+            <option>Tractors/Fork Lifts</option><option>Tractors</option><option>Tractors/Combines</option>
+            <option>Ambulance, Fire Engine, Hearse</option><option>Agricultural Implements</option><option>Special Types</option>
+          </select>
+        </div>
+        <div class="field-block">
+          <div class="field-label">Vehicle use</div>
+          <select class="big-select" id="selUse" onchange="onUseChange()" disabled>
+            <option value="">Select type first…</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="sec-lbl" style="margin-top:6px">Stay in the loop</div>
+      <div class="select-row">
+        <div class="field-block">
+          <div class="field-label">Email address</div>
+          <input class="big-input" id="inpEmail" type="email" placeholder="you@example.com" value="rchirongoma@gmail.com" oninput="onContactType()" onblur="onContactType()">
+          <div class="field-error" id="err-email"><span>⚠</span><span>Enter a valid email address.</span></div>
+        </div>
+        <div class="field-block">
+          <div class="field-label">Mobile number</div>
+          <div class="mob-wrap"><span class="mob-flag">🇿🇼</span><input class="mob-input" id="inpMobile" type="tel" placeholder="263775461117" value="263775461117" oninput="onContactType()" onblur="onContactType()"></div>
+          <div class="field-error" id="err-mobile"><span>⚠</span><span>Enter a valid Zimbabwe mobile number.</span></div>
+        </div>
+      </div>
+      <div class="save-note" id="saveNote"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span id="saveNoteText">We'll save your progress so you can pick up where you left off.</span></div>
+
+      <button class="btn-full" id="veh-btn" disabled style="margin-top:22px" onclick="jumpTo('cover')">Continue to cover</button>
+    </div>
+
+    <!-- STEP 2: Cover -->
+    <div id="v-cover" class="view">
+      <div class="step-eyebrow">Step 2 of 7</div>
+      <div class="step-title">Choose your cover</div>
+      <div class="step-sub">Start with what you'd like to include, then pick your level of protection.</div>
+      <div class="summ-bar" id="veh-summ"></div>
+
+      <div class="field-block">
+        <div class="field-label">Include in this transaction</div>
+        <div class="seg">
+          <button class="seg-opt" id="seg-insurance" onclick="selectBundle('insurance')">Insurance only</button>
+          <button class="seg-opt" id="seg-licence" onclick="selectBundle('licence')">+ ZINARA licence</button>
+          <button class="seg-opt" id="seg-radio" onclick="selectBundle('radio')">+ ZBC radio</button>
+        </div>
+      </div>
+
+      <div class="question" id="r-tv">
+        <div class="tv-row" id="tvRow">
+          <div class="tv-label">This vehicle has a TV fitted</div>
+          <button class="sw" id="tvSwitch" onclick="toggleTV()"></button>
+        </div>
+      </div>
+
+      <div class="question" id="r-cover">
+        <div class="field-label" style="margin-top:16px">Cover type</div>
+        <div class="cover-grid">
+          <button class="cover-card" id="cc-RTA" onclick="selectCover('RTA',this)">
+            <div class="cc-icon"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9 8 11 4.6-2 8-6 8-11V5z"/></svg></div>
+            <div class="cc-title">Road Traffic Act</div>
+            <div class="cc-desc">Statutory minimum cover required by law</div>
+          </button>
+          <button class="cover-card" id="cc-FTP" onclick="selectCover('FTP',this)">
+            <div class="cc-icon"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9 8 11 4.6-2 8-6 8-11V5z"/><path d="m9 12 2 2 4-4"/></svg></div>
+            <div class="cc-title">Third Party, Fire &amp; Theft</div>
+            <div class="cc-desc">Adds fire and theft protection</div>
+          </button>
+          <button class="cover-card" id="cc-COMP" onclick="selectCover('COMP',this)">
+            <div class="cc-icon"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9 8 11 4.6-2 8-6 8-11V5z"/><path d="M12 8v4l3 2"/></svg></div>
+            <div class="cc-title">Comprehensive <span class="cbadge cbadge-rec" style="margin-left:4px">Recommended</span></div>
+            <div class="cc-desc">Covers your own vehicle, theft and third party</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="question" id="r-value">
+        <div class="value-reveal">
+          <label>Declared market value (USD)</label>
+          <div class="val-wrap"><span class="val-pre">USD</span><input class="val-inp" id="inpValue" type="number" placeholder="e.g. 15000" oninput="onValueInput()"></div>
+        </div>
+      </div>
+
+      <div class="question" id="r-continue">
+        <div class="btn-row" style="margin-top:24px">
+          <button class="btn btn-ghost" onclick="jumpTo('vehicle')">Back</button>
+          <button class="btn-full" onclick="jumpTo('extras')">Continue</button>
+        </div>
+      </div>
+      <div id="cover-back" style="margin-top:24px"><button class="btn btn-ghost" onclick="jumpTo('vehicle')">Back</button></div>
+    </div>
+
+    <!-- STEP 3: Duration + Extras -->
+    <div id="v-extras" class="view">
+      <div class="step-eyebrow">Step 3 of 7</div>
+      <div class="step-title">Duration</div>
+      <div class="step-sub">Cover starts when payment clears · quotes valid 48 hours</div>
+      <div class="summ-bar" id="cover-summ"></div>
+
+      <div class="dur-row">
+        <div class="dur-btn active" onclick="selDur(this,4)">4 months<br><span>1 term</span></div>
+        <div class="dur-btn" onclick="selDur(this,8)">8 months<br><span>2 terms</span></div>
+        <div class="dur-btn" onclick="selDur(this,12)">12 months<br><span>3 terms</span></div>
+      </div>
+      <div id="extrasSection">
+        <div class="sec-lbl" style="margin-top:0">Optional extras</div>
+        <div class="extra-row checked" id="ex-WINDSCREEN" onclick="toggleExtra('WINDSCREEN')"><div class="extra-name">Windscreen cover</div><div style="display:flex;align-items:center;gap:8px"><span class="extra-price" id="price-WINDSCREEN">+$11.67</span><div class="chk on" id="chk-WINDSCREEN">✓</div></div></div>
+        <div class="extra-row" id="ex-ACCESSORIES" onclick="toggleExtra('ACCESSORIES')"><div class="extra-name">Accessories cover</div><div style="display:flex;align-items:center;gap:8px"><span class="extra-price" id="price-ACCESSORIES">+$16.67</span><div class="chk" id="chk-ACCESSORIES"></div></div></div>
+        <div class="extra-row" id="ex-EXCESS_BUYDOWN" onclick="toggleExtra('EXCESS_BUYDOWN')"><div class="extra-name">Excess buy-down</div><div style="display:flex;align-items:center;gap:8px"><span class="extra-price" id="price-EXCESS_BUYDOWN">+$26.67</span><div class="chk" id="chk-EXCESS_BUYDOWN"></div></div></div>
+        <div class="extra-row" id="ex-CAR_HIRE" onclick="toggleExtra('CAR_HIRE')"><div class="extra-name">Car hire</div><div style="display:flex;align-items:center;gap:8px"><span class="extra-price" id="price-CAR_HIRE">+$40.00</span><div class="chk" id="chk-CAR_HIRE"></div></div></div>
+        <div style="display:flex;justify-content:space-between;padding:10px 14px;background:var(--gl);border-radius:9px;margin-top:10px">
+          <span style="font-size:13px;font-weight:700">Extras subtotal</span>
+          <span id="extrasTotal" style="font-size:14px;font-weight:800;color:var(--gd)">$11.67</span>
+        </div>
+      </div>
+      <div id="noExtrasNote" style="display:none" class="notice ok">Extras are available on Comprehensive cover only.</div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="jumpTo('cover')">Back</button>
+        <button class="btn-full" onclick="jumpTo('details')">Continue</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: Your Details -->
+    <div id="v-details" class="view">
+      <div class="step-eyebrow">Step 4 of 7</div>
+      <div class="step-title">Your details</div>
+      <div class="step-sub">Pre-filled from your profile</div>
+      <div class="det-card">
+        <div class="det-row"><span class="det-lbl">Full name</span><strong>Ropa Nyagwaya</strong></div>
+        <div class="det-row"><span class="det-lbl">ID number</span><strong>63-184337B05</strong></div>
+        <div class="det-row"><span class="det-lbl">Mobile</span><strong id="det-mobile">263775461117</strong></div>
+        <div class="det-row"><span class="det-lbl">Email</span><strong id="det-email">rchirongoma@gmail.com</strong></div>
+        <div class="det-row" style="border:none"><span class="det-lbl">Address</span><strong>14 Borrowdale Road, Harare</strong></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="jumpTo('extras')">Back</button>
+        <button class="btn-full" id="genQuoteBtn" onclick="submitQuote()">Get my quote</button>
+      </div>
+      <div id="quoteError" class="notice red" style="display:none;margin-top:14px"></div>
+    </div>
+
+    <!-- STEP 5: Quote -->
+    <div id="v-quote" class="view">
+      <div class="step-eyebrow">Step 5 of 7</div>
+      <div class="step-title">Your quote</div>
+      <div class="step-sub">Review the breakdown before you pay</div>
+
+      <div class="quote-card" id="qcard">
+        <div class="qc-header">
+          <span class="qc-ref" id="q-ref">—</span>
+          <span class="qc-valid" id="q-valid">—</span>
+        </div>
+        <div class="qc-body">
+          <div class="qc-details">
+            <div class="detail-row"><div class="detail-label">Vehicle</div><div class="detail-val" id="q-vrn-make">—</div></div>
+            <div class="detail-row"><div class="detail-label">Year</div><div class="detail-val" id="q-year">—</div></div>
+            <div class="detail-divider"></div>
+            <div class="detail-row"><div class="detail-label">Vehicle type</div><div class="detail-val" id="q-veh-type">—</div></div>
+            <div class="detail-row"><div class="detail-label">Insurance</div><div class="detail-val" id="q-ins-type">—</div></div>
+            <div class="detail-divider"></div>
+            <div class="detail-row"><div class="detail-label">Cover period</div><div class="detail-val" id="q-period">—</div></div>
+            <div class="detail-row"><div class="detail-label">Duration</div><div class="detail-val" id="q-dur">—</div></div>
+            <div class="detail-row"><div class="detail-label">Cover amount</div><div class="detail-val" id="q-cover-amt">—</div></div>
+          </div>
+          <div class="qc-amount">
+            <div class="qa-label" id="q-amt-lbl">Total due</div>
+            <div>
+              <div class="qa-currency">USD</div>
+              <div class="qa-figure" id="q-total-fig">—</div>
+            </div>
+            <div class="qa-valid" id="q-expires">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="notice amber" id="q-arrears-notice" style="display:none">
+        <div><strong>Outstanding licence arrears detected.</strong> Your vehicle licence has unpaid arrears and penalties included in the total below.</div>
+      </div>
+
+      <div class="sec-lbl">Insurance breakdown</div>
+      <div class="breakdown" id="q-ins-breakdown">
+        <div class="bk-section-hdr" id="q-ins-hdr">Motor Insurance</div>
+        <div class="bk-row"><span class="bk-label">Premium amount</span><span class="bk-val" id="q-premium">—</span></div>
+        <div class="bk-row"><span class="bk-label">Stamp duty</span><span class="bk-val" id="q-stamp">—</span></div>
+        <div class="bk-row"><span class="bk-label">Government levy</span><span class="bk-val" id="q-levy">—</span></div>
+        <div class="bk-row sub-total"><span class="bk-label">Insurance total</span><span class="bk-val" id="q-ins-total">—</span></div>
+      </div>
+
+      <div id="q-lic-section" style="display:none">
+        <div class="sec-lbl">Licence breakdown</div>
+        <div class="breakdown">
+          <div class="bk-section-hdr">
+            ZINARA Licence
+            <span id="q-lic-expiry" style="float:right;font-weight:400;text-transform:none;letter-spacing:0">Licence expiry: —</span>
+          </div>
+          <div class="bk-row"><span class="bk-label">Licence fee</span><span class="bk-val" id="q-lic-fee">—</span></div>
+          <div class="bk-row" id="q-arrears-row"><span class="bk-label" style="color:var(--amber)">Arrears</span><span class="bk-val" style="color:var(--amber)" id="q-arrears">—</span></div>
+          <div class="bk-row" id="q-penalties-row"><span class="bk-label" style="color:var(--amber)">Penalties</span><span class="bk-val" style="color:var(--amber)" id="q-penalties">—</span></div>
+          <div class="bk-row"><span class="bk-label">Administration</span><span class="bk-val" id="q-admin">—</span></div>
+          <div class="bk-row sub-total"><span class="bk-label">Licence total</span><span class="bk-val" id="q-lic-total">—</span></div>
+          <div class="bk-row"><span class="bk-label">ZBC radio / TV licence</span><span class="bk-val" id="q-radio">—</span></div>
+          <div class="bk-row sub-total"><span class="bk-label">Licence + Radio total</span><span class="bk-val" id="q-lic-radio-total">—</span></div>
+        </div>
+      </div>
+
+      <div class="breakdown" style="margin-bottom:16px">
+        <div class="bk-row grand">
+          <span class="bk-label">Grand total</span>
+          <span class="bk-val" id="q-grand">—</span>
+        </div>
+      </div>
+
+      <div class="quote-card" style="margin-bottom:4px">
+        <div class="ref-row" id="q-refs">
+          <div class="ref-chip" id="q-combined-id-wrap"><div class="ref-chip-lbl">Combined ID</div><div class="ref-chip-val" id="q-combined-id">—</div></div>
+          <div class="ref-chip" id="q-lic-id-wrap"><div class="ref-chip-lbl">Licence ID</div><div class="ref-chip-val" id="q-lic-id">—</div></div>
+          <div class="ref-chip" id="q-ins-id-wrap"><div class="ref-chip-lbl">Insurance ID</div><div class="ref-chip-val" id="q-ins-id">—</div></div>
+          <div class="ref-chip"><div class="ref-chip-lbl">Quote reference</div><div class="ref-chip-val" id="q-quote-id">—</div></div>
+        </div>
+      </div>
+
+      <div class="notice red" id="q-blocked-notice" style="display:none;align-items:flex-start;gap:9px">
+        <span>⛔</span>
+        <div>
+          <strong>This quote cannot be paid.</strong> IceCash declined <span id="q-blocked-vrn">this vehicle</span>: <span id="q-blocked-message"></span>
+          <div style="font-size:10.5px;color:var(--text3);margin-top:4px" id="q-blocked-at"></div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="jumpTo('details')">Back</button>
+        <button class="btn-full" id="q-accept-btn" onclick="jumpTo('payment')" title="">Accept &amp; pay</button>
+      </div>
+    </div>
+
+    <!-- STEP 6: Payment -->
+    <div id="v-payment" class="view">
+      <div class="step-eyebrow">Step 6 of 7</div>
+      <div class="step-title">Payment</div>
+      <div class="step-sub">Pay securely with mobile money</div>
+
+      <div class="quote-card">
+        <div class="qc-header"><span style="font-size:12px;font-weight:700;color:var(--text2)">Payment summary</span><span class="qc-ref" id="pay-ref">—</span></div>
+        <div style="padding:0">
+          <div class="bk-row"><span class="bk-label" id="pay-veh-lbl">Insurance premium</span><span class="bk-val" id="pay-ins-amt">—</span></div>
+          <div class="bk-row" id="pay-lic-row"><span class="bk-label" id="pay-lic-lbl">ZINARA + ZBC radio</span><span class="bk-val" id="pay-lic-amt">—</span></div>
+          <div class="bk-row grand"><span class="bk-label">Total due today</span><span class="bk-val" id="pay-total">—</span></div>
+        </div>
+      </div>
+
+      <div class="payment-card" id="paymentCard">
+        <div class="pc-section" id="section-provider">
+          <div class="pc-step-head"><span class="pc-step-num">1</span><span class="pc-step-title">Select payment method</span></div>
+          <div class="provider-list">
+            <div class="provider-badge pb-ecocash selected" id="badge-ecocash" onclick="selectProvider('ecocash')"><span class="provider-dot"></span>EcoCash</div>
+            <div class="provider-badge pb-innbucks" id="badge-innbucks" onclick="selectProvider('innbucks')"><span class="provider-dot"></span>InnBucks</div>
+            <div class="provider-badge pb-onemoney" id="badge-onemoney" onclick="selectProvider('onemoney')"><span class="provider-dot"></span>OneMoney</div>
+            <div class="provider-badge pb-cash" id="badge-cash" onclick="selectProvider('cash')"><span class="provider-dot"></span>Cash</div>
+            <div class="provider-badge pb-card" id="badge-card" onclick="selectProvider('card')"><span class="provider-dot"></span>Card</div>
+          </div>
+        </div>
+
+        <!-- Mobile money: number entry -->
+        <div class="pc-section" id="section-number">
+          <div class="pc-step-head"><span class="pc-step-num">2</span><span class="pc-step-title">Confirm your mobile number</span></div>
+          <div class="mob-wrap">
+            <span class="mob-flag">🇿🇼</span>
+            <input class="mob-input" type="tel" id="mob-num" placeholder="263775461117" value="263775461117" oninput="checkNumber()">
+          </div>
+          <div class="field-hint" id="num-hint">A payment prompt will be sent to this number.</div>
+        </div>
+
+        <!-- Cash: amount tendered -->
+        <div class="pc-section" id="section-cash" style="display:none">
+          <div class="pc-step-head"><span class="pc-step-num">2</span><span class="pc-step-title">Amount tendered</span></div>
+          <div class="val-wrap"><span class="val-pre">USD</span><input class="val-inp" id="cash-amount" type="number" placeholder="e.g. 175.20" oninput="checkCashReady()"></div>
+          <div class="field-hint">A receipt number is generated once payment is recorded.</div>
+        </div>
+
+        <!-- Card: RRN -->
+        <div class="pc-section" id="section-card" style="display:none">
+          <div class="pc-step-head"><span class="pc-step-num">2</span><span class="pc-step-title">Card transaction reference (RRN)</span></div>
+          <input class="big-input" id="card-rrn" placeholder="e.g. 123456789012" oninput="checkCardReady()">
+          <div class="field-hint">The Retrieval Reference Number from the POS machine slip.</div>
+        </div>
+
+        <!-- Mobile money: consent -->
+        <div class="pc-section locked" id="section-consent">
+          <div class="pc-step-head"><span class="pc-step-num">3</span><span class="pc-step-title">Authorise payment</span></div>
+          <div class="consent-row">
+            <input class="consent-cb" type="checkbox" id="consent-cb" onchange="checkConsent()">
+            <label class="consent-text" for="consent-cb">
+              I authorise a payment of <span class="consent-amount" id="consent-amt">—</span> from my mobile wallet to Zimnat for Motor Insurance cover.
+            </label>
+          </div>
+        </div>
+
+        <div class="pay-btn-wrap">
+          <button class="btn-pay" id="pay-btn" disabled onclick="handlePayClick()">
+            <svg class="lock-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span id="pay-btn-label">Pay</span> <span id="pay-btn-amt">—</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Cash/Card: accept + poll orchestration, shown live -->
+      <div id="cashierOrch" style="display:none">
+        <div class="payment-card">
+          <div class="pc-section">
+            <div class="pc-step-head"><span class="pc-step-num" id="orch-step1-num">1</span><span class="pc-step-title">Accept quote with IceCash <span id="orch-step1-badge" class="cbadge" style="margin-left:6px"></span></span></div>
+            <div class="field-hint" id="orch-step1-detail">Submitting acceptance…</div>
+          </div>
+          <div class="pc-section">
+            <div class="pc-step-head"><span class="pc-step-num" id="orch-step2-num">2</span><span class="pc-step-title">Poll IceCash for policy confirmation <span id="orch-step2-badge" class="cbadge" style="margin-left:6px"></span></span></div>
+            <div class="field-hint" id="orch-step2-detail">Waiting on step 1…</div>
+          </div>
+        </div>
+        <div id="orchResultOk" style="display:none" class="notice ok">
+          <div><strong>Payment recorded.</strong> <span id="orchResultOkText"></span></div>
+        </div>
+        <div id="orchResultFail" style="display:none" class="notice red">
+          <div><strong>Issuance did not complete.</strong> <span id="orchResultFailText"></span></div>
+        </div>
+        <div class="btn-row" id="orchActions" style="display:none">
+          <button class="btn btn-ghost" onclick="retryCashier()">Try again</button>
+          <button class="btn btn-primary" id="orchViewPolicyBtn" style="display:none;flex:1" onclick="jumpTo('policy')">View policy</button>
+        </div>
+      </div>
+
+      <div id="payWaiting" style="display:none" class="pay-status">
+        <div class="pay-spinner"></div>
+        <div class="pay-status-title">Waiting for payment confirmation</div>
+        <div class="pay-status-sub">A prompt was sent to your phone — approve it to continue.</div>
+        <div id="pollList"></div>
+      </div>
+      <div id="payFailed" style="display:none">
+        <div class="notice red"><strong>Payment did not complete.</strong> No policy was created — you have not been charged.</div>
+        <button class="btn btn-primary" onclick="retryPay()">Try again</button>
+      </div>
+      <div id="payFinalising" style="display:none" class="pay-status">
+        <div class="pay-spinner"></div>
+        <div class="pay-status-title">Activating your cover</div>
+        <div class="pay-status-sub">Confirming your policy with ZINARA/IceCash…</div>
+        <div id="icePollList"></div>
+      </div>
+
+      <div class="btn-row" style="margin-top:18px">
+        <button class="btn btn-ghost" onclick="jumpTo('quote')">Back to quote</button>
+      </div>
+    </div>
+
+    <!-- STEP 7: My Policy -->
+    <div id="v-policy" class="view">
+      <div class="policy-hero">
+        <div class="check-circle"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <h2>You're covered</h2>
+        <p>Your motor insurance policy has been issued</p>
+      </div>
+      <div class="policy-summary">
+        <div class="policy-summary-head">
+          <div class="veh-icon"><svg viewBox="0 0 24 24"><path d="M5 17h14M5 17a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm14 0a2 2 0 1 0 4 0 2 2 0 0 0-4 0zM3 17V11l2-5h14l2 5v6"/></svg></div>
+          <div><div style="font-weight:700;font-size:14px" id="pol-veh-name">—</div><div style="font-size:12px;color:var(--text3)" id="pol-veh-make">—</div></div>
+        </div>
+        <div class="det-row"><span class="det-lbl">Cover</span><strong id="pol-cover">—</strong></div>
+        <div class="det-row"><span class="det-lbl">Period</span><strong id="pol-period">—</strong></div>
+        <div class="det-row"><span class="det-lbl">IceCash policy</span><span class="code-tag" id="pol-icecash-no">—</span></div>
+        <div class="det-row" style="border:none"><span class="det-lbl">Digital policy</span><span class="code-tag" id="pol-digital-no">—</span></div>
+      </div>
+      <div class="receipt-panel" id="pol-receipt" style="display:none">
+        <h4>ZINARA licence receipt</h4>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:5px">Present at any ZINARA Licensing Agent or arrange delivery.</div>
+        <div class="ref-num" id="pol-receipt-id">—</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:5px;font-style:italic">Proof of insurance disc printed when you collect your licence disc.</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px">
+        <div class="sec-lbl" style="margin-top:0">Cover note</div>
+        <button class="btn btn-primary" style="padding:8px 14px;font-size:12px" onclick="printCoverNote()">🖨 Print cover note</button>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px;background:var(--surface)">
+        <iframe id="coverNoteFrame" title="Cover note" style="width:100%;height:520px;border:none;display:block;background:#e9e9e9"></iframe>
+      </div>
+
+      <div class="sec-lbl" style="margin-top:16px">Documents</div>
+      <div class="doc-box"><div style="display:flex;align-items:center;gap:11px"><div class="doc-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div><div class="doc-name" id="pol-doc-name">Cover Note</div><div class="doc-sub">Open full-screen in a new tab</div></div></div><a class="btn btn-ghost" id="pol-doc-cover" target="_blank" href="#">View</a></div>
+      <div class="doc-box"><div style="display:flex;align-items:center;gap:11px"><div class="doc-icon"><svg viewBox="0 0 24 24"><path d="M9 12h6M9 16h6M9 8h6M5 4h14v16H5z"/></svg></div><div><div class="doc-name">Policy Schedule</div><div class="doc-sub">Full policy terms and cover details</div></div></div><a class="btn btn-ghost" id="pol-doc-schedule" target="_blank" href="#">View</a></div>
+      <div class="doc-box"><div style="display:flex;align-items:center;gap:11px"><div class="doc-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M9 9h6v6H9z"/></svg></div><div><div class="doc-name">Payment Receipt</div><div class="doc-sub" id="pol-doc-receipt-sub">—</div></div></div><a class="btn btn-ghost" id="pol-doc-receipt" target="_blank" href="#">View</a></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" style="flex:1" onclick="resetDemo()">Done</button>
+        <button class="btn btn-ghost" style="flex:1" onclick="sendDocs()">Resend documents</button>
+      </div>
+      <div id="docsSent" style="display:none;margin-top:12px" class="notice ok"></div>
+    </div>
+
+  </div>
+</div><!-- /wizard-inner -->
+
+<!-- Sticky summary — desktop sidebar -->
+<aside class="summary-panel" id="summaryPanel">
+  <h4>Your quote</h4>
+  <div id="summaryLines"><div class="summary-empty">Tell us about your vehicle to get started.</div></div>
+  <div class="summary-total" id="summaryTotalBox" style="display:none">
+    <div class="st-label" id="summaryTotalLabel">Your quote total</div>
+    <div class="st-figure" id="summaryTotalFig">USD —</div>
+    <div class="st-note" id="summaryTotalNote">Confirmed price from your quote.</div>
+  </div>
+</aside>
+</div><!-- /wizard-layout -->
+
+<!-- Sticky summary — mobile bottom sheet -->
+<div class="summary-sheet collapsed" id="summarySheet">
+  <div class="sheet-handle" onclick="toggleSheet()">
+    <div class="sheet-handle-bar"></div>
+    <div><div class="sheet-handle-label">Your quote</div><div class="sheet-handle-figure" id="sheetFig">Get your quote to see pricing</div></div>
+    <div style="color:var(--text3);font-size:11px;font-weight:700">Details ▾</div>
+  </div>
+  <div class="sheet-body">
+    <div id="summaryLinesMobile"><div class="summary-empty">Tell us about your vehicle to get started.</div></div>
+  </div>
+</div>
+</main>
+
+<script src="console-log.js"></script>
+<script src="app.js"></script>
+<script src="settings.js"></script>
+</body>
+</html>
