@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ZGI Motor Insurance — Self-Service Portal Mock v3.3</title>
+<style>
+/* ── Design tokens — aligned to Zimnat product family ── */
+:root{
+  --g:#007A38;--gd:#005A28;--gl:#E8F5EE;--gm:#1D9E75;--gs:#B8DDC8;--gtext:#004D22;
+  --amber:#E07B00;--amberBg:#FFF8EC;--amberBorder:#FDDFA0;--amberText:#6B4A00;
+  --red:#A32D2D;--redBg:#FFF0F0;--redBorder:#F09595;
+  --blue:#1A4A7A;--blueBg:#EBF3FB;
+  --border:#D8E8DC;--border2:#C0D8C8;
+  --text:#1A1A1A;--text2:#4A5A50;--text3:#7A8A80;
+  --surface:#F4F8F5;--white:#FFFFFF;--line:#D8E8DC;
+  --mono:'Courier New',Courier,monospace;
+  --radius:10px;--radiusSm:6px;--radiusLg:16px;
+  --shadow:0 14px 40px rgba(0,58,28,.09)
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Aptos,'Segoe UI',system-ui,Arial,sans-serif;font-size:14px;color:var(--text);background:var(--surface);line-height:1.5}
+button,input,select{font:inherit}
+
+/* ── Header ── */
+header{background:linear-gradient(135deg,var(--gd),var(--g));color:#fff;border-bottom:4px solid #C9A84C;padding:14px 22px;position:sticky;top:0;z-index:100}
+.head{max-width:1400px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:40px;height:40px;border-radius:11px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);display:grid;place-items:center;font-weight:900;font-size:12px}
+.brand h1{margin:0;font-size:17px;font-weight:800}
+.brand p{margin:2px 0 0;font-size:11px;opacity:.8}
+.hdr-pills{display:flex;gap:8px;flex-wrap:wrap}
+.hdr-pill{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25)}
+.hdr-pill.warn{background:rgba(224,123,0,.3);border-color:rgba(253,223,160,.5)}
+
+/* ── Nav ── */
+nav{background:var(--white);border-bottom:1px solid var(--border);padding:0 22px;display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
+.tab{border:none;background:none;color:var(--text3);padding:11px 14px;font-size:12px;font-weight:800;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+.tab.active{color:var(--gd);border-bottom-color:var(--g)}
+
+/* ── Layout ── */
+main{max-width:1400px;margin:auto;padding:22px}
+.section{display:none}.section.active{display:block}
+.grid-main{display:grid;grid-template-columns:3fr 1fr;gap:20px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.hero-row{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;margin-bottom:20px}
+.panel{background:var(--white);border:1px solid var(--border);border-radius:var(--radiusLg);box-shadow:var(--shadow);padding:18px}
+.panel h2{margin:0 0 8px;font-size:20px;font-weight:700;color:var(--gd)}
+.panel h3{margin:0 0 8px;font-size:14px;font-weight:700}
+.kpi{border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--white)}
+.kpi strong{display:block;font-size:18px;font-weight:800;margin-bottom:3px;color:var(--gd)}
+.kpi span{font-size:11px;color:var(--text3)}
+.text2{color:var(--text2)}.text3{color:var(--text3)}.small{font-size:12px}
+
+/* ── Screen chrome ── */
+.screen-wrap{border:1px solid #C0CEC8;border-radius:var(--radiusLg);overflow:hidden;background:var(--white);box-shadow:var(--shadow)}
+.screenbar{height:38px;background:#1a2a22;color:#fff;display:flex;align-items:center;gap:8px;padding:0 14px}
+.dot{width:9px;height:9px;border-radius:50%;background:#ef4444}.dot:nth-child(2){background:#f59e0b}.dot:nth-child(3){background:#22c55e}
+
+/* ── Stepper — Travel Insurance grid style (CR-019) ── */
+.stepper{display:grid;gap:5px;margin-bottom:0;padding:12px 16px;background:var(--white);border-bottom:1px solid var(--border)}
+.stp{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 10px;text-align:center;font-size:10px;font-weight:800;color:var(--text3)}
+.stp.active{background:var(--g);color:#fff;border-color:var(--g)}
+.stp.done{background:var(--gl);color:var(--gd);border-color:var(--gs)}
+
+/* ── Question reveal — Travel Insurance pattern (CR-018) ── */
+.question{display:none;animation:qup .25s ease}
+.question.show{display:block}
+@keyframes qup{from{opacity:.15;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ── Choice tiles — Travel Insurance pattern (CR-018) ── */
+.choice-grid{display:grid;gap:10px}
+.choice-grid.col3{grid-template-columns:repeat(3,1fr)}
+.choice-grid.col2{grid-template-columns:repeat(2,1fr)}
+.choice{border:2px solid var(--border);border-radius:12px;background:var(--white);padding:14px 12px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+.choice:hover{border-color:var(--g)}.choice.sel{border-color:var(--g);background:var(--gl)}
+.choice .ico{font-size:24px;margin-bottom:6px}
+.choice strong{display:block;font-size:13px;font-weight:800;margin-bottom:2px}
+.choice small{display:block;color:var(--text3);font-size:10px}
+.choice .cbadge{display:inline-block;margin-top:5px;font-size:9px;font-weight:700;padding:2px 7px;border-radius:999px}
+.cbadge-code{background:var(--gl);color:var(--gd);border:1px solid var(--gs)}
+.cbadge-rec{background:var(--g);color:#fff}
+.cbadge-min{background:#f0f0f0;color:var(--text3)}
+
+/* ── Segmented control (bundle) ── */
+.seg{display:flex;background:#eef2ef;border-radius:10px;padding:4px;gap:3px}
+.seg-opt{flex:1;padding:9px 6px;border-radius:7px;text-align:center;font-size:11px;font-weight:700;color:var(--text3);cursor:pointer;border:none;background:transparent;transition:all .15s}
+.seg-opt.active{background:var(--white);color:var(--gd);box-shadow:0 2px 8px rgba(0,0,0,.08);font-weight:900}
+
+/* ── Stacked pill buttons (cover type) ── */
+.pill-stack{display:flex;flex-direction:column;gap:8px}
+.pill-opt{width:100%;padding:13px 16px;border-radius:10px;border:2px solid var(--border);background:var(--white);font-size:13px;font-weight:700;color:var(--text);cursor:pointer;text-align:left;display:flex;align-items:center;justify-content:space-between;transition:all .15s;gap:10px}
+.pill-opt:hover{border-color:var(--g);background:#fcfffe}
+.pill-opt.active{border-color:var(--g);background:var(--gl);color:var(--gd)}
+.pill-badges{display:flex;gap:5px;flex-shrink:0}
+
+/* ── Field inputs — Travel style ── */
+.field{border:1px solid var(--border2);border-radius:var(--radius);padding:9px 11px;background:var(--white);margin-bottom:10px}
+.field label{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.field input,.field select{width:100%;border:0;outline:0;background:transparent;font-size:14px;font-weight:600;color:var(--text)}
+.big-input{width:100%;border:2px solid var(--border2);border-radius:12px;padding:13px 16px;font-size:16px;font-weight:700;outline:none;color:var(--text);background:var(--white);transition:border-color .15s}
+.big-input:focus{border-color:var(--g);box-shadow:0 0 0 3px var(--gl)}
+.big-input::placeholder{color:#b0c0b8;font-weight:400}
+.big-select{width:100%;border:2px solid var(--border2);border-radius:12px;padding:12px 16px;font-size:14px;font-weight:600;outline:none;color:var(--text);background:var(--white);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237A8A80' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;transition:border-color .15s}
+.big-select:focus{border-color:var(--g)}
+.select-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ── TV toggle ── */
+.tv-row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border:1px solid var(--border);border-radius:10px;background:var(--white);margin-top:10px}
+.tv-row.on{border-color:var(--g);background:var(--gl)}
+.tv-label{font-size:13px;font-weight:600}
+.sw{width:38px;height:22px;border-radius:999px;background:#d1d5db;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.sw.on{background:var(--g)}
+.sw::after{content:'';width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.sw.on::after{left:19px}
+
+/* ── Value reveal ── */
+.value-reveal{border:2px solid var(--border2);border-radius:12px;padding:14px 16px;background:var(--white);margin-top:12px}
+.value-reveal label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);display:flex;align-items:center;gap:5px;margin-bottom:8px}
+.val-wrap{display:flex;align-items:center;border:1.5px solid var(--g);border-radius:9px;overflow:hidden}
+.val-pre{padding:11px 13px;background:var(--gl);font-weight:800;color:var(--gd);font-size:14px;border-right:1.5px solid var(--g)}
+.val-inp{border:none;outline:none;padding:11px 13px;font-size:16px;font-weight:700;width:100%;background:var(--white)}
+
+/* ── Tooltips ── */
+.tip-wrap{position:relative;display:inline-flex;align-items:center}
+.tip-icon{width:13px;height:13px;border-radius:50%;background:var(--text3);color:#fff;font-size:8px;font-weight:900;display:grid;place-items:center;cursor:help;font-style:normal}
+.tip-box{position:absolute;bottom:calc(100% + 7px);left:0;background:#1a2a22;color:#fff;font-size:11px;line-height:1.5;padding:7px 10px;border-radius:8px;white-space:normal;max-width:220px;z-index:200;opacity:0;pointer-events:none;transition:opacity .15s;box-shadow:0 6px 20px rgba(0,0,0,.2);font-weight:400;text-transform:none;letter-spacing:0}
+.tip-wrap:hover .tip-box{opacity:1}
+
+/* ── Summary bar ── */
+.summ-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:9px 18px;display:flex;flex-wrap:wrap;gap:7px}
+.summ-chip{background:var(--white);border:1px solid var(--border);border-radius:999px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:5px}
+.summ-chip .s-tick{color:var(--g);font-size:10px}
+.code-tag{display:inline-block;font-family:var(--mono);font-size:11px;background:var(--gl);border:1px solid var(--gs);color:var(--gd);border-radius:5px;padding:1px 6px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--radiusSm);font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .12s;padding:10px 16px}
+.btn-primary{background:var(--g);color:#fff}.btn-primary:hover{background:var(--gd)}
+.btn-ghost{background:var(--white);border:1px solid var(--border2);color:var(--text2)}.btn-ghost:hover{background:var(--surface)}
+.btn-full{width:100%;padding:13px;font-size:15px;font-weight:800;border-radius:var(--radius);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s}
+.btn-full.green{background:var(--g);color:#fff}.btn-full.green:hover{background:var(--gd)}
+.btn-full:disabled{opacity:.4;cursor:not-allowed}
+.btn-row{display:flex;gap:10px;margin-top:16px}
+.focused-wrap{padding:22px 20px;min-height:480px;display:flex;flex-direction:column;gap:14px}
+.f-headline{font-size:24px;font-weight:800;color:var(--gd);line-height:1.2;margin:0 0 2px}
+.f-sub{font-size:13px;color:var(--text2);margin:0}
+.f-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);display:flex;align-items:center;gap:5px;margin-bottom:7px}
+.sec-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:8px;margin-top:18px}
+
+/* ── Extras (duration step) ── */
+.dur-row{display:flex;gap:8px;margin-bottom:6px}
+.dur-btn{flex:1;padding:10px;border:2px solid var(--border);border-radius:9px;background:var(--white);font-weight:800;font-size:13px;cursor:pointer;text-align:center;transition:all .15s;line-height:1.3}
+.dur-btn.active{border-color:var(--g);background:var(--gl);color:var(--gd)}
+.extra-row{border:1px solid var(--border);border-radius:10px;padding:10px 13px;background:var(--white);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all .15s;margin-bottom:7px}
+.extra-row:hover{border-color:var(--g)}.extra-row.checked{border-color:var(--g);background:var(--gl)}
+.extra-name{font-size:13px;font-weight:600}.extra-price{font-size:13px;font-weight:700;color:var(--gd)}
+.chk{width:18px;height:18px;border-radius:5px;border:2px solid var(--border);background:var(--white);display:grid;place-items:center;flex-shrink:0;font-size:10px}
+.chk.on{background:var(--g);border-color:var(--g);color:#fff}
+
+/* ── Notices ── */
+.notice{display:flex;align-items:flex-start;gap:9px;border-radius:var(--radiusSm);padding:10px 13px;font-size:12px;margin-bottom:10px}
+.notice.ok{background:var(--gl);border:1px solid var(--gs);color:var(--gtext)}
+.notice.amber{background:var(--amberBg);border:1px solid var(--amberBorder);color:var(--amberText)}
+.notice.red{background:var(--redBg);border:1px solid var(--redBorder);color:var(--red)}
+
+/* ── Details step ── */
+.det-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px}
+.det-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.det-row:last-child{border-bottom:0}
+.det-lbl{color:var(--text3);font-size:11px}
+
+/* ── QUOTE CARD (CR-016 — Home Insurance pattern) ── */
+.quote-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px}
+.qc-header{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:var(--surface);border-bottom:1px solid var(--border)}
+.qc-ref{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--gd)}
+.qc-valid{font-size:11px;color:var(--gm)}
+.qc-body{display:grid;grid-template-columns:1fr 180px}
+.qc-details{padding:16px 18px;display:flex;flex-direction:column;gap:11px;border-right:1px solid var(--border)}
+.detail-row{display:flex;flex-direction:column;gap:2px}
+.detail-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3)}
+.detail-val{font-size:13px;font-weight:600;color:var(--text)}
+.detail-val.mono{font-family:var(--mono);font-size:12px;color:var(--gd)}
+.detail-divider{height:1px;background:var(--border);margin:1px 0}
+.qc-amount{background:var(--gl);padding:16px 14px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end}
+.qa-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--gtext)}
+.qa-currency{font-size:11px;font-weight:700;color:var(--gtext);margin-bottom:2px;margin-top:auto}
+.qa-figure{font-size:30px;font-weight:800;color:var(--gd);line-height:1;text-align:right}
+.qa-valid{font-size:10px;color:var(--gm);text-align:right;margin-top:6px}
+
+/* ── Breakdown rows ── */
+.breakdown{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:10px}
+.bk-section-hdr{padding:8px 14px;background:var(--surface);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);border-bottom:1px solid var(--border)}
+.bk-row{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:1px solid var(--border);font-size:13px}
+.bk-row:last-child{border-bottom:none}
+.bk-label{color:var(--text2)}.bk-val{font-weight:600;color:var(--text)}
+.bk-row.sub-total{background:var(--surface)}
+.bk-row.sub-total .bk-label{font-weight:700;color:var(--text)}
+.bk-row.sub-total .bk-val{color:var(--gd)}
+.bk-row.grand{background:var(--gd);border:none}
+.bk-row.grand .bk-label{color:#fff;font-size:14px;font-weight:700}
+.bk-row.grand .bk-val{color:#fff;font-size:18px;font-weight:800}
+
+/* ── Reference IDs ── */
+.ref-row{display:flex;gap:8px;flex-wrap:wrap;padding:10px 14px;background:var(--surface);border-top:1px solid var(--border)}
+.ref-chip{display:flex;flex-direction:column;gap:2px}
+.ref-chip-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3)}
+.ref-chip-val{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--gd)}
+
+/* ── Quote mode toggle ── */
+.mode-toggle{display:flex;gap:8px;margin-bottom:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px;align-items:center}
+.mode-toggle span{font-size:11px;font-weight:700;color:var(--text3);margin-right:4px}
+.mode-btn{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700;border:1px solid var(--border);background:var(--white);cursor:pointer;color:var(--text3);transition:all .15s}
+.mode-btn.active{background:var(--gd);color:#fff;border-color:var(--gd)}
+
+/* ── Payment — 3-step card (CR-017) ── */
+.payment-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px}
+.pc-section{padding:14px 16px;border-bottom:1px solid var(--border)}
+.pc-section:last-child{border-bottom:none}
+.pc-section.locked{opacity:.45;pointer-events:none}
+.pc-step-head{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+.pc-step-num{width:22px;height:22px;border-radius:50%;background:var(--gd);color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center;flex-shrink:0}
+.pc-step-title{font-size:13px;font-weight:700;color:var(--text)}
+
+/* Provider badges (CR-017) */
+.provider-list{display:flex;gap:8px;flex-wrap:wrap}
+.provider-badge{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--radiusSm);border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-size:12px;font-weight:700;transition:all .12s;user-select:none}
+.provider-badge:hover{border-color:var(--border2)}
+.provider-badge.selected{color:#fff}
+.provider-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pb-ecocash{color:#007A38}.pb-ecocash .provider-dot{background:#007A38}
+.pb-ecocash.selected{background:#007A38;border-color:#007A38}.pb-ecocash.selected .provider-dot{background:#fff}
+.pb-innbucks{color:#1A3A6A}.pb-innbucks .provider-dot{background:#1A3A6A}
+.pb-innbucks.selected{background:#1A3A6A;border-color:#1A3A6A}.pb-innbucks.selected .provider-dot{background:#fff}
+.pb-onemoney{color:#C85000}.pb-onemoney .provider-dot{background:#C85000}
+.pb-onemoney.selected{background:#C85000;border-color:#C85000}.pb-onemoney.selected .provider-dot{background:#fff}
+
+/* Mobile number */
+.mob-wrap{position:relative}
+.mob-flag{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none}
+.mob-input{width:100%;height:40px;border:1px solid var(--border2);border-radius:var(--radiusSm);padding:0 11px 0 32px;font-size:14px;font-family:var(--mono);font-weight:600;color:var(--text);background:var(--white);outline:none}
+.mob-input:focus{border-color:var(--g);box-shadow:0 0 0 3px var(--gl)}
+.field-hint{font-size:11px;color:var(--text3);margin-top:6px}
+
+/* Consent */
+.consent-row{display:flex;align-items:flex-start;gap:9px}
+.consent-cb{width:16px;height:16px;margin-top:2px;accent-color:var(--g);flex-shrink:0;cursor:pointer}
+.consent-text{font-size:12px;color:var(--text2);line-height:1.5;cursor:pointer}
+.consent-amount{font-weight:800;color:var(--gd)}
+
+/* Pay button wrap */
+.pay-btn-wrap{padding:14px 16px;border-top:1px solid var(--border)}
+.btn-pay{width:100%;height:46px;background:var(--g);color:#fff;border:none;border-radius:var(--radius);font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .12s}
+.btn-pay:hover{background:var(--gd)}.btn-pay:disabled{opacity:.4;cursor:not-allowed}
+.lock-icon{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* Payment waiting */
+.pay-phone{width:56px;height:90px;border:3px solid #1a2a22;border-radius:16px;margin:8px auto 12px;display:grid;place-items:center;font-size:26px;background:#fff}
+.pay-phone.pulse{animation:paypulse 1.4s infinite}
+@keyframes paypulse{0%,100%{transform:scale(1)}50%{transform:scale(.95);opacity:.75}}
+.poll-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text3);padding:3px 0;justify-content:center}
+.pd-wait,.pd-ok{width:8px;height:8px;border-radius:50%}.pd-wait{background:#f79009;animation:blink 1s infinite}.pd-ok{background:#12b76a}
+@keyframes blink{0%,100%{opacity:.35}50%{opacity:1}}
+
+/* Policy screen */
+.doc-box{border:1px solid var(--border);border-radius:9px;padding:10px 13px;background:var(--white);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.doc-name{font-size:13px;font-weight:700}.doc-sub{font-size:11px;color:var(--text3)}
+.receipt-panel{background:var(--gl);border:1px solid var(--gs);border-radius:12px;padding:13px;margin-top:10px}
+.receipt-panel h4{margin:0 0 5px;color:var(--gtext);font-size:13px}
+.ref-num{font-family:var(--mono);font-size:14px;font-weight:800;color:var(--gd);background:var(--white);padding:5px 10px;border-radius:7px;display:inline-block;margin:3px 0}
+
+/* Sidebar steps */
+.steps-list{display:flex;flex-direction:column;gap:6px}
+.slist-item{display:grid;grid-template-columns:24px 1fr;gap:8px;align-items:start;border:1px solid var(--border);border-radius:9px;padding:8px;background:var(--white);cursor:pointer}
+.slist-item:hover{border-color:var(--gs)}.slist-item.active{border-color:var(--g);box-shadow:0 0 0 3px var(--gl)}
+.snum{height:22px;width:22px;border-radius:6px;background:var(--gl);display:grid;place-items:center;font-weight:900;color:var(--gd);font-size:10px}
+.slist-item h4{margin:0 0 2px;font-size:11px;font-weight:700;color:var(--text)}.slist-item p{margin:0;font-size:10px;color:var(--text3)}
+.api-code{font-family:var(--mono);font-size:10px;background:#0d1f15;color:#c8f0d4;border-radius:10px;padding:11px;white-space:pre-wrap;line-height:1.55;overflow:auto;max-height:460px}
+
+/* Other (orchestration, ops) */
+.timeline{display:flex;flex-direction:column;gap:10px}
+.event{display:grid;grid-template-columns:16px 1fr;gap:10px}
+.event::before{content:'';width:10px;height:10px;border-radius:50%;background:#98a2b3;margin-top:4px}
+.event.done::before{background:#12b76a}.event.work::before{background:#f79009}
+.event strong{font-size:13px}.event p{margin:2px 0 0;font-size:12px;color:var(--text3)}
+.table{width:100%;border-collapse:collapse}.table th,.table td{padding:9px;border-bottom:1px solid #edf1f7;text-align:left;font-size:13px}
+.table th{color:#667085;background:var(--surface);text-transform:uppercase;font-size:10px;letter-spacing:.04em}
+.open-item{display:flex;align-items:flex-start;gap:8px;padding:9px;background:var(--amberBg);border:1px solid var(--amberBorder);border-radius:9px;margin-bottom:8px;font-size:11px;color:var(--amberText)}
+.padded{padding:20px}
+.view{display:none}.view.active{display:block}
+
+@media(max-width:900px){.grid-main,.hero-row,.select-row,.choice-grid.col3,.choice-grid.col2{grid-template-columns:1fr}.qc-body{grid-template-columns:1fr}main{padding:12px}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head">
+    <div class="brand">
+      <div class="logo">ZGI</div>
+      <div><h1>Motor Insurance — Customer Portal</h1><p>Self-service mock v3.3</p></div>
+    </div>
+    <div class="hdr-pills">
+      <span class="hdr-pill">IceCash codes confirmed</span>
+      <span class="hdr-pill warn">OI-001: LocationID pending</span>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <button class="tab active" onclick="showSection('customer')">Customer Journey</button>
+  <button class="tab" onclick="showSection('orchestration')">API Orchestration</button>
+  <button class="tab" onclick="showSection('icecash')">IceCash Reference</button>
+  <button class="tab" onclick="showSection('ops')">Operations</button>
+</nav>
+
+<main>
+
+<!-- ══════════════ CUSTOMER JOURNEY ══════════════ -->
+<section id="customer" class="section active">
+  <div class="hero-row">
+    <div class="panel">
+      <h2>Motor Insurance</h2>
+      <p class="text2 small" style="margin-bottom:14px;line-height:1.6">Step-reveal flow. Vehicle details first, then cover and bundle. Quote displays full API response — insurance breakdown, licence arrears and penalties where applicable, and all reference IDs.</p>
+      <div class="grid4">
+        <div class="kpi"><strong id="kpiStage">1/7</strong><span>Stage</span></div>
+        <div class="kpi"><strong id="kpiVehCode">—</strong><span>VehicleType</span></div>
+        <div class="kpi"><strong id="kpiInsCode">—</strong><span>InsuranceType</span></div>
+        <div class="kpi"><strong id="kpiBundle">—</strong><span>Bundle</span></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Demo controls</h3>
+      <p class="small text3" style="margin-bottom:12px">Navigate the journey. Toggle quote mode to see both API response shapes.</p>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="resetDemo()">↺ Reset</button>
+        <button class="btn btn-primary" onclick="jumpTo('vehicle')">Start</button>
+      </div>
+      <div class="open-item" style="margin-top:12px">⚠ <div><strong>OI-001:</strong> LocationID — obtain from IceCash partner account owner before testing TPILICUpdate.</div></div>
+    </div>
+  </div>
+
+  <div class="grid-main">
+    <!-- ── Screen ── -->
+    <div class="screen-wrap">
+      <div class="screenbar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="font-size:11px;font-weight:700">Zimnat Customer Portal — Motor Insurance</span></div>
+
+      <!-- STEP 1: Vehicle -->
+      <div id="v-vehicle" class="view active">
+        <div class="stepper" style="grid-template-columns:repeat(7,1fr)" id="stp-vehicle">
+          <div class="stp active">Vehicle</div><div class="stp">Cover</div><div class="stp">Duration</div><div class="stp">Details</div><div class="stp">Quote</div><div class="stp">Payment</div><div class="stp">Policy</div>
+        </div>
+        <div class="focused-wrap">
+          <div><div class="f-headline">Your vehicle 🚗</div><div class="f-sub">Tell us what you're insuring and how it's used.</div></div>
+
+          <div>
+            <div class="f-label">Registration number <div class="tip-wrap"><i class="tip-icon">ⓘ</i><div class="tip-box">Your vehicle's registration plate as shown on the logbook. Enter TBA for new unregistered vehicles.</div></div></div>
+            <input class="big-input" id="inpVRN" placeholder="e.g. ZBT 6622" oninput="onVRNType()">
+          </div>
+
+          <div class="select-row">
+            <div>
+              <div class="f-label">Vehicle type <div class="tip-wrap"><i class="tip-icon">ⓘ</i><div class="tip-box">Determines the IceCash VehicleType code from Mappings (B).</div></div></div>
+              <select class="big-select" id="selType" onchange="onTypeChange()">
+                <option value="">Select type…</option>
+                <option>Private Car</option><option>Trailer</option><option>Commercial Vehicle</option>
+                <option>Taxis</option><option>Commercial Trailers</option><option>Motor Cycles</option>
+                <option>Omnibus and Commuters</option><option>School Bus</option><option>Staff Bus</option>
+                <option>Tractors/Fork Lifts</option><option>Tractors</option><option>Tractors/Combines</option>
+                <option>Ambulance, Fire Engine, Hearse</option><option>Agricultural Implements</option><option>Special Types</option>
+              </select>
+            </div>
+            <div>
+              <div class="f-label">Vehicle use <div class="tip-wrap"><i class="tip-icon">ⓘ</i><div class="tip-box">Combined with vehicle type to determine the IceCash VehicleType code.</div></div></div>
+              <select class="big-select" id="selUse" onchange="onUseChange()" disabled>
+                <option value="">Select type first…</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="btn-full green" id="veh-btn" disabled onclick="jumpTo('cover')">Continue to cover →</button>
+        </div>
+      </div>
+
+      <!-- STEP 2: Cover -->
+      <div id="v-cover" class="view">
+        <div class="stepper" style="grid-template-columns:repeat(7,1fr)">
+          <div class="stp done">Vehicle</div><div class="stp active">Cover</div><div class="stp">Duration</div><div class="stp">Details</div><div class="stp">Quote</div><div class="stp">Payment</div><div class="stp">Policy</div>
+        </div>
+        <div class="summ-bar" id="veh-summ"></div>
+        <div class="focused-wrap">
+          <div><div class="f-headline">Choose your cover 🛡️</div><div class="f-sub">Start with what you'd like to include, then pick your level of protection.</div></div>
+
+          <!-- Bundle segmented control -->
+          <div>
+            <div class="f-label">Include in this transaction</div>
+            <div class="seg">
+              <button class="seg-opt" id="seg-insurance" onclick="selectBundle('insurance')">Insurance only</button>
+              <button class="seg-opt" id="seg-licence" onclick="selectBundle('licence')">+ ZINARA licence</button>
+              <button class="seg-opt" id="seg-radio" onclick="selectBundle('radio')">+ ZBC radio</button>
+            </div>
+          </div>
+
+          <!-- TV toggle — radio only (CR-013) -->
+          <div class="question" id="r-tv">
+            <div class="tv-row" id="tvRow">
+              <div><div class="tv-label">This vehicle has a TV fitted</div><div style="font-size:11px;color:var(--text3)">RadioTVUsage: 3 — overrides private/company default</div></div>
+              <button class="sw" id="tvSwitch" onclick="toggleTV()"></button>
+            </div>
+          </div>
+
+          <!-- Cover type pills — reveal after bundle (CR-009, CR-012) -->
+          <div class="question" id="r-cover">
+            <div class="f-label">Cover type <div class="tip-wrap"><i class="tip-icon">ⓘ</i><div class="tip-box">RTA is the statutory minimum. Comprehensive covers own damage, theft, and third party.</div></div></div>
+            <div class="pill-stack">
+              <button class="pill-opt" id="cc-RTA" onclick="selectCover('RTA',this)"><span>RTA Only</span><div class="pill-badges"><span class="cbadge cbadge-min">Statutory min</span><span class="cbadge cbadge-code">InsType: 1</span></div></button>
+              <button class="pill-opt" id="cc-FTP" onclick="selectCover('FTP',this)"><span>Third Party FT</span><div class="pill-badges"><span class="cbadge cbadge-code">InsType: 2</span></div></button>
+              <button class="pill-opt" id="cc-COMP" onclick="selectCover('COMP',this)"><span>Comprehensive</span><div class="pill-badges"><span class="cbadge cbadge-rec">Recommended</span><span class="cbadge cbadge-code">InsType: 4</span></div></button>
+            </div>
+          </div>
+
+          <!-- Declared value — COMP only (CR-007) -->
+          <div class="question" id="r-value">
+            <div class="value-reveal">
+              <label>Declared market value (USD) <div class="tip-wrap"><i class="tip-icon">ⓘ</i><div class="tip-box">Current market value. Used to calculate your base Comprehensive premium at 5% per annum.</div></div></label>
+              <div class="val-wrap"><span class="val-pre">USD</span><input class="val-inp" id="inpValue" type="number" placeholder="e.g. 15000" oninput="onValueInput()"></div>
+            </div>
+          </div>
+
+          <!-- Continue -->
+          <div class="question" id="r-continue">
+            <div class="btn-row" style="margin:0">
+              <button class="btn btn-ghost" onclick="jumpTo('vehicle')">← Back</button>
+              <button class="btn-full green" style="flex:1;margin:0" onclick="jumpTo('extras')">Continue →</button>
+            </div>
+          </div>
+          <div id="cover-back" style="margin-top:auto"><button class="btn btn-ghost" onclick="jumpTo('vehicle')">← Back</button></div>
+        </div>
+      </div>
+
+      <!-- STEP 3: Duration + Extras -->
+      <div id="v-extras" class="view">
+        <div class="stepper" style="grid-template-columns:repeat(7,1fr)">
+          <div class="stp done">Vehicle</div><div class="stp done">Cover</div><div class="stp active">Duration</div><div class="stp">Details</div><div class="stp">Quote</div><div class="stp">Payment</div><div class="stp">Policy</div>
+        </div>
+        <div class="summ-bar" id="cover-summ"></div>
+        <div class="padded">
+          <div class="f-headline" style="font-size:21px;margin-bottom:3px">Duration ⏱</div>
+          <div class="f-sub" style="margin-bottom:16px">Cover starts when payment clears · quotes valid 48 hours</div>
+          <div class="dur-row" style="margin-bottom:18px">
+            <div class="dur-btn" onclick="selDur(this,4)">4 months<br><span style="font-size:10px;color:var(--text3)">1 term</span></div>
+            <div class="dur-btn active" onclick="selDur(this,8)">8 months<br><span style="font-size:10px;color:var(--text3)">2 terms</span></div>
+            <div class="dur-btn" onclick="selDur(this,12)">12 months<br><span style="font-size:10px;color:var(--text3)">3 terms</span></div>
+          </div>
+          <div id="extrasSection">
+            <div class="sec-lbl" style="margin-top:0">Optional extras</div>
+            <div class="extra-row checked" id="ex-WINDSCREEN" onclick="toggleExtra('WINDSCREEN')"><div class="extra-name">Windscreen</div><div style="display:flex;align-items:center;gap:8px"><span class="extra-price" id="price-WINDSCREEN">+$23.33</span><div class="chk on" id="chk-WINDSCREEN">✓</div></div></div>
+            <div class="extra-row" id="ex-ACCESSORIES" onclick="toggleExtra('ACCESSORIES')"><div class="extra-name">Accessories</div><div style="display:flex;align-items:center;gap:8px"><span class="extra-price" id="price-ACCESSORIES">+$33.33</span><div class="chk" id="chk-ACCESSORIES"></div></div></div>
+            <div class="extra-row" id="ex-EXCESS_BUYDOWN" onclick="toggleExtra('EXCESS_BUYDOWN')"><div class="extra-name">Excess buy-down</div><div style="display:flex;align-items:center;gap:8px"><span class="extra-price" id="price-EXCESS_BUYDOWN">+$53.33</span><div class="chk" id="chk-EXCESS_BUYDOWN"></div></div></div>
+            <div class="extra-row" id="ex-CAR_HIRE" onclick="toggleExtra('CAR_HIRE')"><div class="extra-name">Car hire</div><div style="display:flex;align-items:center;gap:8px"><span class="extra-price" id="price-CAR_HIRE">+$80.00</span><div class="chk" id="chk-CAR_HIRE"></div></div></div>
+            <div style="display:flex;justify-content:space-between;padding:9px 13px;background:var(--gl);border-radius:9px;margin-top:8px;margin-bottom:4px">
+              <span style="font-size:13px;font-weight:700">Extras subtotal</span>
+              <span id="extrasTotal" style="font-size:14px;font-weight:800;color:var(--gd)">$23.33</span>
+            </div>
+          </div>
+          <div id="noExtrasNote" style="display:none" class="notice ok">Extras available on Comprehensive only.</div>
+          <div class="btn-row">
+            <button class="btn btn-ghost" onclick="jumpTo('cover')">← Back</button>
+            <button class="btn-full green" style="flex:1;margin:0" onclick="jumpTo('details')">Continue →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: Your Details (CR-014: no named drivers) -->
+      <div id="v-details" class="view">
+        <div class="stepper" style="grid-template-columns:repeat(7,1fr)">
+          <div class="stp done">Vehicle</div><div class="stp done">Cover</div><div class="stp done">Duration</div><div class="stp active">Details</div><div class="stp">Quote</div><div class="stp">Payment</div><div class="stp">Policy</div>
+        </div>
+        <div class="padded">
+          <div class="f-headline" style="font-size:21px;margin-bottom:10px">Your details 👤</div>
+          <div class="notice ok" style="margin-bottom:14px">✓ Pre-filled from your KYC profile</div>
+          <div class="det-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><strong>Policy holder</strong><button class="btn btn-ghost" style="padding:5px 10px;font-size:11px">Edit</button></div>
+            <div class="det-row"><span class="det-lbl">Full name</span><strong>Ropa Nyagwaya</strong></div>
+            <div class="det-row"><span class="det-lbl">ID number</span><strong>63184337B05</strong></div>
+            <div class="det-row"><span class="det-lbl">Mobile</span><strong>0771 234 567</strong></div>
+            <div class="det-row"><span class="det-lbl">Email</span><strong>ropa@zimnat.co.zw</strong></div>
+            <div class="det-row" style="border:none"><span class="det-lbl">Address</span><strong>14 Borrowdale Road, Harare</strong></div>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:14px">
+            <div style="padding:10px 13px;cursor:pointer;display:flex;justify-content:space-between;background:var(--surface)" onclick="toggleAcc('altHolder')">
+              <span style="font-size:13px;font-weight:700">Policyholder is someone else?</span><span style="color:var(--text3)">▾</span>
+            </div>
+            <div id="altHolder" style="display:none;padding:14px;border-top:1px solid var(--border)">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div class="field"><label>First name</label><input placeholder="First name"></div>
+                <div class="field"><label>Last name</label><input placeholder="Last name"></div>
+              </div>
+              <div class="field"><label>ID number</label><input placeholder="ID number"></div>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-ghost" onclick="jumpTo('extras')">← Back</button>
+            <button class="btn-full green" style="flex:1;margin:0" onclick="jumpTo('quote')">Generate Quote →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 5: Quote (CR-016, 020-025) -->
+      <div id="v-quote" class="view">
+        <div class="stepper" style="grid-template-columns:repeat(7,1fr)">
+          <div class="stp done">Vehicle</div><div class="stp done">Cover</div><div class="stp done">Duration</div><div class="stp done">Details</div><div class="stp active">Quote</div><div class="stp">Payment</div><div class="stp">Policy</div>
+        </div>
+        <div class="padded">
+          <!-- Mode toggle (demo only) -->
+          <div class="mode-toggle">
+            <span>Demo:</span>
+            <button class="mode-btn active" id="mbtn-combined" onclick="renderQuote('combined')">Combined (insurance + licence)</button>
+            <button class="mode-btn" id="mbtn-insurance" onclick="renderQuote('insurance')">Insurance only</button>
+          </div>
+
+          <!-- Quote card -->
+          <div class="quote-card" id="qcard">
+            <div class="qc-header">
+              <span class="qc-ref" id="q-ref">ZQ-20260727-04821</span>
+              <span class="qc-valid" id="q-valid">Valid until 29 Jul 2026 10:30</span>
+            </div>
+            <div class="qc-body">
+              <div class="qc-details">
+                <div class="detail-row"><div class="detail-label">Vehicle</div><div class="detail-val" id="q-vrn-make">ZBT 6622 · ADMIRAL LY 125 T 15</div></div>
+                <div class="detail-row"><div class="detail-label">Year</div><div class="detail-val" id="q-year">Year not recorded</div></div>
+                <div class="detail-divider"></div>
+                <div class="detail-row"><div class="detail-label">Vehicle type</div><div class="detail-val" id="q-veh-type">Private Car — Business use</div></div>
+                <div class="detail-row"><div class="detail-label">Insurance</div><div class="detail-val" id="q-ins-type">Road Traffic Act (RTA)</div></div>
+                <div class="detail-divider"></div>
+                <div class="detail-row"><div class="detail-label">Cover period</div><div class="detail-val" id="q-period">27 Nov 2026 → 26 Mar 2027</div></div>
+                <div class="detail-row"><div class="detail-label">Duration</div><div class="detail-val" id="q-dur">4 months</div></div>
+                <div class="detail-row"><div class="detail-label">Cover amount</div><div class="detail-val" id="q-cover-amt">USD 30.00</div></div>
+              </div>
+              <div class="qc-amount">
+                <div class="qa-label" id="q-amt-lbl">Total due</div>
+                <div>
+                  <div class="qa-currency">USD</div>
+                  <div class="qa-figure" id="q-total-fig">2,260.60</div>
+                </div>
+                <div class="qa-valid" id="q-expires">Expires 29 Jul 2026</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Arrears notice (CR-020) — shown only for combined with arrears -->
+          <div class="notice amber" id="q-arrears-notice" style="display:none">
+            ⚠ <div><strong>Outstanding licence arrears detected.</strong> Your vehicle licence has unpaid arrears and penalties included in the total below. Review the licence breakdown before accepting.</div>
+          </div>
+
+          <!-- Insurance breakdown -->
+          <div class="sec-lbl">Insurance breakdown</div>
+          <div class="breakdown" id="q-ins-breakdown">
+            <div class="bk-section-hdr" id="q-ins-hdr">Motor Insurance</div>
+            <div class="bk-row"><span class="bk-label">Premium amount</span><span class="bk-val" id="q-premium">$35.60</span></div>
+            <div class="bk-row"><span class="bk-label">Stamp duty</span><span class="bk-val" id="q-stamp">$2.00</span></div>
+            <div class="bk-row"><span class="bk-label">Government levy</span><span class="bk-val" id="q-levy">$3.60</span></div>
+            <div class="bk-row sub-total"><span class="bk-label">Insurance total</span><span class="bk-val" id="q-ins-total">$35.60</span></div>
+          </div>
+
+          <!-- Licence breakdown — combined only (CR-016, CR-021) -->
+          <div id="q-lic-section" style="display:none">
+            <div class="sec-lbl">Licence breakdown</div>
+            <div class="breakdown">
+              <div class="bk-section-hdr">
+                ZINARA Licence
+                <span id="q-lic-expiry" style="float:right;font-weight:400;text-transform:none;letter-spacing:0">Current licence expired: —</span>
+              </div>
+              <div class="bk-row"><span class="bk-label">Licence fee</span><span class="bk-val" id="q-lic-fee">$1,800.00</span></div>
+              <div class="bk-row" id="q-arrears-row"><span class="bk-label" style="color:var(--amber)">Arrears</span><span class="bk-val" style="color:var(--amber)" id="q-arrears">$300.00</span></div>
+              <div class="bk-row" id="q-penalties-row"><span class="bk-label" style="color:var(--amber)">Penalties</span><span class="bk-val" style="color:var(--amber)" id="q-penalties">$80.00</span></div>
+              <div class="bk-row"><span class="bk-label">Administration</span><span class="bk-val" id="q-admin">$10.00</span></div>
+              <div class="bk-row sub-total"><span class="bk-label">Licence total</span><span class="bk-val" id="q-lic-total">$2,190.00</span></div>
+              <div class="bk-row"><span class="bk-label">ZBC radio / TV licence</span><span class="bk-val" id="q-radio">$35.00</span></div>
+              <div class="bk-row sub-total"><span class="bk-label">Licence + Radio total</span><span class="bk-val" id="q-lic-radio-total">$2,225.00</span></div>
+            </div>
+          </div>
+
+          <!-- Grand total -->
+          <div class="breakdown" style="margin-bottom:12px">
+            <div class="bk-row grand">
+              <span class="bk-label">Grand total</span>
+              <span class="bk-val" id="q-grand">USD 2,260.60</span>
+            </div>
+          </div>
+
+          <!-- Reference IDs (CR-022) -->
+          <div class="quote-card" style="margin-bottom:14px">
+            <div class="ref-row" id="q-refs">
+              <div class="ref-chip"><div class="ref-chip-lbl">Combined ID</div><div class="ref-chip-val" id="q-combined-id">11031</div></div>
+              <div class="ref-chip" id="q-lic-id-wrap"><div class="ref-chip-lbl">Licence ID</div><div class="ref-chip-val" id="q-lic-id">22505</div></div>
+              <div class="ref-chip"><div class="ref-chip-lbl">Insurance ID</div><div class="ref-chip-val" id="q-ins-id">139262</div></div>
+              <div class="ref-chip" id="q-custref-wrap" style="display:none"><div class="ref-chip-lbl">Customer Ref</div><div class="ref-chip-val" id="q-cust-ref">Ref 1</div></div>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-ghost" onclick="jumpTo('details')">← Back</button>
+            <button class="btn-full green" style="flex:1;margin:0" onclick="jumpTo('payment')">Accept &amp; Pay →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 6: Payment (CR-017 — 3-step card) -->
+      <div id="v-payment" class="view">
+        <div class="stepper" style="grid-template-columns:repeat(7,1fr)">
+          <div class="stp done">Vehicle</div><div class="stp done">Cover</div><div class="stp done">Duration</div><div class="stp done">Details</div><div class="stp done">Quote</div><div class="stp active">Payment</div><div class="stp">Policy</div>
+        </div>
+        <div class="padded">
+          <!-- Pay summary -->
+          <div class="quote-card" style="margin-bottom:14px">
+            <div class="qc-header"><span style="font-size:12px;font-weight:700;color:var(--text2)">Payment summary</span><span class="qc-ref" id="pay-ref">ZQ-20260727-04821</span></div>
+            <div style="padding:0">
+              <div class="bk-row"><span class="bk-label" id="pay-veh-lbl">Insurance premium</span><span class="bk-val" id="pay-ins-amt">$35.60</span></div>
+              <div class="bk-row" id="pay-lic-row"><span class="bk-label" id="pay-lic-lbl">ZINARA + ZBC radio</span><span class="bk-val" id="pay-lic-amt">$2,225.00</span></div>
+              <div class="bk-row grand"><span class="bk-label">Total due today</span><span class="bk-val" id="pay-total">USD 2,260.60</span></div>
+            </div>
+          </div>
+
+          <!-- 3-step payment card -->
+          <div class="payment-card">
+            <!-- Step 1: Provider -->
+            <div class="pc-section" id="section-provider">
+              <div class="pc-step-head"><span class="pc-step-num">1</span><span class="pc-step-title">Select mobile money provider</span></div>
+              <div class="provider-list">
+                <div class="provider-badge pb-ecocash selected" id="badge-ecocash" onclick="selectProvider('ecocash')"><span class="provider-dot"></span>EcoCash</div>
+                <div class="provider-badge pb-innbucks" id="badge-innbucks" onclick="selectProvider('innbucks')"><span class="provider-dot"></span>InnBucks</div>
+                <div class="provider-badge pb-onemoney" id="badge-onemoney" onclick="selectProvider('onemoney')"><span class="provider-dot"></span>OneMoney</div>
+              </div>
+            </div>
+            <!-- Step 2: Number -->
+            <div class="pc-section" id="section-number">
+              <div class="pc-step-head"><span class="pc-step-num">2</span><span class="pc-step-title">Enter your mobile number</span></div>
+              <div class="mob-wrap">
+                <span class="mob-flag">🇿🇼</span>
+                <input class="mob-input" type="tel" id="mob-num" placeholder="07X XXX XXXX" oninput="checkNumber()">
+              </div>
+              <div class="field-hint" id="num-hint">A payment prompt will be sent to this number.</div>
+            </div>
+            <!-- Step 3: Consent -->
+            <div class="pc-section locked" id="section-consent">
+              <div class="pc-step-head"><span class="pc-step-num">3</span><span class="pc-step-title">Authorise payment</span></div>
+              <div class="consent-row">
+                <input class="consent-cb" type="checkbox" id="consent-cb" onchange="checkConsent()">
+                <label class="consent-text" for="consent-cb">
+                  I authorise a payment of <span class="consent-amount" id="consent-amt">USD 2,260.60</span> from my mobile wallet to Zimnat for Motor Insurance cover.
+                  <a href="#" style="color:var(--g)">Terms &amp; Conditions apply.</a>
+                </label>
+              </div>
+            </div>
+            <!-- Pay button -->
+            <div class="pay-btn-wrap">
+              <button class="btn-pay" id="pay-btn" disabled onclick="handlePay()">
+                <svg class="lock-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Pay <span id="pay-btn-amt">USD 2,260.60</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Waiting state (hidden) -->
+          <div id="payWaiting" style="display:none;text-align:center;padding:8px 0">
+            <div class="pay-phone pulse">📱</div>
+            <div style="font-weight:800;margin-bottom:4px">Waiting for your approval</div>
+            <div class="small text3" style="margin-bottom:10px">Approve the prompt on your phone to continue</div>
+            <div id="pollList"></div>
+            <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+              <button class="btn btn-primary" onclick="paymentSuccess()">✓ Approved</button>
+              <button class="btn" style="background:var(--amber);color:#fff" onclick="paymentFailed()">✗ Failed</button>
+            </div>
+          </div>
+          <div id="payFailed" style="display:none">
+            <div class="notice red" style="margin-bottom:10px"><strong>Payment failed.</strong> No policy created.</div>
+            <button class="btn btn-primary" onclick="retryPay()">Try again</button>
+          </div>
+
+          <!-- IceCash approval (hidden) -->
+          <div id="payFinalising" style="display:none">
+            <div class="notice ok" style="margin-bottom:12px">✓ <strong>Payment confirmed.</strong> Activating on IceCash…</div>
+            <div id="iceStageA">
+              <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:6px">Step 1/3 — TPILICUpdate</div>
+              <div style="background:#0d1f15;border-radius:9px;padding:10px;font-family:var(--mono);font-size:10px;color:#c8f0d4;margin-bottom:8px;line-height:1.6">POST → TPILICUpdate
+PaymentMethod: 3  ← EcoCash
+DeliveryMethod: 2  ← OFFICE COLLECTION
+LicenceCert: 0
+LocationID: [OI-001]
+InsuranceCompanyID: 24
+Status: 1  ← Approved</div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-primary" style="background:var(--g)" onclick="iceApprove()">✓ IceCash Approved</button>
+                <button class="btn" style="background:var(--amber);color:#fff" onclick="iceFail()">✗ Failed</button>
+              </div>
+              <div id="iceFailMsg" style="display:none;margin-top:8px" class="notice red">ICECASH_APPROVAL_FAILED — ops alert raised.</div>
+            </div>
+            <div id="iceStageB" style="display:none;margin-top:12px">
+              <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:6px">Step 2/3 — TPILICResult polling</div>
+              <div id="icePollList"></div>
+              <button class="btn btn-primary" id="iceResBtn" style="margin-top:8px;background:var(--g)" onclick="iceResult()">✓ TPILICResult Confirmed</button>
+            </div>
+            <div id="iceStageC" style="display:none;margin-top:12px">
+              <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--text3);margin-bottom:6px">Step 3/3 — PURE + documents</div>
+              <div style="font-size:12px;color:var(--text2);line-height:1.9">
+                ✓ QueuePolicyIssuanceJob → PURE<br>
+                ✓ digitalPolicyNumber: <span style="font-family:var(--mono);color:var(--gd)">ZDG-20260727-004821</span><br>
+                ✓ Cover note generated<br>
+                ✓ Policy confirmation email dispatched
+              </div>
+            </div>
+          </div>
+
+          <div class="btn-row" style="margin-top:12px">
+            <button class="btn btn-ghost" onclick="jumpTo('quote')">← Back to quote</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 7: My Policy -->
+      <div id="v-policy" class="view">
+        <div class="stepper" style="grid-template-columns:repeat(7,1fr)">
+          <div class="stp done">Vehicle</div><div class="stp done">Cover</div><div class="stp done">Duration</div><div class="stp done">Details</div><div class="stp done">Quote</div><div class="stp done">Payment</div><div class="stp active">Policy</div>
+        </div>
+        <div class="padded">
+          <div style="text-align:center;padding:8px 0 14px">
+            <div style="font-size:42px">✅</div>
+            <div style="font-size:22px;font-weight:800;color:var(--gd);margin:8px 0 4px">You're covered</div>
+            <div style="font-size:13px;color:var(--text3)">Your motor insurance policy has been issued</div>
+          </div>
+          <div style="border:1px solid var(--gs);border-radius:12px;padding:14px;background:var(--gl);margin-bottom:12px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+              <div style="width:36px;height:36px;border-radius:9px;background:var(--white);display:grid;place-items:center;font-size:18px">🚗</div>
+              <div><div style="font-weight:800;font-size:14px" id="pol-veh-name">Private Car — ZBT 6622</div><div style="font-size:12px;color:var(--text3)" id="pol-veh-make">ADMIRAL LY 125 T 15</div></div>
+            </div>
+            <div class="det-row"><span class="det-lbl">Cover</span><strong id="pol-cover">Road Traffic Act</strong></div>
+            <div class="det-row"><span class="det-lbl">Period</span><strong id="pol-period">27 Nov 2026 → 26 Mar 2027</strong></div>
+            <div class="det-row"><span class="det-lbl">IceCash policy</span><span class="code-tag">ICCBZ2600-04821</span></div>
+            <div class="det-row" style="border:none"><span class="det-lbl">Digital policy</span><span class="code-tag">ZDG-20260727-004821</span></div>
+          </div>
+          <div class="receipt-panel" id="pol-receipt">
+            <h4>🪪 ZINARA licence receipt</h4>
+            <div style="font-size:12px;color:var(--gtext);margin-bottom:5px">Present at any ZINARA Licensing Agent or arrange hailing delivery.</div>
+            <div class="ref-num">LIC-RCT-7891234</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:5px;font-style:italic">Proof of insurance disc printed when you collect your licence disc.</div>
+          </div>
+          <div class="sec-lbl" style="margin-top:14px">Documents</div>
+          <div class="doc-box"><div style="display:flex;align-items:center;gap:9px"><span style="font-size:18px">📄</span><div><div class="doc-name" id="pol-doc-name">Cover Note — ZBT 6622</div><div class="doc-sub">PDF · Includes ReceiptID · Make/Model</div></div></div><button class="btn btn-ghost" style="padding:5px 11px;font-size:11px">Download</button></div>
+          <div class="doc-box"><div style="display:flex;align-items:center;gap:9px"><span style="font-size:18px">📋</span><div><div class="doc-name">Policy Schedule</div><div class="doc-sub">PDF</div></div></div><button class="btn btn-ghost" style="padding:5px 11px;font-size:11px">Download</button></div>
+          <div class="doc-box"><div style="display:flex;align-items:center;gap:9px"><span style="font-size:18px">🧾</span><div><div class="doc-name">Payment Receipt</div><div class="doc-sub">EcoCash TC261119.1045.T0528007</div></div></div><button class="btn btn-ghost" style="padding:5px 11px;font-size:11px">Download</button></div>
+          <div style="display:flex;gap:10px;margin-top:14px">
+            <button class="btn btn-primary" onclick="resetDemo()">Done</button>
+            <button class="btn btn-ghost" onclick="sendDocs()">✉ Resend documents</button>
+          </div>
+          <div id="docsSent" style="display:none;margin-top:10px" class="notice ok">✓ Resent to ropa@zimnat.co.zw</div>
+        </div>
+      </div>
+
+    </div><!-- /screen-wrap -->
+
+    <!-- RIGHT: Steps + API -->
+    <div class="panel" style="padding:13px">
+      <h3 style="margin-bottom:10px">Journey steps</h3>
+      <div class="steps-list" id="journeySteps">
+        <div class="slist-item active" data-step="vehicle" onclick="jumpTo('vehicle')"><div class="snum">1</div><div><h4>Your vehicle</h4><p>VRN · VehicleType code</p></div></div>
+        <div class="slist-item" data-step="cover" onclick="jumpTo('cover')"><div class="snum">2</div><div><h4>Cover + bundle</h4><p>Bundle → TV toggle → InsuranceType</p></div></div>
+        <div class="slist-item" data-step="extras" onclick="jumpTo('extras')"><div class="snum">3</div><div><h4>Duration + extras</h4><p>LicFrequency · COMP only</p></div></div>
+        <div class="slist-item" data-step="details" onclick="jumpTo('details')"><div class="snum">4</div><div><h4>Your details</h4><p>GET /customer/profile</p></div></div>
+        <div class="slist-item" data-step="quote" onclick="jumpTo('quote')"><div class="snum">5</div><div><h4>Quote</h4><p>POST /motor/comprehensive/quote</p></div></div>
+        <div class="slist-item" data-step="payment" onclick="jumpTo('payment')"><div class="snum">6</div><div><h4>Payment</h4><p>3-step card → TPILICUpdate</p></div></div>
+        <div class="slist-item" data-step="policy" onclick="jumpTo('policy')"><div class="snum">7</div><div><h4>My policy</h4><p>TPILICResult + PURE</p></div></div>
+      </div>
+      <h3 style="margin-top:14px;margin-bottom:8px">API payload</h3>
+      <pre id="apiPreview" class="api-code"></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ ORCHESTRATION ══════════ -->
+<section id="orchestration" class="section">
+  <div style="display:grid;grid-template-columns:1.1fr .9fr;gap:18px">
+    <div class="panel"><h2>Backend orchestration</h2>
+      <div class="timeline">
+        <div class="event done"><div><strong>1. Local insurance rating</strong><p>basePremium = rate% × declaredValue × (dur/12). stampDuty = subTotal × 5%. govtLevy = RTAbaseline × 12% × (dur/12). No IceCash call.</p></div></div>
+        <div class="event done"><div><strong>2. TPILICQuote (batched, conditional)</strong><p>If bundleLicence or bundleRadio true. Response includes: Licence.ArrearsAmt, Licence.PenaltiesAmt, Licence.LicExpiryDate, Licence.TotalLicAmt, Licence.TotalRadioTVAmt — all surfaced on the quote screen. RadioTVUsage derived from VehicleType (private→1, commercial→2) or overridden to 3 when TV toggle on.</p></div></div>
+        <div class="event done"><div><strong>3. Merge and return</strong><p>Local insurance + IceCash licence/radio consolidated. PARTIAL if any UNAVAILABLE. validUntil: +48 hours.</p></div></div>
+        <div class="event done"><div><strong>4. EcoCash initiation</strong><p>Idempotency guard. USSD push. Portal polls GET /status every 5s, max 10.</p></div></div>
+        <div class="event done"><div><strong>5. EcoCash callback</strong><p>IP-allowlisted. HTTP 200 within 5s. Dispatches: ReceiptPDFJob, SMSJob, ProcessIceCashApprovalJob.</p></div></div>
+        <div class="event done"><div><strong>6. TPILICUpdate</strong><p>PaymentMethod: 3, DeliveryMethod: 2, LicenceCert: 0, InsuranceCompanyID: 24, LocationID: [OI-001].</p></div></div>
+        <div class="event done"><div><strong>7. TPILICResult polling</strong><p>Returns CombinedID, LicenceID, InsuranceID, PolicyNumber, ReceiptID, confirmed dates.</p></div></div>
+        <div class="event done"><div><strong>8. QueuePolicyIssuanceJob → PURE</strong><p>digitalPolicyNumber immediate; corePolicyNumber async.</p></div></div>
+        <div class="event done"><div><strong>9. Document generation</strong><p>Cover note: VRN, Make/Model, InsuranceType, dates, PolicyNumber, ReceiptID. DocumentsReady → email.</p></div></div>
+      </div>
+    </div>
+    <div class="panel"><h2>Reference mapping</h2>
+      <table class="table">
+        <tr><th>Reference</th><th>Source</th></tr>
+        <tr><td>InsuranceCompanyID</td><td>24 — Zimnat Lion</td></tr>
+        <tr><td>VehicleType</td><td>Mappings (B): Type + Use → code</td></tr>
+        <tr><td>InsuranceType</td><td>a.2: RTA=1, FTP=2, COMP=4</td></tr>
+        <tr><td>RadioTVUsage</td><td>TV toggle→3; private→1; commercial→2</td></tr>
+        <tr><td>LicFrequency</td><td>c.1: duration → code</td></tr>
+        <tr><td>PaymentMethod</td><td>3 — EcoCash (a.1)</td></tr>
+        <tr><td>DeliveryMethod</td><td>2 — OFFICE COLLECTION (a.3)</td></tr>
+        <tr><td>CombinedID</td><td>From TPILICQuote / TPILICResult</td></tr>
+        <tr><td>LicenceID</td><td>From TPILICQuote (combined only)</td></tr>
+        <tr><td>InsuranceID</td><td>From TPILICQuote (both modes)</td></tr>
+        <tr><td>CustomerReference</td><td>From TPIQuote (insurance-only mode)</td></tr>
+      </table>
+      <h3 style="margin-top:14px">Settlement waterfall</h3>
+      <table class="table">
+        <tr><th>Component</th><th>Rate</th><th>Basis</th></tr>
+        <tr><td>Motor levy</td><td>12%</td><td>Prorated RTA baseline</td></tr>
+        <tr><td>Stamp duty</td><td>5%</td><td>Full premium — remitted month-end</td></tr>
+        <tr><td>IceCash fee</td><td>1%</td><td>Transaction total</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ ICECASH REFERENCE ══════════ -->
+<section id="icecash" class="section">
+  <div class="grid3">
+    <div class="panel"><h3>Mappings (B) — All 37 VehicleType codes</h3>
+      <table class="table">
+        <tr><th>Code</th><th>Type</th><th>Use</th></tr>
+        <tr><td>1</td><td>Private Car</td><td>Private Use</td></tr><tr><td>2</td><td>Private Car</td><td>Business use</td></tr><tr><td>3</td><td>Private Car</td><td>Fleet</td></tr><tr><td>4</td><td>Private Car</td><td>Private Hire</td></tr><tr><td>5</td><td>Private Car</td><td>Driving School</td></tr>
+        <tr><td>6</td><td>Trailer</td><td>Domestic Trailers</td></tr><tr><td>7</td><td>Trailer</td><td>Caravans</td></tr>
+        <tr><td>8</td><td>Commercial Vehicle</td><td>Own use</td></tr><tr><td>9</td><td>Commercial Vehicle</td><td>Hire and Reward</td></tr><tr><td>10</td><td>Commercial Vehicle</td><td>Fleet — Own use</td></tr><tr><td>11</td><td>Commercial Vehicle</td><td>Fleet — Hire and Reward</td></tr><tr><td>12</td><td>Commercial Vehicle</td><td>Driving School</td></tr>
+        <tr><td>13</td><td>Taxis</td><td>Public Hire</td></tr>
+        <tr><td>14</td><td>Commercial Trailers</td><td>Own use</td></tr><tr><td>15</td><td>Commercial Trailers</td><td>Hire and Reward</td></tr><tr><td>16</td><td>Commercial Trailers</td><td>Fleet — Own use</td></tr><tr><td>17</td><td>Commercial Trailers</td><td>Fleet — Hire and Reward</td></tr><tr><td>18</td><td>Commercial Trailers</td><td>Agriculture</td></tr>
+        <tr><td>19</td><td>Motor Cycles</td><td>SD&P use</td></tr><tr><td>20</td><td>Motor Cycles</td><td>Business use</td></tr><tr><td>21</td><td>Motor Cycles</td><td>Fleet</td></tr>
+        <tr><td>22</td><td>Omnibus and Commuters</td><td>Up to 30 seats</td></tr><tr><td>23</td><td>Omnibus and Commuters</td><td>31–60 seats</td></tr><tr><td>24</td><td>Omnibus and Commuters</td><td>60+ seats</td></tr>
+        <tr><td>25</td><td>School Bus</td><td>Up to 30 seats</td></tr><tr><td>26</td><td>School Bus</td><td>31–60 seats</td></tr><tr><td>27</td><td>School Bus</td><td>60+ seats</td></tr>
+        <tr><td>28</td><td>Staff Bus</td><td>Up to 30 seats</td></tr><tr><td>29</td><td>Staff Bus</td><td>31–60 seats</td></tr><tr><td>30</td><td>Staff Bus</td><td>60+ seats</td></tr>
+        <tr><td>31</td><td>Tractors/Fork Lifts</td><td>Own use</td></tr><tr><td>32</td><td>Tractors</td><td>Hire and Reward</td></tr>
+        <tr><td>33</td><td>Tractors/Combines</td><td>Agriculture — Own use</td></tr><tr><td>34</td><td>Tractors/Combines</td><td>Agriculture — Hire &amp; Reward</td></tr>
+        <tr><td>35</td><td>Ambulance, Fire Engine, Hearse</td><td>Various</td></tr>
+        <tr><td>36</td><td>Agricultural Implements</td><td>Various</td></tr>
+        <tr><td>37</td><td>Special Types</td><td>Contractors Plant &amp; Equipment</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <h3>Appendix a.2 — Insurance Types</h3>
+      <table class="table"><tr><th>Code</th><th>Description</th></tr><tr><td>1</td><td>Road Traffic Act (RTA)</td></tr><tr><td>2</td><td>Full Third Party</td></tr><tr><td>3</td><td>Full Third Party, Fire &amp; Theft</td></tr><tr><td>4</td><td>Comprehensive Cover (FTPFT)</td></tr></table>
+      <h3 style="margin-top:14px">Appendix c.3 — RadioTVUsage</h3>
+      <table class="table"><tr><th>Code</th><th>Description</th><th>When</th></tr><tr><td>1</td><td>Private Vehicle</td><td>Private VehicleType, no TV</td></tr><tr><td>2</td><td>Company Vehicle</td><td>Commercial type, no TV</td></tr><tr><td>3</td><td>TV fitted</td><td>TV toggle on — overrides 1 &amp; 2</td></tr></table>
+      <h3 style="margin-top:14px">Appendix a.1 — Payment</h3>
+      <table class="table"><tr><th>Code</th><th>Description</th></tr><tr><td>3</td><td>EcoCash</td></tr><tr><td>2</td><td>ICEcash (not customer-facing)</td></tr></table>
+      <h3 style="margin-top:14px">Appendix a.3 — Delivery</h3>
+      <table class="table"><tr><th>Code</th><th>Description</th></tr><tr><td>2</td><td>Office Collection</td></tr></table>
+    </div>
+    <div class="panel">
+      <h3>Appendix c.1 — Licence Frequency</h3>
+      <table class="table"><tr><th>Code</th><th>Duration</th></tr><tr><td>1</td><td>4 months</td></tr><tr><td>6</td><td>8 months</td></tr><tr><td>3</td><td>12 months</td></tr><tr><td>4,2,5,7,8,9</td><td>5,6,7,9,10,11 mo</td></tr></table>
+      <h3 style="margin-top:14px">Insurance Company IDs</h3>
+      <table class="table"><tr><th>ID</th><th>Organisation</th></tr><tr><td>24</td><td>ZIMNAT LION INSURANCE CO.</td></tr><tr><td>21</td><td>OLD MUTUAL</td></tr><tr><td>17</td><td>NICOZ DIAMOND</td></tr></table>
+      <div class="open-item" style="margin-top:14px">⚠ <div><strong>OI-001 — LocationID:</strong> ZINARA-assigned, environment-specific. Required on every TPILICUpdate.</div></div>
+      <h3 style="margin-top:14px">Finding — InsuranceType code discrepancy</h3>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6;background:var(--amberBg);border:1px solid var(--amberBorder);border-radius:8px;padding:10px;margin-top:6px">Real API sample (insurance-only) returns <code>InsuranceType: "3"</code> for a vehicle with declared value $25,000 — suggesting code 3 may be Comprehensive in practice. Appendix a.2 lists code 3 as FTPF (Full Third Party Fire &amp; Theft). Needs confirmation with IceCash before mapping is finalised.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ OPS ══════════ -->
+<section id="ops" class="section">
+  <div class="grid3" style="margin-bottom:16px">
+    <div class="panel"><strong style="color:var(--amber);font-size:20px">1</strong><br><span class="text3 small">Open items (LocationID)</span></div>
+    <div class="panel"><strong style="color:var(--red);font-size:20px">2</strong><br><span class="text3 small">Blocking defects</span></div>
+    <div class="panel"><strong style="color:var(--amber);font-size:20px">5</strong><br><span class="text3 small">High severity defects</span></div>
+  </div>
+  <div class="panel"><h2>Defects register</h2>
+    <table class="table"><tr><th>ID</th><th>Severity</th><th>Description</th></tr>
+      <tr><td>KD-001</td><td><span style="color:var(--red);font-weight:700">BLOCKING</span></td><td>coverage-options: stampDutyRate and governmentLevyRate swapped.</td></tr>
+      <tr><td>WSS-001</td><td><span style="color:var(--red);font-weight:700">BLOCKING</span></td><td>Live portal: fallback pricing engine active — blocks payment.</td></tr>
+      <tr><td>KD-002</td><td><span style="color:var(--amber);font-weight:700">High</span></td><td>coverage-options: insuranceType returned as single object, not array.</td></tr>
+      <tr><td>KD-003</td><td><span style="color:var(--amber);font-weight:700">High</span></td><td>coverage-options: vehicleTypes uses invented multiplier model.</td></tr>
+      <tr><td>WSS-002</td><td><span style="color:var(--amber);font-weight:700">High</span></td><td>Live portal: no MDM pre-fill on Your Details.</td></tr>
+      <tr><td>WSS-bug</td><td><span style="color:var(--amber);font-weight:700">High</span></td><td>IceCash listed as customer payment method — must be removed.</td></tr>
+      <tr><td>Finding</td><td>Investigate</td><td>InsuranceType code 3 in real API response may mean FTPFT (Comprehensive), not FTPF as per appendix. Needs IceCash confirmation.</td></tr>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────
+const VEH_MAP={
+  'Private Car':              [{u:'Private Use',c:1},{u:'Business use',c:2},{u:'Fleet',c:3},{u:'Private Hire (Car Hire)',c:4},{u:'Driving School',c:5}],
+  'Trailer':                  [{u:'Domestic Trailers',c:6},{u:'Caravans',c:7}],
+  'Commercial Vehicle':       [{u:'Own use',c:8},{u:'Hire and Reward',c:9},{u:'Fleet — Own use',c:10},{u:'Fleet — Hire and Reward',c:11},{u:'Driving School',c:12}],
+  'Taxis':                    [{u:'Public Hire',c:13}],
+  'Commercial Trailers':      [{u:'Own use',c:14},{u:'Hire and Reward',c:15},{u:'Fleet — Own use',c:16},{u:'Fleet — Hire and Reward',c:17},{u:'Agriculture',c:18}],
+  'Motor Cycles':             [{u:'SD&P use',c:19},{u:'Business use',c:20},{u:'Fleet',c:21}],
+  'Omnibus and Commuters':    [{u:'Up to 30 seats',c:22},{u:'Between 31–60 seats',c:23},{u:'More than 60 seats',c:24}],
+  'School Bus':               [{u:'Up to 30 seats',c:25},{u:'Between 31–60 seats',c:26},{u:'More than 60 seats',c:27}],
+  'Staff Bus':                [{u:'Up to 30 seats',c:28},{u:'Between 31–60 seats',c:29},{u:'More than 60 seats',c:30}],
+  'Tractors/Fork Lifts':      [{u:'Own use',c:31}],
+  'Tractors':                 [{u:'Hire and Reward',c:32}],
+  'Tractors/Combines':        [{u:'Agriculture — Own use',c:33},{u:'Agriculture — Hire & Reward',c:34}],
+  'Ambulance, Fire Engine, Hearse':[{u:'Various',c:35}],
+  'Agricultural Implements':  [{u:'Various',c:36}],
+  'Special Types':            [{u:'Contractors Plant and Equipment',c:37}]
+};
+const PRIVATE_CODES=new Set([1,2,3,4,5,6,7,19,20,21]);
+const INS={RTA:{code:1,label:'Road Traffic Act (RTA)'},FTP:{code:2,label:'Full Third Party'},COMP:{code:4,label:'Comprehensive Cover'}};
+const LIC_FREQ={1:10,2:11,3:12,4:1,5:4,6:2,7:5,8:6,9:7,10:8,11:9,12:3};
+const BUNDLE_LABELS={insurance:'Insurance only',licence:'Insurance + ZINARA Licence',radio:'Insurance + ZINARA + ZBC Radio'};
+const ANNUAL={WINDSCREEN:35,ACCESSORIES:50,EXCESS_BUYDOWN:80,CAR_HIRE:120};
+const INS_TYPE_LABELS={'1':'Road Traffic Act (RTA)','2':'Full Third Party','3':'Full Third Party, Fire & Theft','4':'Comprehensive Cover'};
+const VEH_TYPE_LABELS={1:'Private Car — Private Use',2:'Private Car — Business use',3:'Private Car — Fleet',4:'Private Car — Private Hire',5:'Private Car — Driving School',6:'Trailer — Domestic',7:'Trailer — Caravan',8:'Commercial Vehicle — Own use',9:'Commercial Vehicle — Hire and Reward',10:'Commercial Vehicle — Fleet Own use',11:'Commercial Vehicle — Fleet Hire/Reward',12:'Commercial Vehicle — Driving School',13:'Taxis — Public Hire',14:'Commercial Trailers — Own use',15:'Commercial Trailers — Hire and Reward',19:'Motor Cycle — SD&P use',20:'Motor Cycle — Business use',21:'Motor Cycle — Fleet'};
+
+// Mock API quote responses (actual samples from IceCash)
+const MOCK_QUOTES={
+  combined:{
+    mode:'combined',quoteRef:'ZQ-20260727-04821',validUntil:'29 Jul 2026 10:30',
+    VRN:'JAN00028',CombinedID:11031,LicenceID:22505,InsuranceID:139262,Amount:2260.60,
+    Policy:{InsuranceType:'1',StartDate:'20261127',EndDate:'20270326',DurationMonths:'4',Amount:'35.60',StampDuty:'2.00',GovernmentLevy:'3.60',CoverAmount:'30.00',PremiumAmount:'35.60',Currency:'USD'},
+    Vehicle:{Make:'ADMIRAL',Model:'LY 125 T 15',TaxClass:4,YearManufacture:'',VehicleType:'2',VehicleValue:'5000'},
+    Licence:{LicFrequency:3,RadioTVUsage:'1',LicExpiryDate:'20260531',TransactionAmt:'1800.00',ArrearsAmt:'300.00',PenaltiesAmt:'80.00',AdministrationAmt:'10.00',TotalLicAmt:'2190.00',RadioTVAmt:'0.00',TotalRadioTVAmt:'35.00',TotalAmount:'2225.00'}
+  },
+  insurance:{
+    mode:'insurance',quoteRef:'ZQ-20260727-04822',validUntil:'29 Jul 2026 10:30',
+    VRN:'ADA0010',InsuranceID:133313,CustomerReference:'Ref 1',Amount:213.60,
+    Policy:{InsuranceType:'3',StartDate:'20260201',EndDate:'20260531',DurationMonths:'4',Amount:'213.60',StampDuty:'10.00',GovernmentLevy:'3.60',CoverAmount:'200.00',PremiumAmount:'213.60',Currency:'USD'},
+    Vehicle:{Make:'CHANA',Model:'CLUB CAB',TaxClass:1,YearManufacture:'',VehicleType:'2',VehicleValue:'25000'}
+  }
+};
+
+// ── State ─────────────────────────────────────────────────────────────────
+let S={vrn:'',type:'',use:'',vehCode:null,cover:null,value:null,bundle:null,hasTV:false,months:8};
+let payPolls=0,icePolls=0;
+let selectedProvider='ecocash',numberEntered=false,consentGiven=false;
+
+// ── Section nav ───────────────────────────────────────────────────────────
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',['customer','orchestration','icecash','ops'][i]===id);});
+}
+
+// ── Step nav ──────────────────────────────────────────────────────────────
+const STEPS=['vehicle','cover','extras','details','quote','payment','policy'];
+function jumpTo(step){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('v-'+step).classList.add('active');
+  document.querySelectorAll('.slist-item').forEach(s=>s.classList.toggle('active',s.dataset.step===step));
+  document.getElementById('kpiStage').textContent=(STEPS.indexOf(step)+1)+'/'+STEPS.length;
+  if(step==='cover') buildCoverSumm();
+  if(step==='extras'){buildCoverSumm2();applyExtrasVis();}
+  if(step==='quote'){renderQuote('combined');updateAPI('quote');}
+  if(step==='payment') updateAPI('payment');
+  if(step==='policy') buildPolicy();
+  if(step!=='quote'&&step!=='payment') updateAPI(step);
+}
+
+// ── Step 1: Vehicle ───────────────────────────────────────────────────────
+function onVRNType(){S.vrn=document.getElementById('inpVRN').value.trim().toUpperCase();checkVehBtn();}
+function onTypeChange(){
+  const t=document.getElementById('selType').value;S.type=t;S.use='';S.vehCode=null;
+  const sel=document.getElementById('selUse');
+  if(!t){sel.innerHTML='<option value="">Select type first…</option>';sel.disabled=true;checkVehBtn();return;}
+  const uses=VEH_MAP[t]||[];
+  sel.innerHTML='<option value="">Select use…</option>';
+  uses.forEach(u=>{const o=document.createElement('option');o.value=u.c;o.textContent=u.u;o.dataset.use=u.u;sel.appendChild(o);});
+  sel.disabled=false;
+  if(uses.length===1){sel.value=uses[0].c;onUseChange();}
+  checkVehBtn();updateAPI('vehicle');
+}
+function onUseChange(){
+  const sel=document.getElementById('selUse');
+  const opt=sel.options[sel.selectedIndex];
+  S.vehCode=sel.value?parseInt(sel.value):null;
+  S.use=opt?opt.dataset.use||opt.textContent:'';
+  document.getElementById('kpiVehCode').textContent=S.vehCode||'—';
+  checkVehBtn();updateAPI('vehicle');
+}
+function checkVehBtn(){document.getElementById('veh-btn').disabled=!(S.vrn.length>=2&&S.type&&S.vehCode);}
+
+// ── Step 2: Cover ─────────────────────────────────────────────────────────
+function buildCoverSumm(){
+  document.getElementById('veh-summ').innerHTML=
+    `<div class="summ-chip"><span class="s-tick">✓</span>${S.vrn||'VRN'}</div>
+     <div class="summ-chip"><span class="s-tick">✓</span>${S.type}</div>
+     <div class="summ-chip"><span class="s-tick">✓</span>${S.use} <span class="code-tag" style="margin-left:4px">VehicleType: ${S.vehCode}</span></div>`;
+  // Reset reveal state
+  ['r-tv','r-cover','r-value','r-continue'].forEach(id=>document.getElementById(id)?.classList.remove('show'));
+  ['seg-insurance','seg-licence','seg-radio'].forEach(id=>document.getElementById(id)?.classList.remove('active'));
+  document.querySelectorAll('.pill-opt').forEach(x=>x.classList.remove('active'));
+  const sw=document.getElementById('tvSwitch');if(sw)sw.classList.remove('on');
+  document.getElementById('tvRow')?.classList.remove('on');
+  show('cover-back');
+  S.cover=null;S.value=null;S.bundle=null;S.hasTV=false;
+  document.getElementById('kpiInsCode').textContent='—';document.getElementById('kpiBundle').textContent='—';
+}
+function selectBundle(b){
+  S.bundle=b;S.cover=null;S.value=null;
+  ['insurance','licence','radio'].forEach(k=>document.getElementById('seg-'+k)?.classList.toggle('active',k===b));
+  document.getElementById('kpiBundle').textContent={insurance:'Ins',licence:'Ins+Lic',radio:'Ins+Lic+Radio'}[b];
+  if(b==='radio'){document.getElementById('r-tv').classList.add('show');}
+  else{document.getElementById('r-tv').classList.remove('show');S.hasTV=false;document.getElementById('tvSwitch')?.classList.remove('on');document.getElementById('tvRow')?.classList.remove('on');}
+  document.getElementById('r-cover').classList.add('show');
+  document.getElementById('r-value').classList.remove('show');
+  document.getElementById('r-continue').classList.remove('show');
+  document.querySelectorAll('.pill-opt').forEach(x=>x.classList.remove('active'));
+  document.getElementById('kpiInsCode').textContent='—';
+  hide('cover-back');updateAPI('cover');
+}
+function toggleTV(){
+  S.hasTV=!S.hasTV;
+  document.getElementById('tvSwitch').classList.toggle('on',S.hasTV);
+  document.getElementById('tvRow').classList.toggle('on',S.hasTV);
+  updateAPI('cover');
+}
+function selectCover(c,el){
+  S.cover=c;S.value=null;
+  document.querySelectorAll('.pill-opt').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('kpiInsCode').textContent=INS[c].code+' ('+c+')';
+  if(c==='COMP'){document.getElementById('r-value').classList.add('show');document.getElementById('r-continue').classList.remove('show');}
+  else{document.getElementById('r-value').classList.remove('show');document.getElementById('r-continue').classList.add('show');}
+  updateAPI('cover');
+}
+function onValueInput(){
+  S.value=parseFloat(document.getElementById('inpValue').value)||null;
+  if(S.value>0)document.getElementById('r-continue').classList.add('show');
+  else document.getElementById('r-continue').classList.remove('show');
+}
+function getRadioTVUsage(){if(S.hasTV)return 3;return PRIVATE_CODES.has(S.vehCode)?1:2;}
+
+// ── Step 3: Extras ────────────────────────────────────────────────────────
+function buildCoverSumm2(){
+  document.getElementById('cover-summ').innerHTML=
+    `<div class="summ-chip"><span class="s-tick">✓</span>${S.vrn}</div>
+     <div class="summ-chip"><span class="s-tick">✓</span>${S.cover} <span class="code-tag" style="margin-left:4px">InsType: ${S.cover?INS[S.cover].code:'—'}</span></div>
+     <div class="summ-chip"><span class="s-tick">✓</span>${BUNDLE_LABELS[S.bundle]||''}</div>`;
+}
+function applyExtrasVis(){
+  const c=S.cover==='COMP';
+  document.getElementById('extrasSection').style.display=c?'block':'none';
+  document.getElementById('noExtrasNote').style.display=c?'none':'block';
+}
+function selDur(el,m){
+  document.querySelectorAll('.dur-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');S.months=m;
+  Object.keys(ANNUAL).forEach(c=>{const p=(ANNUAL[c]*m/12).toFixed(2);const pe=document.getElementById('price-'+c);if(pe)pe.textContent='+$'+p;});
+  updateExtrasTotal();updateAPI('extras');
+}
+function toggleExtra(code){
+  const row=document.getElementById('ex-'+code),chk=document.getElementById('chk-'+code);
+  const on=row.classList.toggle('checked');
+  if(chk){chk.classList.toggle('on',on);chk.textContent=on?'✓':'';}
+  updateExtrasTotal();
+}
+function updateExtrasTotal(){
+  let t=0;Object.keys(ANNUAL).forEach(c=>{if(document.getElementById('ex-'+c)?.classList.contains('checked'))t+=ANNUAL[c]*S.months/12;});
+  const el=document.getElementById('extrasTotal');if(el)el.textContent='$'+t.toFixed(2);
+}
+
+// ── Quote render (CR-016, 020-025) ───────────────────────────────────────
+function fmtDate(d){
+  if(!d||d.length<8)return '—';
+  const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return parseInt(d.substring(6,8))+' '+mo[parseInt(d.substring(4,6))-1]+' '+d.substring(0,4);
+}
+function fmtAmt(v){const n=parseFloat(v);return isNaN(n)?'—':'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtTotal(v){const n=parseFloat(v);return isNaN(n)?'—':'USD '+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+
+function renderQuote(mode){
+  const q=MOCK_QUOTES[mode];
+  const p=q.Policy,v=q.Vehicle,l=q.Licence;
+  // Mode toggle buttons
+  document.getElementById('mbtn-combined').classList.toggle('active',mode==='combined');
+  document.getElementById('mbtn-insurance').classList.toggle('active',mode==='insurance');
+  // Header
+  document.getElementById('q-ref').textContent=q.quoteRef;
+  document.getElementById('q-valid').textContent='Valid until '+q.validUntil;
+  document.getElementById('q-expires').textContent='Expires '+q.validUntil;
+  // Vehicle details (CR-025: YearManufacture fallback)
+  const year=v.YearManufacture&&v.YearManufacture.trim()?v.YearManufacture:'Year not recorded';
+  document.getElementById('q-vrn-make').textContent=q.VRN+' · '+v.Make+' '+v.Model;
+  document.getElementById('q-year').textContent=year;
+  document.getElementById('q-veh-type').textContent=(VEH_TYPE_LABELS[parseInt(v.VehicleType)]||'VehicleType: '+v.VehicleType);
+  document.getElementById('q-ins-type').textContent=(INS_TYPE_LABELS[p.InsuranceType]||'InsType: '+p.InsuranceType)+' (code '+p.InsuranceType+')';
+  document.getElementById('q-period').textContent=fmtDate(p.StartDate)+' → '+fmtDate(p.EndDate);
+  document.getElementById('q-dur').textContent=p.DurationMonths+' months';
+  document.getElementById('q-cover-amt').textContent='USD '+parseFloat(p.CoverAmount).toLocaleString('en-US',{minimumFractionDigits:2});
+  // Amount panel
+  document.getElementById('q-amt-lbl').textContent=mode==='combined'?'Total due (ins + licence)':'Total due';
+  document.getElementById('q-total-fig').textContent=parseFloat(q.Amount).toLocaleString('en-US',{minimumFractionDigits:2});
+  // Insurance breakdown
+  document.getElementById('q-ins-hdr').textContent='Motor Insurance · '+q.VRN;
+  document.getElementById('q-premium').textContent=fmtAmt(p.PremiumAmount);
+  document.getElementById('q-stamp').textContent=fmtAmt(p.StampDuty);
+  document.getElementById('q-levy').textContent=fmtAmt(p.GovernmentLevy);
+  document.getElementById('q-ins-total').textContent=fmtAmt(p.Amount);
+  // Grand total
+  document.getElementById('q-grand').textContent=fmtTotal(q.Amount);
+  // Reference IDs (CR-022, CR-023)
+  const combined=mode==='combined';
+  document.getElementById('q-lic-section').style.display=combined?'block':'none';
+  document.getElementById('q-combined-id').textContent=combined?(q.CombinedID||'—'):'N/A';
+  document.getElementById('q-lic-id-wrap').style.display=combined?'flex':'none';
+  document.getElementById('q-lic-id').textContent=combined?(q.LicenceID||'—'):'—';
+  document.getElementById('q-ins-id').textContent=q.InsuranceID||'—';
+  document.getElementById('q-custref-wrap').style.display=combined?'none':'flex';
+  document.getElementById('q-cust-ref').textContent=q.CustomerReference||'—';
+  // Licence breakdown (CR-016, CR-020, CR-021)
+  if(combined&&l){
+    const hasArrears=parseFloat(l.ArrearsAmt)>0||parseFloat(l.PenaltiesAmt)>0;
+    document.getElementById('q-arrears-notice').style.display=hasArrears?'flex':'none';
+    document.getElementById('q-lic-expiry').textContent='Current licence expired: '+fmtDate(l.LicExpiryDate);
+    document.getElementById('q-lic-fee').textContent=fmtAmt(l.TransactionAmt);
+    document.getElementById('q-arrears-row').style.display=parseFloat(l.ArrearsAmt)>0?'flex':'none';
+    document.getElementById('q-arrears').textContent=fmtAmt(l.ArrearsAmt);
+    document.getElementById('q-penalties-row').style.display=parseFloat(l.PenaltiesAmt)>0?'flex':'none';
+    document.getElementById('q-penalties').textContent=fmtAmt(l.PenaltiesAmt);
+    document.getElementById('q-admin').textContent=fmtAmt(l.AdministrationAmt);
+    document.getElementById('q-lic-total').textContent=fmtAmt(l.TotalLicAmt);
+    document.getElementById('q-radio').textContent=fmtAmt(l.TotalRadioTVAmt);
+    document.getElementById('q-lic-radio-total').textContent=fmtAmt(l.TotalAmount);
+  }
+  // Payment screen sync
+  const gran=parseFloat(q.Amount);
+  const grandFmt=fmtTotal(q.Amount);
+  document.getElementById('pay-ref').textContent=q.quoteRef;
+  document.getElementById('pay-ins-amt').textContent=fmtAmt(p.Amount);
+  document.getElementById('pay-lic-row').style.display=combined?'flex':'none';
+  if(combined&&l){document.getElementById('pay-lic-amt').textContent=fmtAmt(l.TotalAmount);}
+  document.getElementById('pay-total').textContent=grandFmt;
+  document.getElementById('consent-amt').textContent=grandFmt;
+  document.getElementById('pay-btn-amt').textContent=grandFmt;
+  updateAPI('quote');
+}
+
+// ── Policy builder ────────────────────────────────────────────────────────
+function buildPolicy(){
+  const q=MOCK_QUOTES['combined'],p=q.Policy,v=q.Vehicle;
+  document.getElementById('pol-veh-name').textContent=q.VRN;
+  document.getElementById('pol-veh-make').textContent=v.Make+' '+v.Model;
+  document.getElementById('pol-cover').textContent=INS_TYPE_LABELS[p.InsuranceType]||p.InsuranceType;
+  document.getElementById('pol-period').textContent=fmtDate(p.StartDate)+' → '+fmtDate(p.EndDate);
+  document.getElementById('pol-doc-name').textContent='Cover Note — '+q.VRN;
+  document.getElementById('pol-receipt').style.display=S.bundle==='insurance'?'none':'block';
+}
+
+// ── Dynamic API preview ───────────────────────────────────────────────────
+function updateAPI(step){
+  const m=S.months,licFreq=LIC_FREQ[m]||6;
+  const vehCode=S.vehCode||'—',insCode=S.cover?INS[S.cover].code:'—';
+  const bLic=S.bundle!=='insurance'&&S.bundle!==null,bRad=S.bundle==='radio';
+  const vrn=S.vrn||'JAN00028';const rtvUsage=getRadioTVUsage();
+  const extras=S.cover==='COMP'?['WINDSCREEN','ACCESSORIES','EXCESS_BUYDOWN','CAR_HIRE'].filter(c=>document.getElementById('ex-'+c)?.classList.contains('checked')):[];
+  let txt='';
+  if(step==='vehicle'){
+    txt=`Step 1 — Vehicle\n\n  VRN:          "${vrn}"\n  Vehicle type: ${S.type||'—'}\n  Vehicle use:  ${S.use||'—'}\n  VehicleType:  ${vehCode}   ← Mappings (B)\n\nNo API call at this step.`;
+  }else if(step==='cover'){
+    txt=`Step 2 — Cover + bundle\n\n  Bundle:        ${S.bundle?BUNDLE_LABELS[S.bundle]:'—'}\n  bundleLicence: ${bLic}\n  bundleRadio:   ${bRad}\n  hasTV:         ${S.hasTV}\n  RadioTVUsage:  ${rtvUsage}   ← c.3\n\n  InsuranceType: ${insCode}   ← a.2\n  Cover:         ${S.cover||'—'}\n  DeclaredValue: ${S.cover==='COMP'?(S.value?'$'+S.value:'pending'):'N/A'}`;
+  }else if(step==='extras'){
+    txt=`Step 3 — Duration + extras\n\n  durationMonths: ${m}\n  LicFrequency:   ${licFreq}   ← c.1\n\nExtras (COMP only):\n  WINDSCREEN:     ${extras.includes('WINDSCREEN')?'✓':'—'}\n  ACCESSORIES:    ${extras.includes('ACCESSORIES')?'✓':'—'}\n  EXCESS_BUYDOWN: ${extras.includes('EXCESS_BUYDOWN')?'✓':'—'}\n  CAR_HIRE:       ${extras.includes('CAR_HIRE')?'✓':'—'}`;
+  }else if(step==='details'){
+    txt=`GET /api/v1/customer/profile\n\n{\n  "masterId": "GR_20260315_00001",\n  "idNumber": "63184337B05",\n  "firstName": "Ropa", "lastName": "Nyagwaya",\n  "msisdn": "263771234567",\n  "email": "ropa@zimnat.co.zw"\n}`;
+  }else if(step==='quote'){
+    txt=`POST /api/v2/motor/comprehensive/quote\n{\n  "vrn": "${vrn}",\n  "vehicleTypeCode": ${vehCode},\n  "coverType": "${S.cover||'RTA'}",\n  "declaredValue": ${S.cover==='COMP'?(S.value||5000):'null'},\n  "durationMonths": ${m},\n  "optionalCovers": ${JSON.stringify(extras)},\n  "bundleLicence": ${bLic},\n  "bundleRadio": ${bRad}\n}\n\nIceCash TPILICQuote (backend):\n  InsuranceCompanyID: 24\n  InsuranceType:      ${insCode}   ← a.2\n  VehicleType:        ${vehCode}   ← Mappings (B)\n  LicFrequency:       ${licFreq}   ← c.1\n  RadioTVUsage:       ${rtvUsage}   ← c.3\n\nResponse (combined):\n  CombinedID:   11031\n  LicenceID:    22505\n  InsuranceID:  139262\n  ArrearsAmt:   $300.00  ← surfaced as amber notice\n  PenaltiesAmt: $80.00\n  LicExpiryDate: 20260531`;
+  }else if(step==='payment'){
+    txt=`POST /api/v1/payments/ecocash/initiate\n{\n  "transactionReference": "ZQ-20260727-04821",\n  "currency": "USD",\n  "amount": 2260.60,\n  "msisdn": "263771234567",\n  "productType": "MOTOR_INSURANCE",\n  "idempotencyKey": "a7f3c291-4b82"\n}\n\n→ USSD push sent to 263XXXXXXX\n→ Portal polls GET /status every 5s`;
+  }else if(step==='policy'){
+    txt=`TPILICResult:\n{\n  "PolicyNumber": "ICCBZ2600-04821",\n  "ReceiptID":    "LIC-RCT-7891234",\n  "StartDate":    "20261127",\n  "EndDate":      "20270326",\n  "dateSource":   "ICECASH_CONFIRMED"\n}\n\n→ PURE: digitalPolicyNumber assigned\n→ Cover note generated\n→ Email dispatched`;
+  }
+  document.getElementById('apiPreview').textContent=txt;
+}
+
+// ── Payment — 3-step card (CR-017) ───────────────────────────────────────
+var PROVIDERS={ecocash:{label:'EcoCash'},innbucks:{label:'InnBucks'},onemoney:{label:'OneMoney'}};
+function selectProvider(id){
+  selectedProvider=id;
+  Object.keys(PROVIDERS).forEach(k=>document.getElementById('badge-'+k).classList.remove('selected'));
+  document.getElementById('badge-'+id).classList.add('selected');
+  document.getElementById('num-hint').textContent='A payment prompt will be sent via '+PROVIDERS[id].label+'.';
+  checkPayReady();
+}
+function checkNumber(){
+  const val=document.getElementById('mob-num').value.trim();
+  numberEntered=val.length>=9;
+  const cs=document.getElementById('section-consent');
+  if(numberEntered){cs.classList.remove('locked');}
+  else{cs.classList.add('locked');document.getElementById('consent-cb').checked=false;consentGiven=false;}
+  checkPayReady();
+}
+function checkConsent(){consentGiven=document.getElementById('consent-cb').checked;checkPayReady();}
+function checkPayReady(){document.getElementById('pay-btn').disabled=!(selectedProvider&&numberEntered&&consentGiven);}
+
+function handlePay(){
+  hide('payment-card');
+  // Hide pay button area, show waiting
+  const payCard=document.querySelector('#v-payment .payment-card');
+  if(payCard)payCard.style.display='none';
+  show('payWaiting');
+  payPolls=0;document.getElementById('pollList').innerHTML='';
+  let t=setInterval(()=>{
+    payPolls++;
+    document.getElementById('pollList').innerHTML+=`<div class="poll-item"><div class="${payPolls<3?'pd-ok':'pd-wait'}"></div><span>Poll ${payPolls}/10 — ${payPolls<3?'PENDING':'AWAITING APPROVAL'}</span></div>`;
+    if(payPolls>=3)clearInterval(t);
+  },650);
+}
+function paymentSuccess(){
+  hide('payWaiting');hide('payFailed');show('payFinalising');
+  show('iceStageA');hide('iceStageB');hide('iceStageC');hide('iceFailMsg');
+  icePolls=0;document.getElementById('icePollList').innerHTML='';
+}
+function paymentFailed(){hide('payWaiting');show('payFailed');}
+function retryPay(){
+  hide('payFailed');hide('payWaiting');hide('payFinalising');
+  const payCard=document.querySelector('#v-payment .payment-card');
+  if(payCard)payCard.style.display='block';
+}
+function iceApprove(){
+  hide('iceStageA');show('iceStageB');icePolls=0;
+  let t=setInterval(()=>{
+    icePolls++;
+    document.getElementById('icePollList').innerHTML+=`<div class="poll-item"><div class="${icePolls<2?'pd-wait':'pd-ok'}"></div><span>TPILICResult poll ${icePolls}/5 — ${icePolls<2?'PENDING':'READY'}</span></div>`;
+    if(icePolls>=2)clearInterval(t);
+  },700);
+}
+function iceFail(){show('iceFailMsg');}
+function iceResult(){
+  document.getElementById('iceResBtn').style.display='none';
+  setTimeout(()=>{show('iceStageC');setTimeout(()=>jumpTo('policy'),1600);},900);
+}
+
+// ── Misc ──────────────────────────────────────────────────────────────────
+function show(id){const e=document.getElementById(id);if(e)e.style.display='block';}
+function hide(id){const e=document.getElementById(id);if(e)e.style.display='none';}
+function toggleAcc(id){const e=document.getElementById(id);if(e)e.style.display=e.style.display==='none'?'block':'none';}
+function sendDocs(){show('docsSent');}
+
+// ── Reset ─────────────────────────────────────────────────────────────────
+function resetDemo(){
+  S={vrn:'',type:'',use:'',vehCode:null,cover:null,value:null,bundle:null,hasTV:false,months:8};
+  payPolls=0;icePolls=0;selectedProvider='ecocash';numberEntered=false;consentGiven=false;
+  document.getElementById('inpVRN').value='';
+  document.getElementById('selType').value='';
+  document.getElementById('selUse').innerHTML='<option value="">Select type first…</option>';
+  document.getElementById('selUse').disabled=true;
+  document.getElementById('veh-btn').disabled=true;
+  if(document.getElementById('inpValue'))document.getElementById('inpValue').value='';
+  document.querySelectorAll('.dur-btn').forEach((b,i)=>b.classList.toggle('active',i===1));
+  ['WINDSCREEN','ACCESSORIES','EXCESS_BUYDOWN','CAR_HIRE'].forEach((c,i)=>{
+    const on=i===0;
+    document.getElementById('ex-'+c)?.classList.toggle('checked',on);
+    const ch=document.getElementById('chk-'+c);if(ch){ch.classList.toggle('on',on);ch.textContent=on?'✓':'';}
+    const pe=document.getElementById('price-'+c);if(pe)pe.textContent='+$'+(ANNUAL[c]*8/12).toFixed(2);
+  });
+  updateExtrasTotal();
+  ['payWaiting','payFailed','payFinalising','docsSent','iceFailMsg','iceStageB','iceStageC'].forEach(hide);
+  const rb=document.getElementById('iceResBtn');if(rb)rb.style.display='block';
+  const payCard=document.querySelector('#v-payment .payment-card');if(payCard)payCard.style.display='block';
+  document.getElementById('mob-num').value='';
+  document.getElementById('consent-cb').checked=false;
+  document.getElementById('pay-btn').disabled=true;
+  document.getElementById('section-consent').classList.add('locked');
+  Object.keys(PROVIDERS).forEach(k=>document.getElementById('badge-'+k).classList.remove('selected'));
+  document.getElementById('badge-ecocash').classList.add('selected');
+  document.getElementById('kpiVehCode').textContent='—';
+  document.getElementById('kpiInsCode').textContent='—';
+  document.getElementById('kpiBundle').textContent='—';
+  jumpTo('vehicle');
+}
+
+jumpTo('vehicle');
+</script>
+</body>
+</html>

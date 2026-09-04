@@ -1,0 +1,2432 @@
+{
+	"info": {
+		"_postman_id": "e70b52bb-d99d-44e2-84b5-a793c3521d11",
+		"name": "ZINARA ICECASH",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "11084604"
+	},
+	"item": [
+		{
+			"name": "New Request",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"success\": true,\r\n    \"data\": {\r\n        \"quotes\": [\r\n            {\r\n                \"result\": 1,\r\n                \"message\": \" Licence Retrieved\",\r\n                \"vrn\": \"ADA0010\",\r\n                \" referenceID \": \"20009\",\r\n                \"receiptID\": \" R000039165\",\r\n                \"status\": \"Approved\",\r\n                \"currency\": \"ZWG\",\r\n                \"issuer\": {\r\n                    \"issuerCompany\": \"ZIMNAT LION INSURANCE COMPANY\",\r\n                    \"loadedBy\": \" Zimnat Lion Insurance\",\r\n                    \"loadedDate\": \"2025-09-19 11:28:00\",\r\n                    \"approvedBy\": \" Zimnat Lion Insurance\",\r\n                    \"approvedDate\": \"2025-09-19 11:46:00\"\r\n                },\r\n                \"owner\": {\r\n                    \"idNumber\": \"121909090Z67\",\r\n                    \"firstName\": \"John\",\r\n                    \"lastName\": \"Smith\",\r\n                    \"msisdn\": \"***1234***\",\r\n                    \"email\": \"Smith\",\r\n                    \"suburbId\": \"1\",\r\n                    \"address1\": \"***ress lin***\",\r\n                    \"address2\": \"***ress lin***\",\r\n                    \"town\": \"****\",\r\n                    \"entityType\": \"Personal\",\r\n                    \"companyName\": \"**lO**\"\r\n                },\r\n                \"licenceDetails\": {\r\n                    \"licFrequency\": \"3\",\r\n                    \"radioTvUsage\": \"1\",\r\n                    \"radioTvFrequency\": \"1\",\r\n                    \"licExpiryDate\": \"2025-01-31\",\r\n                    \"transactionAmt\": \"20.00\",\r\n                    \"arrearsAmt\": \"0\",\r\n                    \"penaltiesAmt\": \"0\",\r\n                    \"administrationAmt\": \"0\",\r\n                    \"totalLicAmt\": \"20.00\",\r\n                    \"radioTvAmt\": \"5.00\",\r\n                    \"radioTvArrearsAmt\": \"0\",\r\n                    \"totalRadioTvAmt\": \"5.00\",\r\n                    \"totalAmount\": \"91.00\"\r\n                },\r\n                \"vehicle\": {\r\n                    \"nettMass\": \"1150\"\r\n                }\r\n            }\r\n        ],\r\n        \"meta\": {\r\n            \"processedAt\": \"2025-09-05T12:05:15.250Z\",\r\n            \"requestId\": \"GW-1757685737808-KFEJ7Z\"\r\n        }\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Zinara Get Partner Token",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Ensure CryptoJS is available\nconst CryptoJS = require('crypto-js');\nconst btoa = require('btoa');\n\n//Utility Functions\n\nfunction reverseString(str) {\n    return str.split(\"\").reverse().join(\"\");\n}\n\nfunction generateNumericId() {\n    return Math.floor(1000000 + Math.random() * 9000000).toString();\n}\n\nfunction getCurrentDateTime() {\n    const now = new Date();\n    return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;\n}\n\n//Generate MAC using the provided key and requestBody\nfunction generateMAC(key, argumentsJson) {\n\n    const reversedJson = reverseString(argumentsJson);\n    const reversedkey = reverseString(key);\n    const combined = reversedJson + reversedkey;\n\n    // Base64 encode properly using CryptoJS\n    const base64Encoded = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(combined));\n    const sha512Hash = CryptoJS.SHA512(base64Encoded).toString(CryptoJS.enc.Hex);\n\n    const positions = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120];\n    let mac = \"\";\n    positions.forEach(pos => mac += sha512Hash.charAt(pos));\n    return mac.toUpperCase();\n}\n\n// Generate Required Values Dynamically:\nlet partnerKey = JSON.parse(pm.environment.get(\"icecash_partner_key\"));\nconst currentDateTime = getCurrentDateTime();//\"20250123093628\"; \nconst partnerReference = generateNumericId(); //\"5800936\";\n\nlet requestBody =\n{\n    \"Arguments\": {\n        \"Version\": \"2.3\",\n        \"Date\": currentDateTime,\n        \"PartnerReference\": partnerReference,\n        \"Request\": {\n            \"Function\": \"PartnerToken\"\n        }\n    }\n}\n\n// --- Create raw JSON string for MAC ---\nconst argumentsJson = JSON.stringify(requestBody.Arguments);\n\n// --- Generate MAC ---\nconst mac = generateMAC(partnerKey, argumentsJson);\nif (mac) {\n    requestBody.Mode = \"SH\";\n    requestBody.MAC = mac;\n    pm.environment.set(\"MAC\", mac);\n    pm.environment.set(\"requestBody\", JSON.stringify(requestBody));\n    console.log(\"Generated MAC:\", mac);\n    console.log(\"Generated Date:\", currentDateTime);\n    console.log(\"Generated PartnerReference:\", partnerReference);\n} else {\n    console.error(\"MAC generation failed.\");\n}\n\n//ADA0010\n//250507P\n//KJVV456456\n//KJVV123123\n//ZBT66223\n//TRP63631"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const responseJson = pm.response.json();\nvar accessToken = responseJson.Response.PartnerToken;\npm.environment.set(\"icecash_partner_token\",JSON.stringify(accessToken));"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{{requestBody}}\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Icecash-URL}}/request/20117846",
+					"host": [
+						"{{Icecash-URL}}"
+					],
+					"path": [
+						"request",
+						"20117846"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Zinara Get Partner Token",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://test-api.icecash.mobi/request/20117846",
+							"protocol": "https",
+							"host": [
+								"test-api",
+								"icecash",
+								"mobi"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"_postman_previewlanguage": null,
+					"header": null,
+					"cookie": [],
+					"body": null
+				}
+			]
+		},
+		{
+			"name": "Zinara Get Partner Token SH Method",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Icecash-URL}}/generate_mac?mode=SH&key=292364410524404888749880&args={%22Version%22:%222.0%22,%22Request%22:{%22Function%22:%22PartnerToken%22,%22LocationID%22:%22122001%22},%22Date%22:%2220250123120309%22,%22PartnerReference%22:%228622625%22}",
+					"host": [
+						"{{Icecash-URL}}"
+					],
+					"path": [
+						"generate_mac"
+					],
+					"query": [
+						{
+							"key": "mode",
+							"value": "SH"
+						},
+						{
+							"key": "key",
+							"value": "292364410524404888749880"
+						},
+						{
+							"key": "args",
+							"value": "{%22Version%22:%222.0%22,%22Request%22:{%22Function%22:%22PartnerToken%22,%22LocationID%22:%22122001%22},%22Date%22:%2220250123120309%22,%22PartnerReference%22:%228622625%22}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Icecash - TP Insurance Quotes",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Ensure CryptoJS is available\nconst CryptoJS = require('crypto-js');\nconst btoa = require('btoa');\n\n//Utility Functions\n\nfunction reverseString(str) {\n    return str.split(\"\").reverse().join(\"\");\n}\n\nfunction generateNumericId() {\n    return Math.floor(1000000 + Math.random() * 9000000).toString();\n}\n\nfunction getCurrentDateTime() {\n    const now = new Date();\n    return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;\n}\n\n//Generate MAC using the provided key and requestBody\nfunction generateMAC(key, argumentsJson) {\n\n    const reversedJson = reverseString(argumentsJson);\n    const reversedkey = reverseString(key);\n    const combined = reversedJson + reversedkey;\n\n    // Base64 encode properly using CryptoJS\n    const base64Encoded = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(combined));\n    const sha512Hash = CryptoJS.SHA512(base64Encoded).toString(CryptoJS.enc.Hex);\n\n    const positions = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120];\n    let mac = \"\";\n    positions.forEach(pos => mac += sha512Hash.charAt(pos));\n    return mac.toUpperCase();\n}\n\n// Generate Required Values Dynamically:\nlet partnerKey = JSON.parse(pm.environment.get(\"icecash_partner_key\"));\nlet partnerToken = JSON.parse(pm.environment.get(\"icecash_partner_token\"));\nconst currentDateTime = getCurrentDateTime();//\"20250123093628\"; \nconst partnerReference = generateNumericId(); //\"5800936\";\n\n\nlet requestBody =\n{\n    \"Arguments\": {\n        \"Version\": \"2.3\",\n        \"PartnerToken\": partnerToken,\n        \"Date\": currentDateTime,\n        \"PartnerReference\": partnerReference,\n        \"Request\": {\n            \"Function\": \"TPIQuote\",\n            \"Vehicles\": [{\n                \"VRN\": \"ADA0010\",\n                \"EntityType\": \"Personal\",\n                \"IDNumber\": \"\",\n                \"CompanyName\": \"\",\n                \"FirstName\": \"\",\n                \"LastName\": \"\",\n                \"MSISDN\": \"\",\n                \"Email\": \"\",\n                \"Address1\": \"\",\n                \"Address2\": \"\",\n                \"Town\": \"Town\", \n                \"BirthDate\": \"\",\n                \"Owner_FirstName\": \"\",\n                \"Owner_LastName\": \"\",\n                \"Owner_MSISDN\": \"\",\n                \"Owner_Email\": \"\",\n                \"Owner_Address1\": \"\",\n                \"Owner_Address2\": \"\",\n                \"Owner_Town\": \"\",\n                \"Owner_BirthDate\": \"\",\n                \"InsuranceType\": \"2\",\n                \"VehicleType\": \"2\",\n                \"VehicleValue\": \"\",\n                \"DurationMonths\": \"4\",\n                \"CustomerReference\": currentDateTime,\n                \"Currency\": \"USD\"\n            }]\n        }\n    },\n}\n\n// --- Create raw JSON string for MAC ---\nconst argumentsJson = JSON.stringify(requestBody.Arguments);\n\n// --- Generate MAC ---\nconst mac = generateMAC(partnerKey, argumentsJson);\nif (mac) {\n    requestBody.Mode = \"SH\";\n    requestBody.MAC = mac;\n    pm.environment.set(\"MAC\", mac);\n    pm.environment.set(\"requestBody\", JSON.stringify(requestBody));\n    console.log(\"Generated MAC:\", mac);\n    console.log(\"Generated Date:\", currentDateTime);\n    console.log(\"Generated PartnerReference:\", partnerReference);\n} else {\n    console.error(\"MAC generation failed.\");\n}\n\n//ADA0010\n//250507P\n//KJVV456456\n//KJVV123123\n//ZBT66223\n//TRP63631"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const res = pm.response.json();\r\nconst id = res?.Response?.Quotes?.[0]?.InsuranceID;\r\n\r\nif (id) {\r\n    pm.environment.set(\"insurance_quote_id\", JSON.stringify(id.toString()));\r\n    console.log(\"✔️ Saved insurance_quote_id:\", id);\r\n} else {\r\n    console.warn(\"⚠️ InsuranceID not found or null. Response:\", res);\r\n}"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{icecash_partner_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{{requestBody}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Icecash-URL}}/request/20117846",
+					"host": [
+						"{{Icecash-URL}}"
+					],
+					"path": [
+						"request",
+						"20117846"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "TP Insurance Quote - Success",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://test-api.icecash.mobi/request/20117846",
+							"protocol": "https",
+							"host": [
+								"test-api",
+								"icecash",
+								"mobi"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Mon, 20 Oct 2025 19:49:13 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "1163"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"2143717\",\n    \"Date\": \"20251020214913\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Result\": 1,\n        \"Message\": \"1 quotes generated. 0 failed\",\n        \"Quotes\": [\n            {\n                \"VRN\": \"ADA0010\",\n                \"InsuranceID\": 133313,\n                \"Result\": 1,\n                \"Message\": \"Quote generated. \",\n                \"CustomerReference\": \"Ref 1\",\n                \"Policy\": {\n                    \"InsuranceType\": \"3\",\n                    \"StartDate\": \"20260201\",\n                    \"EndDate\": \"20260531\",\n                    \"DurationMonths\": \"4\",\n                    \"Amount\": \"213.60\",\n                    \"StampDuty\": \"10.00\",\n                    \"GovernmentLevy\": \"3.60\",\n                    \"CoverAmount\": \"200.00\",\n                    \"PremiumAmount\": \"213.60\",\n                    \"Currency\": \"USD\"\n                },\n                \"Client\": {\n                    \"IDNumber\": \"***DEFGH***\",\n                    \"FirstName\": \"****\",\n                    \"LastName\": \"**i**\",\n                    \"MSISDN\": \"***1234***\",\n                    \"Address1\": \"***ress lin***\",\n                    \"Address2\": \"***ress lin***\",\n                    \"Town\": \"****\",\n                    \"EntityType\": \"Personal\",\n                    \"CompanyName\": \"****\",\n                    \"BirthDate\": \"***0-08***\",\n                    \"Email\": \"***il@ice.c***\",\n                    \"Owner_IDNumber\": \"**A00**\",\n                    \"Owner_FirstName\": \"****\",\n                    \"Owner_LastName\": \"**i**\",\n                    \"Owner_MSISDN\": \"***1234***\",\n                    \"Owner_Email\": \"***ilicec***\",\n                    \"Owner_Address1\": \"***ress lin***\",\n                    \"Owner_Address2\": \"***ress lin***\",\n                    \"Owner_Town\": \"****\",\n                    \"Owner_EntityType\": \"Personal\",\n                    \"Owner_CompanyName\": \"\",\n                    \"Owner_BirthDate\": \"**9001**\"\n                },\n                \"Vehicle\": {\n                    \"Make\": \"CHANA\",\n                    \"Model\": \"CLUB CAB\",\n                    \"TaxClass\": 1,\n                    \"YearManufacture\": \"\",\n                    \"VehicleType\": \"2\",\n                    \"VehicleValue\": \"25000\"\n                }\n            }\n        ]\n    }\n}"
+				},
+				{
+					"name": "Icecash - TP Insurance Quotes - success",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Icecash-URL}}/request/20117846",
+							"host": [
+								"{{Icecash-URL}}"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Mon, 02 Feb 2026 11:05:10 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "1170"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"5729292\",\n    \"Date\": \"20260202130511\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Result\": 1,\n        \"Message\": \"1 quotes generated. 0 failed\",\n        \"Quotes\": [\n            {\n                \"VRN\": \"ZBT66223\",\n                \"InsuranceID\": 135096,\n                \"Result\": 1,\n                \"Message\": \"Quote generated. \",\n                \"CustomerReference\": \"Ref 1\",\n                \"Policy\": {\n                    \"InsuranceType\": \"3\",\n                    \"StartDate\": \"20260216\",\n                    \"EndDate\": \"20260615\",\n                    \"DurationMonths\": \"4\",\n                    \"Amount\": \"213.60\",\n                    \"StampDuty\": \"10.00\",\n                    \"GovernmentLevy\": \"3.60\",\n                    \"CoverAmount\": \"200.00\",\n                    \"PremiumAmount\": \"213.60\",\n                    \"Currency\": \"USD\"\n                },\n                \"Client\": {\n                    \"IDNumber\": \"***DEFGH***\",\n                    \"FirstName\": \"****\",\n                    \"LastName\": \"**i**\",\n                    \"MSISDN\": \"***1234***\",\n                    \"Address1\": \"***ress lin***\",\n                    \"Address2\": \"***ress lin***\",\n                    \"Town\": \"****\",\n                    \"EntityType\": \"Personal\",\n                    \"CompanyName\": \"\",\n                    \"BirthDate\": \"\",\n                    \"Email\": \"***il@ice.c***\",\n                    \"Owner_IDNumber\": \"*\",\n                    \"Owner_FirstName\": \"****\",\n                    \"Owner_LastName\": \"**i**\",\n                    \"Owner_MSISDN\": \"***1234***\",\n                    \"Owner_Email\": \"***ilicec***\",\n                    \"Owner_Address1\": \"***ress lin***\",\n                    \"Owner_Address2\": \"***ress lin***\",\n                    \"Owner_Town\": \"****\",\n                    \"Owner_EntityType\": \"Personal\",\n                    \"Owner_CompanyName\": \"*****NCE INSURANCE CO*****\",\n                    \"Owner_BirthDate\": \"**9001**\"\n                },\n                \"Vehicle\": {\n                    \"Make\": \"ALFA ROMEO\",\n                    \"Model\": \"145\",\n                    \"TaxClass\": 1,\n                    \"YearManufacture\": \"\",\n                    \"VehicleType\": \"2\",\n                    \"VehicleValue\": \"25000\"\n                }\n            }\n        ]\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Icecash - TP Insurance Approve/Reject",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Ensure CryptoJS is available\nconst CryptoJS = require('crypto-js');\nconst btoa = require('btoa');\n\n//Utility Functions\n\nfunction reverseString(str) {\n    return str.split(\"\").reverse().join(\"\");\n}\n\nfunction generateNumericId() {\n    return Math.floor(1000000 + Math.random() * 9000000).toString();\n}\n\nfunction getCurrentDateTime() {\n    const now = new Date();\n    return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;\n}\n\n//Generate MAC using the provided key and requestBody\nfunction generateMAC(key, argumentsJson) {\n\n    const reversedJson = reverseString(argumentsJson);\n    const reversedkey = reverseString(key);\n    const combined = reversedJson + reversedkey;\n\n    // Base64 encode properly using CryptoJS\n    const base64Encoded = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(combined));\n    const sha512Hash = CryptoJS.SHA512(base64Encoded).toString(CryptoJS.enc.Hex);\n\n    const positions = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120];\n    let mac = \"\";\n    positions.forEach(pos => mac += sha512Hash.charAt(pos));\n    return mac.toUpperCase();\n}\n\n// Generate Required Values Dynamically:\nlet partnerKey = JSON.parse(pm.environment.get(\"icecash_partner_key\"));\nlet partnerToken = JSON.parse(pm.environment.get(\"icecash_partner_token\"));\nlet insuranceId = JSON.parse(pm.environment.get(\"insurance_quote_id\"));\nconst currentDateTime = getCurrentDateTime();//\"20250123093628\"; \nconst partnerReference = generateNumericId(); //\"5800936\";\n\nlet requestBody =\n{\n    \"Arguments\": {\n        \"Version\": \"2.3\",\n        \"PartnerToken\": partnerToken,\n        \"Date\": currentDateTime,\n        \"PartnerReference\": partnerReference,\n        \"Request\": {\n            \"Function\": \"TPIQuoteUpdate\",\n            \"PaymentMethod\": \"1\",\n            \"Identifier\": \"123456789E1\",\n            \"MSISDN\": \"263775001007\",\n            \"Quotes\": [{\n                \"InsuranceID\": insuranceId,\n                \"Status\": \"1\"\n            }]\n        }\n    },\n}\n\n// --- Create raw JSON string for MAC ---\nconst argumentsJson = JSON.stringify(requestBody.Arguments);\n\n// --- Generate MAC ---\nconst mac = generateMAC(partnerKey, argumentsJson);\nif (mac) {\n    requestBody.Mode = \"SH\";\n    requestBody.MAC = mac;\n    pm.environment.set(\"MAC\", mac);\n    pm.environment.set(\"requestBody\", JSON.stringify(requestBody));\n    console.log(\"Generated MAC:\", mac);\n    console.log(\"Generated Date:\", currentDateTime);\n    console.log(\"Generated PartnerReference:\", partnerReference);\n} else {\n    console.error(\"MAC generation failed.\");\n}\n\n//ADA0010\n//250507P\n//KJVV456456\n//KJVV123123\n//ZBT66223\n//TRP63631"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const responseJson = pm.response.json();\r\n//var reference = responseJson.Response.PartnerReference;\r\n//pm.environment.set(\"insurance_quote_id\",JSON.stringify(reference));"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{icecash_partner_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{{requestBody}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Icecash-URL}}/request/20117846",
+					"host": [
+						"{{Icecash-URL}}"
+					],
+					"path": [
+						"request",
+						"20117846"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Icecash - TP Insurance Approve/Reject",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Icecash-URL}}/request/20117846",
+							"host": [
+								"{{Icecash-URL}}"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Mon, 02 Feb 2026 11:14:40 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "207"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"1538342\",\n    \"Date\": \"20260202131440\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Result\": 1,\n        \"Payment_ID\": \"\",\n        \"Currency\": \"\",\n        \"Message\": \"Request submitted successfully. Poll Insurance ID for further details.\"\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Icecash - TP Insurance Single Confirmation",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"\n// Ensure CryptoJS is available\nconst CryptoJS = require('crypto-js');\nconst btoa = require('btoa');\n\n//Utility Functions\n\nfunction reverseString(str) {\n    return str.split(\"\").reverse().join(\"\");\n}\n\nfunction generateNumericId() {\n    return Math.floor(1000000 + Math.random() * 9000000).toString();\n}\n\nfunction getCurrentDateTime() {\n    const now = new Date();\n    return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;\n}\n\n//Generate MAC using the provided key and requestBody\nfunction generateMAC(key, argumentsJson) {\n\n    const reversedJson = reverseString(argumentsJson);\n    const reversedkey = reverseString(key);\n    const combined = reversedJson + reversedkey;\n\n    // Base64 encode properly using CryptoJS\n    const base64Encoded = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(combined));\n    const sha512Hash = CryptoJS.SHA512(base64Encoded).toString(CryptoJS.enc.Hex);\n\n    const positions = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120];\n    let mac = \"\";\n    positions.forEach(pos => mac += sha512Hash.charAt(pos));\n    return mac.toUpperCase();\n}\n\n// Generate Required Values Dynamically:\nlet partnerKey = JSON.parse(pm.environment.get(\"icecash_partner_key\"));\nlet partnerToken = JSON.parse(pm.environment.get(\"icecash_partner_token\"));\nconst currentDateTime = getCurrentDateTime();\nconst partnerReference = generateNumericId(); \nlet insuranceId = JSON.parse(pm.environment.get(\"insurance_quote_id\"));\n\nlet requestBody =\n{\n    \"Arguments\": {\n        \"Version\": \"2.3\",\n        \"PartnerToken\": partnerToken,\n        \"Date\": currentDateTime,\n        \"PartnerReference\": partnerReference,\n        \"Request\": {\n            \"Function\": \"TPIPolicy\",\n            \"InsuranceID\": insuranceId,\n\n        }\n    },\n}\n\n// --- Create raw JSON string for MAC ---\nconst argumentsJson = JSON.stringify(requestBody.Arguments);\n\n// --- Generate MAC ---\nconst mac = generateMAC(partnerKey, argumentsJson);\nif (mac) {\n    requestBody.Mode = \"SH\";\n    requestBody.MAC = mac;\n    pm.environment.set(\"MAC\", mac);\n    pm.environment.set(\"requestBody\", JSON.stringify(requestBody));\n    console.log(\"Generated MAC:\", mac);\n    console.log(\"Generated Date:\", currentDateTime);\n    console.log(\"Generated PartnerReference:\", partnerReference);\n} else {\n    console.error(\"MAC generation failed.\");\n}\n\n//ADA0010\n//250507P\n//KJVV456456\n//KJVV123123\n//ZBT66223\n//TRP63631"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const responseJson = pm.response.json();\r\nvar reference = responseJson.Response.PartnerReference;\r\npm.environment.set(\"insurance_quote_id\",JSON.stringify(reference));"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{icecash_partner_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{{requestBody}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Icecash-URL}}/request/20117846",
+					"host": [
+						"{{Icecash-URL}}"
+					],
+					"path": [
+						"request",
+						"20117846"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Icecash - TP Insurance Single Confirmation - approved",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Icecash-URL}}/request/20117846",
+							"host": [
+								"{{Icecash-URL}}"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Mon, 02 Feb 2026 11:14:55 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "1282"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"4518079\",\n    \"Date\": \"20260202131456\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Function\": \"TPIPolicy\",\n        \"Result\": \"1\",\n        \"Message\": \"Policy Retrieved\",\n        \"PolicyNo\": \"ICZIM26135097\",\n        \"VRN\": \"ZBT66223\",\n        \"IssuerCompany\": \"ZIMNAT LION INSURANCE COMPANY\",\n        \"Status\": \"Approved\",\n        \"InsuranceType\": \"3\",\n        \"LoadedBy\": \" Zimnat Lion Insurance\",\n        \"LoadedDate\": \"202602021314\",\n        \"ApprovedBy\": \" Zimnat Lion Insurance\",\n        \"ApprovedDate\": \"202602021314\",\n        \"IDNumber\": \"ABCDEFGHIJ1\",\n        \"FirstName\": \"John\",\n        \"LastName\": \"Smith\",\n        \"MSISDN\": \"0771234123\",\n        \"Email\": \"email@ice.cash\",\n        \"Address1\": \"Address line 1\",\n        \"Address2\": \"Address line 2\",\n        \"Town\": \"Town\",\n        \"EntityType\": \"Personal\",\n        \"CompanyName\": \"\",\n        \"Owner_IDNumber\": \"8\",\n        \"Owner_FirstName\": \"Jane\",\n        \"Owner_LastName\": \"Smith\",\n        \"Owner_Email\": \"emailicecash\",\n        \"Owner_MSISDN\": \"0771234123\",\n        \"Owner_Address1\": \"Address line 1\",\n        \"Owner_Address2\": \"Address line 2\",\n        \"Owner_Town\": \"Town\",\n        \"Owner_EntityType\": \"Personal\",\n        \"Owner_CompanyName\": \"ALLIANCE INSURANCE COMPANY\",\n        \"StartDate\": \"20260216\",\n        \"EndDate\": \"20260615\",\n        \"DurationMonths\": \"4\",\n        \"Amount\": \"213.60\",\n        \"Rate\": \"0.0240\",\n        \"StampDuty\": \"10.00\",\n        \"GovernmentLevy\": \"3.60\",\n        \"CoverAmount\": \"200.00\",\n        \"PremiumAmount\": \"213.60\",\n        \"ValueAmount\": \"25000.00\",\n        \"Make\": \"ALFA ROMEO\",\n        \"Model\": \"145\",\n        \"TaxClass\": \"1\",\n        \"YearManufacture\": \"2024\",\n        \"VehicleType\": \"1\",\n        \"Customer_Reference\": \"Ref 1\",\n        \"Currency\": \"USD\"\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Icecash - TP Insurance Multiple Confirmation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const responseJson = pm.response.json();\r\nvar reference = responseJson.Response.PartnerReference;\r\npm.environment.set(\"insurance_quote_id\",JSON.stringify(reference));"
+						]
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Ensure CryptoJS is available\nconst CryptoJS = require('crypto-js');\nconst btoa = require('btoa');\n\n//Utility Functions\n\nfunction reverseString(str) {\n    return str.split(\"\").reverse().join(\"\");\n}\n\nfunction generateNumericId() {\n    return Math.floor(1000000 + Math.random() * 9000000).toString();\n}\n\nfunction getCurrentDateTime() {\n    const now = new Date();\n    return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;\n}\n\n//Generate MAC using the provided key and requestBody\nfunction generateMAC(key, argumentsJson) {\n\n    const reversedJson = reverseString(argumentsJson);\n    const reversedkey = reverseString(key);\n    const combined = reversedJson + reversedkey;\n\n    // Base64 encode properly using CryptoJS\n    const base64Encoded = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(combined));\n    const sha512Hash = CryptoJS.SHA512(base64Encoded).toString(CryptoJS.enc.Hex);\n\n    const positions = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120];\n    let mac = \"\";\n    positions.forEach(pos => mac += sha512Hash.charAt(pos));\n    return mac.toUpperCase();\n}\n\n// Generate Required Values Dynamically:\nlet partnerKey = JSON.parse(pm.environment.get(\"icecash_partner_key\"));\nlet partnerToken = JSON.parse(pm.environment.get(\"icecash_partner_token\"));\nconst currentDateTime = getCurrentDateTime();//\"20250123093628\"; \nconst partnerReference = generateNumericId(); //\"5800936\";\nlet insuranceId = JSON.parse(pm.environment.get(\"insurance_quote_id\"));\n\nlet requestBody =\n{\n    \"Arguments\": {\n        \"Version\": \"2.3\",\n        \"PartnerToken\": partnerToken,\n        \"Date\": currentDateTime,\n        \"PartnerReference\": partnerReference,\n        \"Request\": {\n            \"Function\": \"TPIPolicy\",\n            \"InsuranceID\": insuranceId,\n\n        }\n    },\n}\n\n// --- Create raw JSON string for MAC ---\nconst argumentsJson = JSON.stringify(requestBody.Arguments);\n\n// --- Generate MAC ---\nconst mac = generateMAC(partnerKey, argumentsJson);\nif (mac) {\n    requestBody.Mode = \"SH\";\n    requestBody.MAC = mac;\n    pm.environment.set(\"MAC\", mac);\n    pm.environment.set(\"requestBody\", JSON.stringify(requestBody));\n    console.log(\"Generated MAC:\", mac);\n    console.log(\"Generated Date:\", currentDateTime);\n    console.log(\"Generated PartnerReference:\", partnerReference);\n} else {\n    console.error(\"MAC generation failed.\");\n}\n\n//ADA0010\n//250507P\n//KJVV456456\n//KJVV123123\n//ZBT66223\n//TRP63631"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{icecash_partner_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{{requestBody}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Icecash-URL}}/request/20117846",
+					"host": [
+						"{{Icecash-URL}}"
+					],
+					"path": [
+						"request",
+						"20117846"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Icecash - Licence Quotes",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Ensure CryptoJS is available\nconst CryptoJS = require('crypto-js');\nconst btoa = require('btoa');\n\n//Utility Functions\n\nfunction reverseString(str) {\n    return str.split(\"\").reverse().join(\"\");\n}\n\nfunction generateNumericId() {\n    return Math.floor(1000000 + Math.random() * 9000000).toString();\n}\n\nfunction getCurrentDateTime() {\n    const now = new Date();\n    return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;\n}\n\n//Generate MAC using the provided key and requestBody\nfunction generateMAC(key, argumentsJson) {\n\n    const reversedJson = reverseString(argumentsJson);\n    const reversedkey = reverseString(key);\n    const combined = reversedJson + reversedkey;\n\n    // Base64 encode properly using CryptoJS\n    const base64Encoded = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(combined));\n    const sha512Hash = CryptoJS.SHA512(base64Encoded).toString(CryptoJS.enc.Hex);\n\n    const positions = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120];\n    let mac = \"\";\n    positions.forEach(pos => mac += sha512Hash.charAt(pos));\n    return mac.toUpperCase();\n}\n\n// Generate Required Values Dynamically:\nlet partnerKey = JSON.parse(pm.environment.get(\"icecash_partner_key\"));\nlet partnerToken = JSON.parse(pm.environment.get(\"icecash_partner_token\"));\nconst currentDateTime = getCurrentDateTime();//\"20250123093628\"; \nconst partnerReference = generateNumericId(); //\"5800936\";\n\n\nlet requestBody =\n{\n    \"Arguments\": {\n        \"Version\": \"2.3\",\n        \"PartnerToken\": partnerToken,\n        \"Date\": currentDateTime,\n        \"PartnerReference\": partnerReference,\n        \"Request\": {\n            \"Function\": \"LICQuote\",\n            \"Vehicles\": [{\n                \"VRN\": \"JAN00028\",\n                \"IDNumber\": \"ABCDEFGHIJ1\",\n                \"ClientIDType\": \"1\",\n                \"LicFrequency\": \"1\",\n                \"RadioTVUsage\": \"1\",\n                \"RadioTVFrequency\": \"1\",\n                \"FirstName\": \"John\",\n                \"LastName\": \"Smith\",\n                \"MSISDN\": \"0771234123\",\n                \"Email\": \"email@ice.cash\",\n                \"Address1\": \"Address line 1\",\n                \"Address2\": \"Address line 2\",\n                \"Town\": \"Town\", \n                \"BirthDate\": \"\",\n                \"SuburbID\": \"28\",\n                \"CustomerReference\": currentDateTime,\n                \"AgencyID\":\"24\",\n                \"Currency\": \"USD\"\n\n\n            }]\n        }\n    },\n}\n\n// --- Create raw JSON string for MAC ---\nconst argumentsJson = JSON.stringify(requestBody.Arguments);\n\n// --- Generate MAC ---\nconst mac = generateMAC(partnerKey, argumentsJson);\nif (mac) {\n    requestBody.Mode = \"SH\";\n    requestBody.MAC = mac;\n    pm.environment.set(\"MAC\", mac);\n    pm.environment.set(\"requestBody\", JSON.stringify(requestBody));\n    console.log(\"Generated MAC:\", mac);\n    console.log(\"Generated Date:\", currentDateTime);\n    console.log(\"Generated PartnerReference:\", partnerReference);\n} else {\n    console.error(\"MAC generation failed.\");\n}\n\n//ADA0010\n//250507P\n//ZBT66223\n//TRP63631 - not authorised\n//JAN00028\n//ASW5555\n//AVV2525\n//ADA0010\n//ZBT66223"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const res = pm.response.json();\r\nconst id = res?.Response?.Quotes?.[0]?.LicenceID;\r\n\r\nif (id) {\r\n    pm.environment.set(\"licence_quote_id\", JSON.stringify(id.toString()));\r\n    console.log(\"✔️ Saved licence_quote_id:\", id);\r\n} else {\r\n    console.warn(\"⚠️ LicenceID not found or null. Response:\", res);\r\n}"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{icecash_partner_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{{requestBody}}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Icecash-URL}}/request/20117846",
+					"host": [
+						"{{Icecash-URL}}"
+					],
+					"path": [
+						"request",
+						"20117846"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Icecash - Licence Quotes",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://test-api.icecash.mobi/request/20117846",
+							"protocol": "https",
+							"host": [
+								"test-api",
+								"icecash",
+								"mobi"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Fri, 17 Oct 2025 11:08:10 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "742"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"5478037\",\n    \"Date\": \"20251017130811\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Result\": 1,\n        \"Message\": \"1 quotes generated. 0 failed\",\n        \"Quotes\": [\n            {\n                \"VRN\": \"ADA0010\",\n                \"IDNumber\": \"***DEFGH***\",\n                \"ClientIDType\": \"1\",\n                \"FirstName\": \"****\",\n                \"LastName\": \"**i**\",\n                \"Address1\": \"***ress lin***\",\n                \"Address2\": \"***ress lin***\",\n                \"SuburbID\": \"1\",\n                \"LicFrequency\": 3,\n                \"RadioTVUsage\": \"\",\n                \"RadioTVFrequency\": \"\",\n                \"TaxClass\": 1,\n                \"NettMass\": 2000,\n                \"LicExpiryDate\": \"20250930\",\n                \"TransactionAmt\": \"2025.00\",\n                \"ArrearsAmt\": \"0.00\",\n                \"PenaltiesAmt\": \"0.00\",\n                \"AdministrationAmt\": \"0.00\",\n                \"TotalLicAmt\": \"2025.00\",\n                \"RadioTVAmt\": \"0.00\",\n                \"RadioTVArrearsAmt\": \"0.00\",\n                \"TotalRadioTVAmt\": \"0.00\",\n                \"TotalAmount\": \"2025.00\",\n                \"MSISDN\": \"***1234***\",\n                \"Email\": \"***il@ice.c***\",\n                \"LicenceID\": 20009,\n                \"Result\": 1,\n                \"Message\": \"Success\"\n            }\n        ]\n    }\n}"
+				},
+				{
+					"name": "TRP63631 - Success",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://test-api.icecash.mobi/request/20117846",
+							"protocol": "https",
+							"host": [
+								"test-api",
+								"icecash",
+								"mobi"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Mon, 20 Oct 2025 13:31:26 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "747"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"7019413\",\n    \"Date\": \"20251020153128\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Result\": 1,\n        \"Message\": \"1 quotes generated. 0 failed\",\n        \"Quotes\": [\n            {\n                \"VRN\": \"TRP63631\",\n                \"IDNumber\": \"***DEFGH***\",\n                \"ClientIDType\": \"1\",\n                \"FirstName\": \"**njam**\",\n                \"LastName\": \"**u**\",\n                \"Address1\": \"***ress lin***\",\n                \"Address2\": \"***ress lin***\",\n                \"SuburbID\": \"1\",\n                \"LicFrequency\": 3,\n                \"RadioTVUsage\": \"\",\n                \"RadioTVFrequency\": \"\",\n                \"TaxClass\": 1,\n                \"NettMass\": 2200,\n                \"LicExpiryDate\": \"20250930\",\n                \"TransactionAmt\": \"2025.00\",\n                \"ArrearsAmt\": \"0.00\",\n                \"PenaltiesAmt\": \"0.00\",\n                \"AdministrationAmt\": \"0.00\",\n                \"TotalLicAmt\": \"2025.00\",\n                \"RadioTVAmt\": \"0.00\",\n                \"RadioTVArrearsAmt\": \"0.00\",\n                \"TotalRadioTVAmt\": \"0.00\",\n                \"TotalAmount\": \"2025.00\",\n                \"MSISDN\": \"***1234***\",\n                \"Email\": \"***il@ice.c***\",\n                \"LicenceID\": 20010,\n                \"Result\": 1,\n                \"Message\": \"Success\"\n            }\n        ]\n    }\n}"
+				},
+				{
+					"name": "Icecash - Licence Quotes - ZWG Success",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Icecash-URL}}/request/20117846",
+							"host": [
+								"{{Icecash-URL}}"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Mon, 02 Feb 2026 11:22:24 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "749"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"9226549\",\n    \"Date\": \"20260202132225\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Result\": 1,\n        \"Message\": \"1 quotes generated. 0 failed\",\n        \"Quotes\": [\n            {\n                \"VRN\": \"ZBT66223\",\n                \"IDNumber\": \"***DEFGH***\",\n                \"ClientIDType\": \"1\",\n                \"FirstName\": \"****\",\n                \"LastName\": \"**i**\",\n                \"Address1\": \"***ress lin***\",\n                \"Address2\": \"***ress lin***\",\n                \"SuburbID\": \"1\",\n                \"LicFrequency\": 9,\n                \"RadioTVUsage\": \"\",\n                \"RadioTVFrequency\": \"\",\n                \"TaxClass\": 1,\n                \"NettMass\": 1500,\n                \"LicExpiryDate\": \"20251031\",\n                \"TransactionAmt\": \"3080.00\",\n                \"ArrearsAmt\": \"840.00\",\n                \"PenaltiesAmt\": \"840.00\",\n                \"AdministrationAmt\": \"280.00\",\n                \"TotalLicAmt\": \"5040.00\",\n                \"RadioTVAmt\": \"0.00\",\n                \"RadioTVArrearsAmt\": \"0.00\",\n                \"TotalRadioTVAmt\": \"0.00\",\n                \"TotalAmount\": \"5040.00\",\n                \"MSISDN\": \"***1234***\",\n                \"Email\": \"***il@ice.c***\",\n                \"LicenceID\": 20882,\n                \"Result\": 1,\n                \"Message\": \"Success\"\n            }\n        ]\n    }\n}"
+				},
+				{
+					"name": "Icecash - Licence Quotes- USD",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Icecash-URL}}/request/20117846",
+							"host": [
+								"{{Icecash-URL}}"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Tue, 03 Feb 2026 13:03:05 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "765"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"9226877\",\n    \"Date\": \"20260203150306\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Result\": 1,\n        \"Message\": \"1 quotes generated. 0 failed\",\n        \"Quotes\": [\n            {\n                \"VRN\": \"JAN00028\",\n                \"IDNumber\": \"***DEFGH***\",\n                \"ClientIDType\": \"1\",\n                \"FirstName\": \"****\",\n                \"LastName\": \"****\",\n                \"Address1\": \"***ress lin***\",\n                \"Address2\": \"***ress lin***\",\n                \"SuburbID\": \"1\",\n                \"LicFrequency\": 9,\n                \"RadioTVUsage\": \"\",\n                \"RadioTVFrequency\": \"\",\n                \"TaxClass\": 4,\n                \"NettMass\": 15487,\n                \"LicExpiryDate\": \"20250731\",\n                \"TransactionAmt\": \"1650.00\",\n                \"ArrearsAmt\": \"900.00\",\n                \"PenaltiesAmt\": \"240.00\",\n                \"AdministrationAmt\": \"10.00\",\n                \"TotalLicAmt\": \"2800.00\",\n                \"RadioTVAmt\": \"0.00\",\n                \"RadioTVArrearsAmt\": \"0.00\",\n                \"TotalRadioTVAmt\": \"0.00\",\n                \"TotalAmount\": \"2800.00\",\n                \"MSISDN\": \"***1234***\",\n                \"Email\": \"***il@ice.c***\",\n                \"Currency\": \"USD\",\n                \"LicenceID\": 20899,\n                \"Result\": 1,\n                \"Message\": \"Success\"\n            }\n        ]\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Icecash - Licence Approve/Reject",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Ensure CryptoJS is available\nconst CryptoJS = require('crypto-js');\nconst btoa = require('btoa');\n\n//Utility Functions\n\nfunction reverseString(str) {\n    return str.split(\"\").reverse().join(\"\");\n}\n\nfunction generateNumericId() {\n    return Math.floor(1000000 + Math.random() * 9000000).toString();\n}\n\nfunction getCurrentDateTime() {\n    const now = new Date();\n    return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;\n}\n\n//Generate MAC using the provided key and requestBody\nfunction generateMAC(key, argumentsJson) {\n\n    const reversedJson = reverseString(argumentsJson);\n    const reversedkey = reverseString(key);\n    const combined = reversedJson + reversedkey;\n\n    // Base64 encode properly using CryptoJS\n    const base64Encoded = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(combined));\n    const sha512Hash = CryptoJS.SHA512(base64Encoded).toString(CryptoJS.enc.Hex);\n\n    const positions = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120];\n    let mac = \"\";\n    positions.forEach(pos => mac += sha512Hash.charAt(pos));\n    return mac.toUpperCase();\n}\n\n// Generate Required Values Dynamically:\nlet partnerKey = JSON.parse(pm.environment.get(\"icecash_partner_key\"));\nlet partnerToken = JSON.parse(pm.environment.get(\"icecash_partner_token\"));\nlet licenceId = JSON.parse(pm.environment.get(\"licence_quote_id\"));\nconst currentDateTime = getCurrentDateTime();//\"20250123093628\"; \nconst partnerReference = generateNumericId(); //\"5800936\";\nlet requestBody =\n{\n    \"Arguments\": {\n        \"Version\": \"2.3\",\n        \"PartnerToken\": partnerToken,\n        \"Date\": currentDateTime,\n        \"PartnerReference\": partnerReference,\n        \"Request\": {\n            \"Function\": \"LicQuoteUpdate\",\n            \"PaymentMethod\": \"1\",\n            \"Identifier\": \"123456789E1\",\n            \"MSISDN\": \"263775461117\",\n            \"Quotes\": [{\n                \"LicenceID\": licenceId,\n                \"Status\": \"0\",\n                \"DeliveryMethod\": \"1\"\n            }]\n        }\n    },\n}\n\n// --- Create raw JSON string for MAC ---\nconst argumentsJson = JSON.stringify(requestBody.Arguments);\n\n// --- Generate MAC ---\nconst mac = generateMAC(partnerKey, argumentsJson);\nif (mac) {\n    requestBody.Mode = \"SH\";\n    requestBody.MAC = mac;\n    pm.environment.set(\"MAC\", mac);\n    pm.environment.set(\"requestBody\", JSON.stringify(requestBody));\n    console.log(\"Generated MAC:\", mac);\n    console.log(\"Generated Date:\", currentDateTime);\n    console.log(\"Generated PartnerReference:\", partnerReference);\n} else {\n    console.error(\"MAC generation failed.\");\n}"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const responseJson = pm.response.json();\r\n//var reference = responseJson.Response.PartnerReference;\r\n//pm.environment.set(\"licence_quote_id\",JSON.stringify(reference));"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{icecash_partner_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{{requestBody}}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Icecash-URL}}/request/20117846",
+					"host": [
+						"{{Icecash-URL}}"
+					],
+					"path": [
+						"request",
+						"20117846"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Unable to retrieve Licence Info",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://test-api.icecash.mobi/request/20117846",
+							"protocol": "https",
+							"host": [
+								"test-api",
+								"icecash",
+								"mobi"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Fri, 17 Oct 2025 11:14:33 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "226"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"9994188\",\n    \"Date\": \"20251017131434\",\n    \"Version\": \"2.1\",\n    \"Response\": {\n        \"Result\": 0,\n        \"Payment_ID\": \"\",\n        \"Currency\": \"ZWG\",\n        \"Message\": \"20009 unable to retrieve ZBC license information. Poll Licence ID for further details.\"\n    }\n}"
+				},
+				{
+					"name": "System Error",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://test-api.icecash.mobi/request/20117846",
+							"protocol": "https",
+							"host": [
+								"test-api",
+								"icecash",
+								"mobi"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Fri, 17 Oct 2025 11:27:38 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "194"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"8057166\",\n    \"Date\": \"20251017132738\",\n    \"Version\": \"2.1\",\n    \"Response\": {\n        \"Result\": 0,\n        \"Payment_ID\": \"\",\n        \"Currency\": \"ZWG\",\n        \"Message\": \"System error [1]. Poll Licence ID for further details.\"\n    }\n}"
+				},
+				{
+					"name": "Successful",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://test-api.icecash.mobi/request/20117846",
+							"protocol": "https",
+							"host": [
+								"test-api",
+								"icecash",
+								"mobi"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Fri, 17 Oct 2025 11:31:30 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "208"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"4440964\",\n    \"Date\": \"20251017133132\",\n    \"Version\": \"2.1\",\n    \"Response\": {\n        \"Result\": 1,\n        \"Payment_ID\": \"\",\n        \"Currency\": \"ZWG\",\n        \"Message\": \"Request submitted successfully. Poll Licence ID for further details.\"\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Icecash - Licence Single Confirm/Check Status",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Ensure CryptoJS is available\nconst CryptoJS = require('crypto-js');\nconst btoa = require('btoa');\n\n//Utility Functions\n\nfunction reverseString(str) {\n    return str.split(\"\").reverse().join(\"\");\n}\n\nfunction generateNumericId() {\n    return Math.floor(1000000 + Math.random() * 9000000).toString();\n}\n\nfunction getCurrentDateTime() {\n    const now = new Date();\n    return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;\n}\n\n//Generate MAC using the provided key and requestBody\nfunction generateMAC(key, argumentsJson) {\n\n    const reversedJson = reverseString(argumentsJson);\n    const reversedkey = reverseString(key);\n    const combined = reversedJson + reversedkey;\n\n    // Base64 encode properly using CryptoJS\n    const base64Encoded = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(combined));\n    const sha512Hash = CryptoJS.SHA512(base64Encoded).toString(CryptoJS.enc.Hex);\n\n    const positions = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120];\n    let mac = \"\";\n    positions.forEach(pos => mac += sha512Hash.charAt(pos));\n    return mac.toUpperCase();\n}\n\n// Generate Required Values Dynamically:\nlet partnerKey = JSON.parse(pm.environment.get(\"icecash_partner_key\"));\nlet partnerToken = JSON.parse(pm.environment.get(\"icecash_partner_token\"));\nlet licenceId = JSON.parse(pm.environment.get(\"licence_quote_id\"));\nconst currentDateTime = getCurrentDateTime();//\"20250123093628\"; \nconst partnerReference = generateNumericId(); //\"5800936\";\nlet requestBody =\n{\n    \"Arguments\": {\n        \"Version\": \"2.3\",\n        \"PartnerToken\": partnerToken,\n        \"Date\": currentDateTime,\n        \"PartnerReference\": partnerReference,\n        \"Request\": {\n            \"Function\": \"LICResult\",\n            \"LicenceID\": licenceId\n\n        }\n    }\n}\n\n// --- Create raw JSON string for MAC ---\nconst argumentsJson = JSON.stringify(requestBody.Arguments);\n\n// --- Generate MAC ---\nconst mac = generateMAC(partnerKey, argumentsJson);\nif (mac) {\n    requestBody.Mode = \"SH\";\n    requestBody.MAC = mac;\n    pm.environment.set(\"MAC\", mac);\n    pm.environment.set(\"requestBody\", JSON.stringify(requestBody));\n    console.log(\"Generated MAC:\", mac);\n    console.log(\"Generated Date:\", currentDateTime);\n    console.log(\"Generated PartnerReference:\", partnerReference);\n} else {\n    console.error(\"MAC generation failed.\");\n}"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const responseJson = pm.response.json();\r\n//var reference = responseJson.Response.PartnerReference;\r\n//pm.environment.set(\"licence_quote_id\",JSON.stringify(reference));"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{icecash_partner_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{{requestBody}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Icecash-URL}}/request/20117846",
+					"host": [
+						"{{Icecash-URL}}"
+					],
+					"path": [
+						"request",
+						"20117846"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Loaded",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://test-api.icecash.mobi/request/20117846",
+							"protocol": "https",
+							"host": [
+								"test-api",
+								"icecash",
+								"mobi"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Fri, 17 Oct 2025 11:28:41 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "461"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"9347072\",\n    \"Date\": \"20251017132840\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Function\": \"LICResult\",\n        \"Result\": \"1\",\n        \"Message\": \"Licence Retrieved\",\n        \"Radio_ReceiptID\": \"\",\n        \"VRN\": \"ADA0010\",\n        \"Status\": \"Loaded\",\n        \"LoadedBy\": \" Zimnat Lion Insurance\",\n        \"LoadedDate\": \"202510171308\",\n        \"ApprovedBy\": \" \",\n        \"IDNumber\": \"ADA0010\",\n        \"FirstName\": \"Jane\",\n        \"LastName\": \"Smith\",\n        \"Address1\": \"Address line 1\",\n        \"Address2\": \"Address line 2\",\n        \"SuburbID\": 1,\n        \"IssuerCompany\": \"ZIMNAT LION INSURANCE COMPANY\"\n    }\n}"
+				},
+				{
+					"name": "Successful",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://test-api.icecash.mobi/request/20117846",
+							"protocol": "https",
+							"host": [
+								"test-api",
+								"icecash",
+								"mobi"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Fri, 17 Oct 2025 11:32:04 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "778"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"5643541\",\n    \"Date\": \"20251017133203\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Function\": \"LICResult\",\n        \"Result\": \"1\",\n        \"Message\": \"Licence Retrieved\",\n        \"ReceiptID\": \"R000039165\",\n        \"VRN\": \"ADA0010\",\n        \"Status\": \"Approved\",\n        \"LoadedBy\": \" Zimnat Lion Insurance\",\n        \"LoadedDate\": \"202510171308\",\n        \"ApprovedBy\": \" Zimnat Lion Insurance\",\n        \"ApprovedDate\": \"202510171331\",\n        \"IDNumber\": \"ADA0010\",\n        \"FirstName\": \"Jane\",\n        \"LastName\": \"Smith\",\n        \"Address1\": \"Address line 1\",\n        \"Address2\": \"Address line 2\",\n        \"SuburbID\": 1,\n        \"TransactionAmt\": 2025,\n        \"ArrearsAmt\": 0,\n        \"PenaltiesAmt\": 0,\n        \"AdministrationAmt\": 0,\n        \"TotalLicAmt\": 2025,\n        \"RadioTVAmt\": 0,\n        \"RadioTVArrearsAmt\": 0,\n        \"TotalRadioTVAmt\": 0,\n        \"TotalAmount\": 2025,\n        \"TaxClass\": \"1\",\n        \"NettMass\": 2000,\n        \"LicExpiryDate\": \"20260930\",\n        \"RadioTVExpiryDate\": \"20250930\",\n        \"IssuerCompany\": \"ZIMNAT LION INSURANCE COMPANY\"\n    }\n}"
+				},
+				{
+					"name": "TRP63631 - Success",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://test-api.icecash.mobi/request/20117846",
+							"protocol": "https",
+							"host": [
+								"test-api",
+								"icecash",
+								"mobi"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Mon, 20 Oct 2025 13:34:15 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "788"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"7239140\",\n    \"Date\": \"20251020153414\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Function\": \"LICResult\",\n        \"Result\": \"1\",\n        \"Message\": \"Licence Retrieved\",\n        \"ReceiptID\": \"R000039204\",\n        \"VRN\": \"TRP63631\",\n        \"Status\": \"Approved\",\n        \"LoadedBy\": \" Zimnat Lion Insurance\",\n        \"LoadedDate\": \"202510201531\",\n        \"ApprovedBy\": \" Zimnat Lion Insurance\",\n        \"ApprovedDate\": \"202510201533\",\n        \"IDNumber\": \"632119497J49\",\n        \"FirstName\": \"Benjamin\",\n        \"LastName\": \"Tsuro\",\n        \"Address1\": \"Address line 1\",\n        \"Address2\": \"Address line 2\",\n        \"SuburbID\": 1,\n        \"TransactionAmt\": 2025,\n        \"ArrearsAmt\": 0,\n        \"PenaltiesAmt\": 0,\n        \"AdministrationAmt\": 0,\n        \"TotalLicAmt\": 2025,\n        \"RadioTVAmt\": 0,\n        \"RadioTVArrearsAmt\": 0,\n        \"TotalRadioTVAmt\": 0,\n        \"TotalAmount\": 2025,\n        \"TaxClass\": \"1\",\n        \"NettMass\": 2200,\n        \"LicExpiryDate\": \"20260930\",\n        \"RadioTVExpiryDate\": \"20250930\",\n        \"IssuerCompany\": \"ZIMNAT LION INSURANCE COMPANY\"\n    }\n}"
+				},
+				{
+					"name": "Icecash - Licence Single Confirm/Check Status",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Icecash-URL}}/request/20117846",
+							"host": [
+								"{{Icecash-URL}}"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Mon, 02 Feb 2026 11:46:33 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "789"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"4440885\",\n    \"Date\": \"20260202134633\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Function\": \"LICResult\",\n        \"Result\": \"1\",\n        \"Message\": \"Licence Retrieved\",\n        \"ReceiptID\": \"R000053416\",\n        \"VRN\": \"ZBT66223\",\n        \"Status\": \"Approved\",\n        \"LoadedBy\": \" Zimnat Lion Insurance\",\n        \"LoadedDate\": \"202602021344\",\n        \"ApprovedBy\": \" Zimnat Lion Insurance\",\n        \"ApprovedDate\": \"202602021345\",\n        \"IDNumber\": \"ABCDEFGHIJ1\",\n        \"FirstName\": \"John\",\n        \"LastName\": \"Smith\",\n        \"Address1\": \"Address line 1\",\n        \"Address2\": \"Address line 2\",\n        \"SuburbID\": 1,\n        \"TransactionAmt\": 5040,\n        \"ArrearsAmt\": 840,\n        \"PenaltiesAmt\": 840,\n        \"AdministrationAmt\": 280,\n        \"TotalLicAmt\": 5040,\n        \"RadioTVAmt\": 0,\n        \"RadioTVArrearsAmt\": 0,\n        \"TotalRadioTVAmt\": 0,\n        \"TotalAmount\": 5040,\n        \"TaxClass\": \"1\",\n        \"NettMass\": 1500,\n        \"LicExpiryDate\": \"20261231\",\n        \"RadioTVExpiryDate\": \"20251031\",\n        \"IssuerCompany\": \"ZIMNAT LION INSURANCE COMPANY\"\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Icecash - Combined Quote",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Ensure CryptoJS is available\nconst CryptoJS = require('crypto-js');\nconst btoa = require('btoa');\n\n//Utility Functions\n\nfunction reverseString(str) {\n    return str.split(\"\").reverse().join(\"\");\n}\n\nfunction generateNumericId() {\n    return Math.floor(1000000 + Math.random() * 9000000).toString();\n}\n\nfunction getCurrentDateTime() {\n    const now = new Date();\n    return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;\n}\n\n//Generate MAC using the provided key and requestBody\nfunction generateMAC(key, argumentsJson) {\n\n    const reversedJson = reverseString(argumentsJson);\n    const reversedkey = reverseString(key);\n    const combined = reversedJson + reversedkey;\n\n    // Base64 encode properly using CryptoJS\n    const base64Encoded = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(combined));\n    const sha512Hash = CryptoJS.SHA512(base64Encoded).toString(CryptoJS.enc.Hex);\n\n    const positions = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120];\n    let mac = \"\";\n    positions.forEach(pos => mac += sha512Hash.charAt(pos));\n    return mac.toUpperCase();\n}\n\n// Generate Required Values Dynamically:\nlet partnerKey = JSON.parse(pm.environment.get(\"icecash_partner_key\"));\nlet partnerToken = JSON.parse(pm.environment.get(\"icecash_partner_token\"));\nconst currentDateTime = getCurrentDateTime();//\"20250123093628\"; \nconst partnerReference = generateNumericId(); //\"5800936\";\n\n\nlet requestBody =\n{\n    \"Arguments\": {\n        \"Version\": \"2.3\",\n        \"PartnerToken\": partnerToken,\n        \"Date\": currentDateTime,\n        \"PartnerReference\": partnerReference,\n        \"Request\": {\n            \"Function\": \"TPILICQuote\",\n            \"Vehicles\": [{\n                \"VRN\": \"JAN00028\",\n                \"VehicleType\": \"2\",\n                \"VehicleValue\": \"5000\",\n                \"InsuranceType\": \"1\",\n                \"DurationMonths\": \"4\",\n                \"LicFrequency\": \"3\",\n                \"RadioTVUsage\": \"1\",\n                \"RadioTVFrequency\": \"1\",\n                \"EntityType\": \"Personal\",\n                \"IDNumber\": \"ABCDEFGHIJ1\",\n                \"ClientIDType\": \"1\",\n                \"CompanyName\": \"Test\",\n                \"FirstName\": \"John\",\n                \"LastName\": \"Smith\",\n                \"MSISDN\": \"263711231234\",\n                \"Email\": \"email@ice.cash\",\n                \"BirthDate\": \"\",\n                \"Address1\": \"Address line 1\",\n                \"Address2\": \"Address line 2\",\n                \"Town\": \"Town\",\n                \"SuburbID\": \"1\",\n                \"Policy_IDNumber\": \"ABCDEFGHIJ2\",\n                \"Policy_CompanyName\": \"\",\n                \"Policy_FirstName\": \"Jane\",\n                \"Policy_LastName\": \"Smith\",\n                \"Policy_MSISDN\": \"263711231234\",\n                \"Policy_Email\": \"email@ice.cash\",\n                \"Policy_Address1\": \"Address line 1\",\n                \"Policy_Address2\": \"Address line 2\",\n                \"Policy_EntityType\": \"Personal\",\n                \"Policy_BirthDate\": \"19700101\",\n                \"Currency\": \"USD\",\n                \"AgencyID\": \"24\",\n                \"CustomerReference\": \"TestRef\"\n            }]\n        }\n    },\n}\n\n// --- Create raw JSON string for MAC ---\nconst argumentsJson = JSON.stringify(requestBody.Arguments);\n\n// --- Generate MAC ---\nconst mac = generateMAC(partnerKey, argumentsJson);\nif (mac) {\n    requestBody.Mode = \"SH\";\n    requestBody.MAC = mac;\n    pm.environment.set(\"MAC\", mac);\n    pm.environment.set(\"requestBody\", JSON.stringify(requestBody));\n    console.log(\"Generated MAC:\", mac);\n    console.log(\"Generated Date:\", currentDateTime);\n    console.log(\"Generated PartnerReference:\", partnerReference);\n} else {\n    console.error(\"MAC generation failed.\");\n}\n\n//ADA0010\n//250507P\n//KJVV456456\n//KJVV123123\n//ZBT66223\n//TRP63631\n//JAN00028\n//ASW5555\n//AVV2525\n//ADA0010\n//ZBT66223"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const res = pm.response.json();\r\nconst LicenceQuoteId = res?.Response?.Quotes?.[0]?.LicenceID;\r\nconst InsuranceQuoteId = res?.Response?.Quotes?.[0]?.InsuranceID;\r\nconst CombinedQuoteId = res?.Response?.Quotes?.[0]?.CombinedID;\r\nif (CombinedQuoteId) {\r\n    pm.environment.set(\"combined_quote_id\", JSON.stringify(CombinedQuoteId.toString()));\r\n    console.log(\"✔️ Saved combined_quote_id:\", CombinedQuoteId);\r\n} else {\r\n    console.warn(\"⚠️ Combined ID not found or null. Response:\", res);\r\n}"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{icecash_partner_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{{requestBody}}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Icecash-URL}}/request/20117846",
+					"host": [
+						"{{Icecash-URL}}"
+					],
+					"path": [
+						"request",
+						"20117846"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "TRP63631- Licence Expired",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://test-api.icecash.mobi/request/20117846",
+							"protocol": "https",
+							"host": [
+								"test-api",
+								"icecash",
+								"mobi"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Mon, 20 Oct 2025 13:30:49 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "371"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"9440940\",\n    \"Date\": \"20251020153049\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Result\": 0,\n        \"Message\": \"0 quotes generated. 1 failed\",\n        \"Quotes\": [\n            {\n                \"VRN\": \"TRP63631\",\n                \"CombinedID\": \"\",\n                \"InsuranceID\": \"\",\n                \"LicenceID\": \"\",\n                \"Result\": \"39\",\n                \"Message\": \"ZBC license has expired (2025-04-30). Insurance may not be issued without a valid ZBC license, please take out a ZBC license first.\"\n            }\n        ]\n    }\n}"
+				},
+				{
+					"name": "ADA0010 - Licencing Not Allowed",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://test-api.icecash.mobi/request/20117846",
+							"protocol": "https",
+							"host": [
+								"test-api",
+								"icecash",
+								"mobi"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Mon, 20 Oct 2025 18:29:11 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "335"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"3162551\",\n    \"Date\": \"20251020202913\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Result\": 0,\n        \"Message\": \"0 quotes generated. 1 failed\",\n        \"Quotes\": [\n            {\n                \"VRN\": \"ADA0010\",\n                \"CombinedID\": \"\",\n                \"InsuranceID\": \"\",\n                \"LicenceID\": \"\",\n                \"Result\": 0,\n                \"Message\": \"Licensing is only allowed 2 months prior to licence expiry which is currently on 30 SEPTEMBER 2026.\"\n            }\n        ]\n    }\n}"
+				},
+				{
+					"name": "Invalid Tax Class",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://test-api.icecash.mobi/request/20117846",
+							"protocol": "https",
+							"host": [
+								"test-api",
+								"icecash",
+								"mobi"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Mon, 20 Oct 2025 18:33:33 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "278"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"9544305\",\n    \"Date\": \"20251020203333\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Result\": 0,\n        \"Message\": \"0 quotes generated. 1 failed\",\n        \"Quotes\": [\n            {\n                \"VRN\": \"250507P\",\n                \"CombinedID\": \"\",\n                \"InsuranceID\": \"\",\n                \"LicenceID\": \"\",\n                \"Result\": \"40\",\n                \"Message\": \"Invalid Tax Class for this Vehicle Type\"\n            }\n        ]\n    }\n}"
+				},
+				{
+					"name": "Icecash - Combined Quote",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Icecash-URL}}/request/20117846",
+							"host": [
+								"{{Icecash-URL}}"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Mon, 27 Jul 2026 08:57:06 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "1436"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://www.gstatic.com https://maps.googleapis.com https://maps.gstatic.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://fonts.googleapis.com; img-src 'self' data: blob: https: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' data: blob: cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://fonts.gstatic.com; frame-src * blob:; connect-src 'self' * *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:* https://www.gstatic.com https://fonts.gstatic.com; worker-src blob: 'self' https:; media-src 'self' data: blob:;object-src 'self' data: blob:;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"7590804\",\n    \"Date\": \"20260727105707\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Result\": 1,\n        \"Message\": \"1 quotes generated. 0 failed\",\n        \"Quotes\": [\n            {\n                \"VRN\": \"JAN00028\",\n                \"CombinedID\": 10992,\n                \"LicenceID\": 22297,\n                \"InsuranceID\": 138936,\n                \"Result\": 1,\n                \"Message\": \"Quote generated\",\n                \"Amount\": 2070.6,\n                \"Policy\": {\n                    \"InsuranceType\": \"1\",\n                    \"StartDate\": \"20260727\",\n                    \"EndDate\": \"20261126\",\n                    \"DurationMonths\": \"4\",\n                    \"Amount\": \"35.60\",\n                    \"StampDuty\": \"2.00\",\n                    \"GovernmentLevy\": \"3.60\",\n                    \"CoverAmount\": \"30.00\",\n                    \"PremiumAmount\": \"35.60\",\n                    \"Currency\": \"USD\"\n                },\n                \"Client\": {\n                    \"IDNumber\": \"***DEFGH***\",\n                    \"FirstName\": \"*A\",\n                    \"LastName\": \"*A\",\n                    \"Address1\": \"***ress lin***\",\n                    \"Address2\": \"***ress lin***\",\n                    \"SuburbID\": \"1\",\n                    \"MSISDN\": \"***1234***\",\n                    \"Email\": \"***il@ice.c***\",\n                    \"ClientIDType\": \"1\",\n                    \"Policy_IDNumber\": \"***DEFGH***\",\n                    \"Policy_FirstName\": \"****\",\n                    \"Policy_LastName\": \"**i**\",\n                    \"Policy_MSISDN\": \"***1234***\",\n                    \"Policy_Address1\": \"***ress lin***\",\n                    \"Policy_Address2\": \"***ress lin***\",\n                    \"Policy_EntityType\": \"Personal\",\n                    \"Policy_CompanyName\": \"****\",\n                    \"Policy_BirthDate\": \"**7001**\"\n                },\n                \"Vehicle\": {\n                    \"Make\": \"ADMIRAL\",\n                    \"Model\": \"LY 125 T 15\",\n                    \"TaxClass\": 4,\n                    \"YearManufacture\": \"\",\n                    \"VehicleType\": \"2\",\n                    \"VehicleValue\": \"5000\"\n                },\n                \"Licence\": {\n                    \"LicFrequency\": 3,\n                    \"RadioTVUsage\": \"1\",\n                    \"RadioTVFrequency\": \"1\",\n                    \"NettMass\": 15487,\n                    \"LicExpiryDate\": \"20260531\",\n                    \"TransactionAmt\": \"1800.00\",\n                    \"ArrearsAmt\": \"150.00\",\n                    \"PenaltiesAmt\": \"40.00\",\n                    \"AdministrationAmt\": \"10.00\",\n                    \"TotalLicAmt\": \"2000.00\",\n                    \"RadioTVAmt\": \"0.00\",\n                    \"RadioTVArrearsAmt\": \"0.00\",\n                    \"TotalRadioTVAmt\": \"35.00\",\n                    \"TotalAmount\": \"2035.00\"\n                }\n            }\n        ]\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Icecash - Combined Approve/Reject",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Ensure CryptoJS is available\nconst CryptoJS = require('crypto-js');\nconst btoa = require('btoa');\n\n//Utility Functions\n\nfunction reverseString(str) {\n    return str.split(\"\").reverse().join(\"\");\n}\n\nfunction generateNumericId() {\n    return Math.floor(1000000 + Math.random() * 9000000).toString();\n}\n\nfunction getCurrentDateTime() {\n    const now = new Date();\n    return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;\n}\n\n//Generate MAC using the provided key and requestBody\nfunction generateMAC(key, argumentsJson) {\n\n    const reversedJson = reverseString(argumentsJson);\n    const reversedkey = reverseString(key);\n    const combined = reversedJson + reversedkey;\n\n    // Base64 encode properly using CryptoJS\n    const base64Encoded = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(combined));\n    const sha512Hash = CryptoJS.SHA512(base64Encoded).toString(CryptoJS.enc.Hex);\n\n    const positions = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120];\n    let mac = \"\";\n    positions.forEach(pos => mac += sha512Hash.charAt(pos));\n    return mac.toUpperCase();\n}\n\n// Generate Required Values Dynamically:\nlet partnerKey = JSON.parse(pm.environment.get(\"icecash_partner_key\"));\nlet partnerToken = JSON.parse(pm.environment.get(\"icecash_partner_token\"));\nlet combinedId = JSON.parse(pm.environment.get(\"combined_quote_id\"));\nconst currentDateTime = getCurrentDateTime();//\"20250123093628\"; \nconst partnerReference = generateNumericId(); //\"5800936\";\nlet requestBody =\n{\n    \"Arguments\": {\n        \"Version\": \"2.3\",\n        \"PartnerToken\": partnerToken,\n        \"Date\": currentDateTime,\n        \"PartnerReference\": partnerReference,\n        \"Request\": {\n            \"Function\": \"TPILICUpdate\",\n            \"PaymentMethod\": \"2\",\n            \"Identifier\": \"123456789E1\",\n            \"MSISDN\": \"263711231234\",\n            \"Quotes\": [{\n                \"CombinedID\": combinedId,\n                \"PaymentMethod\": \"1\",//1=cash, 3=ecocash\n                \"Status\": \"1\",//1=approved, 0=rejected\n                \"DeliveryMethod\": \"2\",\n                \"LicenceCert\": \"0\",\n                \"LocationID\": \"1234\"\n            }]\n        }\n    },\n}\n\n// --- Create raw JSON string for MAC ---\nconst argumentsJson = JSON.stringify(requestBody.Arguments);\n\n// --- Generate MAC ---\nconst mac = generateMAC(partnerKey, argumentsJson);\nif (mac) {\n    requestBody.Mode = \"SH\";\n    requestBody.MAC = mac;\n    pm.environment.set(\"MAC\", mac);\n    pm.environment.set(\"requestBody\", JSON.stringify(requestBody));\n    console.log(\"Generated MAC:\", mac);\n    console.log(\"Generated Date:\", currentDateTime);\n    console.log(\"Generated PartnerReference:\", partnerReference);\n} else {\n    console.error(\"MAC generation failed.\");\n}"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{icecash_partner_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{{requestBody}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Icecash-URL}}/request/20117846",
+					"host": [
+						"{{Icecash-URL}}"
+					],
+					"path": [
+						"request",
+						"20117846"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Icecash - Combined Approve/Reject",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Icecash-URL}}/request/20117846",
+							"host": [
+								"{{Icecash-URL}}"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Mon, 27 Jul 2026 09:12:27 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "226"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://www.gstatic.com https://maps.googleapis.com https://maps.gstatic.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://fonts.googleapis.com; img-src 'self' data: blob: https: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' data: blob: cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://fonts.gstatic.com; frame-src * blob:; connect-src 'self' * *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:* https://www.gstatic.com https://fonts.gstatic.com; worker-src blob: 'self' https:; media-src 'self' data: blob:;object-src 'self' data: blob:;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"6379472\",\n    \"Date\": \"20260727111227\",\n    \"Version\": \"2.2\",\n    \"Response\": {\n        \"Result\": 0,\n        \"Payment_ID\": \"\",\n        \"Currency\": \"\",\n        \"Message\": \"22297: DeliveryMethod must be 3 (ALM) to request a LicenceCert. Poll for further details.\"\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Icecash - Combined Confirm/Check Status Copy",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"// Ensure CryptoJS is available\nconst CryptoJS = require('crypto-js');\nconst btoa = require('btoa');\n\n//Utility Functions\n\nfunction reverseString(str) {\n    return str.split(\"\").reverse().join(\"\");\n}\n\nfunction generateNumericId() {\n    return Math.floor(1000000 + Math.random() * 9000000).toString();\n}\n\nfunction getCurrentDateTime() {\n    const now = new Date();\n    return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;\n}\n\n//Generate MAC using the provided key and requestBody\nfunction generateMAC(key, argumentsJson) {\n\n    const reversedJson = reverseString(argumentsJson);\n    const reversedkey = reverseString(key);\n    const combined = reversedJson + reversedkey;\n\n    // Base64 encode properly using CryptoJS\n    const base64Encoded = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(combined));\n    const sha512Hash = CryptoJS.SHA512(base64Encoded).toString(CryptoJS.enc.Hex);\n\n    const positions = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120];\n    let mac = \"\";\n    positions.forEach(pos => mac += sha512Hash.charAt(pos));\n    return mac.toUpperCase();\n}\n\n// Generate Required Values Dynamically:\nlet partnerKey = JSON.parse(pm.environment.get(\"icecash_partner_key\"));\nlet partnerToken = JSON.parse(pm.environment.get(\"icecash_partner_token\"));\nlet combinedId = JSON.parse(pm.environment.get(\"combined_quote_id\"));\nconst currentDateTime = getCurrentDateTime();//\"20250123093628\"; \nconst partnerReference = generateNumericId(); //\"5800936\";\nlet requestBody =\n{\n    \"Arguments\": {\n        \"Version\": \"2.3\",\n        \"PartnerToken\": partnerToken,\n        \"Date\": currentDateTime,\n        \"PartnerReference\": partnerReference,\n        \"Request\": {\n            \"Function\": \"TPILICResult\",\n            \"CombinedID\": \"11057\"\n\n        }\n    }\n}\n\n// --- Create raw JSON string for MAC ---\nconst argumentsJson = JSON.stringify(requestBody.Arguments);\n\n// --- Generate MAC ---\nconst mac = generateMAC(partnerKey, argumentsJson);\nif (mac) {\n    requestBody.Mode = \"SH\";\n    requestBody.MAC = mac;\n    pm.environment.set(\"MAC\", mac);\n    pm.environment.set(\"requestBody\", JSON.stringify(requestBody));\n    console.log(\"Generated MAC:\", mac);\n    console.log(\"Generated Date:\", currentDateTime);\n    console.log(\"Generated PartnerReference:\", partnerReference);\n} else {\n    console.error(\"MAC generation failed.\");\n}"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"const responseJson = pm.response.json();\r\n//var reference = responseJson.Response.PartnerReference;\r\n//pm.environment.set(\"licence_quote_id\",JSON.stringify(reference));"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{icecash_partner_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{{requestBody}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{Icecash-URL}}/request/20117846",
+					"host": [
+						"{{Icecash-URL}}"
+					],
+					"path": [
+						"request",
+						"20117846"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Loaded",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://test-api.icecash.mobi/request/20117846",
+							"protocol": "https",
+							"host": [
+								"test-api",
+								"icecash",
+								"mobi"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Fri, 17 Oct 2025 11:28:41 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "461"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"9347072\",\n    \"Date\": \"20251017132840\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Function\": \"LICResult\",\n        \"Result\": \"1\",\n        \"Message\": \"Licence Retrieved\",\n        \"Radio_ReceiptID\": \"\",\n        \"VRN\": \"ADA0010\",\n        \"Status\": \"Loaded\",\n        \"LoadedBy\": \" Zimnat Lion Insurance\",\n        \"LoadedDate\": \"202510171308\",\n        \"ApprovedBy\": \" \",\n        \"IDNumber\": \"ADA0010\",\n        \"FirstName\": \"Jane\",\n        \"LastName\": \"Smith\",\n        \"Address1\": \"Address line 1\",\n        \"Address2\": \"Address line 2\",\n        \"SuburbID\": 1,\n        \"IssuerCompany\": \"ZIMNAT LION INSURANCE COMPANY\"\n    }\n}"
+				},
+				{
+					"name": "Successful",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://test-api.icecash.mobi/request/20117846",
+							"protocol": "https",
+							"host": [
+								"test-api",
+								"icecash",
+								"mobi"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Fri, 17 Oct 2025 11:32:04 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "778"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"5643541\",\n    \"Date\": \"20251017133203\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Function\": \"LICResult\",\n        \"Result\": \"1\",\n        \"Message\": \"Licence Retrieved\",\n        \"ReceiptID\": \"R000039165\",\n        \"VRN\": \"ADA0010\",\n        \"Status\": \"Approved\",\n        \"LoadedBy\": \" Zimnat Lion Insurance\",\n        \"LoadedDate\": \"202510171308\",\n        \"ApprovedBy\": \" Zimnat Lion Insurance\",\n        \"ApprovedDate\": \"202510171331\",\n        \"IDNumber\": \"ADA0010\",\n        \"FirstName\": \"Jane\",\n        \"LastName\": \"Smith\",\n        \"Address1\": \"Address line 1\",\n        \"Address2\": \"Address line 2\",\n        \"SuburbID\": 1,\n        \"TransactionAmt\": 2025,\n        \"ArrearsAmt\": 0,\n        \"PenaltiesAmt\": 0,\n        \"AdministrationAmt\": 0,\n        \"TotalLicAmt\": 2025,\n        \"RadioTVAmt\": 0,\n        \"RadioTVArrearsAmt\": 0,\n        \"TotalRadioTVAmt\": 0,\n        \"TotalAmount\": 2025,\n        \"TaxClass\": \"1\",\n        \"NettMass\": 2000,\n        \"LicExpiryDate\": \"20260930\",\n        \"RadioTVExpiryDate\": \"20250930\",\n        \"IssuerCompany\": \"ZIMNAT LION INSURANCE COMPANY\"\n    }\n}"
+				},
+				{
+					"name": "TRP63631 - Success",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://test-api.icecash.mobi/request/20117846",
+							"protocol": "https",
+							"host": [
+								"test-api",
+								"icecash",
+								"mobi"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Mon, 20 Oct 2025 13:34:15 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "788"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"7239140\",\n    \"Date\": \"20251020153414\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Function\": \"LICResult\",\n        \"Result\": \"1\",\n        \"Message\": \"Licence Retrieved\",\n        \"ReceiptID\": \"R000039204\",\n        \"VRN\": \"TRP63631\",\n        \"Status\": \"Approved\",\n        \"LoadedBy\": \" Zimnat Lion Insurance\",\n        \"LoadedDate\": \"202510201531\",\n        \"ApprovedBy\": \" Zimnat Lion Insurance\",\n        \"ApprovedDate\": \"202510201533\",\n        \"IDNumber\": \"632119497J49\",\n        \"FirstName\": \"Benjamin\",\n        \"LastName\": \"Tsuro\",\n        \"Address1\": \"Address line 1\",\n        \"Address2\": \"Address line 2\",\n        \"SuburbID\": 1,\n        \"TransactionAmt\": 2025,\n        \"ArrearsAmt\": 0,\n        \"PenaltiesAmt\": 0,\n        \"AdministrationAmt\": 0,\n        \"TotalLicAmt\": 2025,\n        \"RadioTVAmt\": 0,\n        \"RadioTVArrearsAmt\": 0,\n        \"TotalRadioTVAmt\": 0,\n        \"TotalAmount\": 2025,\n        \"TaxClass\": \"1\",\n        \"NettMass\": 2200,\n        \"LicExpiryDate\": \"20260930\",\n        \"RadioTVExpiryDate\": \"20250930\",\n        \"IssuerCompany\": \"ZIMNAT LION INSURANCE COMPANY\"\n    }\n}"
+				},
+				{
+					"name": "Icecash - Licence Single Confirm/Check Status",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{requestBody}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Icecash-URL}}/request/20117846",
+							"host": [
+								"{{Icecash-URL}}"
+							],
+							"path": [
+								"request",
+								"20117846"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "date",
+							"value": "Mon, 02 Feb 2026 11:46:33 GMT"
+						},
+						{
+							"key": "p3p",
+							"value": "CP=\"NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM\""
+						},
+						{
+							"key": "access-control-allow-origin",
+							"value": "*"
+						},
+						{
+							"key": "access-control-allow-headers",
+							"value": "Origin, X-Requested-With, Content-Type, Accept"
+						},
+						{
+							"key": "content-length",
+							"value": "789"
+						},
+						{
+							"key": "content-type",
+							"value": "application/json"
+						},
+						{
+							"key": "strict-transport-security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "content-security-policy",
+							"value": "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net cdn.jsdelivr.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; style-src 'self' 'unsafe-inline' cdnjs.cloudflare.com cdn.datatables.net *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; img-src 'self' data: api.qrserver.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; font-src 'self' cdnjs.cloudflare.com *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com; frame-src *; connect-src 'self' *.icecash.mobi *.zinara.mobi *.zimpost.mobi *.digittal.mobi *.oppwa.com https://localhost:*;"
+						},
+						{
+							"key": "x-frame-options",
+							"value": "SAMEORIGIN"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"PartnerReference\": \"4440885\",\n    \"Date\": \"20260202134633\",\n    \"Version\": \"2.0\",\n    \"Response\": {\n        \"Function\": \"LICResult\",\n        \"Result\": \"1\",\n        \"Message\": \"Licence Retrieved\",\n        \"ReceiptID\": \"R000053416\",\n        \"VRN\": \"ZBT66223\",\n        \"Status\": \"Approved\",\n        \"LoadedBy\": \" Zimnat Lion Insurance\",\n        \"LoadedDate\": \"202602021344\",\n        \"ApprovedBy\": \" Zimnat Lion Insurance\",\n        \"ApprovedDate\": \"202602021345\",\n        \"IDNumber\": \"ABCDEFGHIJ1\",\n        \"FirstName\": \"John\",\n        \"LastName\": \"Smith\",\n        \"Address1\": \"Address line 1\",\n        \"Address2\": \"Address line 2\",\n        \"SuburbID\": 1,\n        \"TransactionAmt\": 5040,\n        \"ArrearsAmt\": 840,\n        \"PenaltiesAmt\": 840,\n        \"AdministrationAmt\": 280,\n        \"TotalLicAmt\": 5040,\n        \"RadioTVAmt\": 0,\n        \"RadioTVArrearsAmt\": 0,\n        \"TotalRadioTVAmt\": 0,\n        \"TotalAmount\": 5040,\n        \"TaxClass\": \"1\",\n        \"NettMass\": 1500,\n        \"LicExpiryDate\": \"20261231\",\n        \"RadioTVExpiryDate\": \"20251031\",\n        \"IssuerCompany\": \"ZIMNAT LION INSURANCE COMPANY\"\n    }\n}"
+				}
+			]
+		}
+	]
+}

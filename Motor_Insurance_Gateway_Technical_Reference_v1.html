@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motor Insurance API Gateway — Technical Reference</title>
+<style>
+:root{--g:#007A38;--gd:#005A28;--gl:#E8F5EE;--gold:#C9A84C;--blue:#1F4E79;--amber:#E07B00;--red:#B42318;--border:#C8DFD0;--muted:#667085;--ink:#1f2937;--bg:#F2F5F2;--code:#1E1E2E;--codefg:#CDD6F4}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:"Segoe UI",Arial,sans-serif;color:var(--ink);font-size:14px;line-height:1.55}
+.topbar{position:sticky;top:0;z-index:5;height:56px;background:var(--gd);color:#fff;display:flex;align-items:center;padding:0 24px;box-shadow:0 2px 12px rgba(0,0,0,.22)}
+.brand{font-weight:800;letter-spacing:-.2px}.sub{opacity:.65;margin-left:14px;font-size:12px}.badge{margin-left:auto;background:rgba(255,255,255,.14);padding:4px 12px;border-radius:999px;font-size:12px}
+.layout{display:grid;grid-template-columns:300px minmax(0,1fr);min-height:calc(100vh - 56px)}
+.sidebar{position:sticky;top:56px;height:calc(100vh - 56px);overflow:auto;background:#fff;border-right:1px solid var(--border);padding:18px 12px}
+.nav-title{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:800;margin:12px 8px 8px}
+.nav a{display:block;padding:7px 10px;border-radius:7px;text-decoration:none;color:#344054;font-size:13px}
+.nav a:hover{background:var(--gl);color:var(--gd)}
+.main{padding:26px;max-width:1240px}
+.hero{background:linear-gradient(135deg,var(--gd),var(--g));color:white;border-radius:14px;padding:26px 28px;margin-bottom:16px}
+.hero h1{margin:0 0 6px;font-size:28px;letter-spacing:-.4px}.hero p{margin:0;color:rgba(255,255,255,.78)}
+.meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}
+.meta{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:10px}
+.meta span{display:block;font-size:11px;opacity:.72}.meta b{font-size:13px}
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;margin:14px 0;padding:18px;box-shadow:0 1px 10px rgba(0,80,40,.06)}
+h2{color:var(--gd);font-size:20px;margin:0 0 8px}h3{color:#243b2f;font-size:16px;margin:18px 0 8px}h4{font-size:14px;margin:14px 0 6px;color:#344054}
+.kicker{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:800;margin-bottom:8px}
+.callout{border-radius:9px;padding:11px 13px;margin:12px 0;border-left:4px solid var(--blue);background:#EBF3FB;color:#1F4E79}
+.warn{border-left-color:var(--amber);background:#FFF8EC;color:#7B4F00}
+.ok{border-left-color:var(--g);background:var(--gl);color:var(--gd)}
+.crit{border-left-color:var(--red);background:#FFF1F0;color:#7A271A}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid #E7EFE9;vertical-align:top}
+th{background:#F8FBF8;color:#344054;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+code{font-family:Consolas,Monaco,monospace;background:#EEF7F0;border:1px solid #D6EBDD;color:#075E2A;padding:1px 4px;border-radius:4px}
+pre{background:var(--code);color:var(--codefg);border-radius:10px;padding:14px;overflow:auto;font-size:12px;line-height:1.55;white-space:pre}
+.method{display:inline-block;font-family:Consolas,monospace;font-weight:800;font-size:11px;padding:2px 7px;border-radius:5px}
+.get{background:#166534;color:#86EFAC}.post{background:#1E3A5F;color:#93C5FD}.patch{background:#5B21B6;color:#DDD6FE}
+.internal{background:#fff7e6;border:1px solid #f5d08a;color:#7B4F00;border-radius:999px;font-size:11px;padding:2px 8px;font-weight:700}
+.public{background:var(--gl);border:1px solid #b7dec4;color:var(--gd);border-radius:999px;font-size:11px;padding:2px 8px;font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.pill{display:inline-block;border:1px solid var(--border);background:#fff;border-radius:999px;padding:3px 9px;margin:2px;font-size:12px;color:#344054}
+.flow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.node{background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:12px;box-shadow:0 1px 6px rgba(0,80,40,.05)}
+.arrow{color:var(--muted);font-weight:800}
+.small{font-size:12px;color:var(--muted)}
+.endpoint{border-left:5px solid var(--g)}
+.scenario-grid{display:grid;grid-template-columns:180px repeat(3,1fr);gap:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:16px 0}
+.sg-header{background:var(--gd);color:#fff;padding:12px 14px;font-weight:800;font-size:12px;text-align:center}
+.sg-rowlabel{background:#F8FBF8;padding:12px 14px;font-weight:700;font-size:13px;border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
+.sg-cell{padding:12px 14px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);text-align:center}
+.sg-cell a{display:inline-block;background:var(--g);color:#fff;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:800;text-decoration:none;margin-bottom:4px}
+.sg-cell a:hover{background:var(--gd)}
+.sg-cell .sc-desc{font-size:11px;color:var(--muted);display:block;margin-top:4px}
+.sg-cell.card-ref a{background:#6B7280}
+.step-list{counter-reset:steps;list-style:none;padding:0;margin:12px 0}
+.step-list li{counter-increment:steps;display:grid;grid-template-columns:28px 1fr;gap:10px;margin-bottom:12px;align-items:start}
+.step-list li::before{content:counter(steps);background:var(--g);color:#fff;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;flex-shrink:0;margin-top:2px}
+.status{display:inline-block;border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700}
+.status-ok{background:var(--gl);color:var(--gd);border:1px solid #b7dec4}
+.status-warn{background:#FFF8EC;color:#7B4F00;border:1px solid #f5d08a}
+.status-crit{background:#FFF1F0;color:#7A271A;border:1px solid #fca5a5}
+.status-blue{background:#EBF3FB;color:#1F4E79;border:1px solid #bfdbfe}
+.chk{color:var(--g);font-weight:700}
+.defect{display:flex;gap:8px;padding:10px 12px;background:#FFF8EC;border:1px solid #f5d08a;border-radius:9px;margin:8px 0;font-size:13px}
+.defect-id{font-family:Consolas,monospace;font-weight:800;color:var(--amber);flex-shrink:0}
+.map td:first-child{font-family:Consolas,monospace;font-size:12px;color:#075E2A}
+.oi{background:#FFF1F0;border:1px solid #fca5a5;color:#7A271A;border-radius:9px;padding:10px 12px;margin:8px 0;font-size:13px;display:flex;gap:8px}
+.oi-id{font-family:Consolas,monospace;font-weight:800;flex-shrink:0}
+.var-chain{background:var(--code);color:var(--codefg);border-radius:10px;padding:14px;font-family:Consolas,monospace;font-size:12px;line-height:1.8}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.sidebar{position:relative;top:0;height:auto}.meta-grid,.grid2,.grid3,.scenario-grid{grid-template-columns:1fr}.main{padding:16px}}
+@media print{.topbar,.sidebar{display:none}.layout{display:block}.main{max-width:100%;padding:0}.card{break-inside:avoid;box-shadow:none}.hero{background:#fff;color:#000;border:1px solid #ccc}.hero p{color:#333}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">Motor Insurance API Gateway</div>
+  <div class="sub">Technical Reference and Orchestration Specification</div>
+  <div class="badge">v1.0 &mdash; ZGI</div>
+</div>
+
+<div class="layout">
+<aside class="sidebar">
+<div class="nav">
+  <div class="nav-title">Contents</div>
+  <a href="#overview">1. Executive Overview</a>
+  <a href="#architecture">2. Target Architecture</a>
+  <a href="#navigator">3. Scenario Navigator</a>
+  <a href="#sequences">4. Sequence Diagrams</a>
+  <a href="#enums">5. Enums and Reference Data</a>
+  <a href="#coverage">6. Coverage Options</a>
+  <a href="#quotes">7. Quote APIs</a>
+  <a href="#payments">8. Payment APIs</a>
+  <a href="#orchestration">9. Post-Payment Orchestration</a>
+  <a href="#policy">10. Policy and Documents</a>
+  <a href="#notifications">11. Notifications</a>
+  <a href="#errors">12. Errors and Retries</a>
+  <a href="#security">13. Security</a>
+  <a href="#limitations">14. Known Limitations</a>
+  <a href="#checklist">15. Go-live Checklist</a>
+  <div class="nav-title">Scenarios</div>
+  <a href="#A1">A1 &mdash; Licence + EcoCash</a>
+  <a href="#A2">A2 &mdash; Licence + Cash</a>
+  <a href="#B1">B1 &mdash; Insurance + EcoCash</a>
+  <a href="#B2">B2 &mdash; Insurance + Cash</a>
+  <a href="#C1">C1 &mdash; Combined + EcoCash</a>
+  <a href="#C2">C2 &mdash; Combined + Cash</a>
+  <a href="#D1">D1 &mdash; Comprehensive + EcoCash</a>
+  <a href="#D2">D2 &mdash; Comprehensive + Cash</a>
+</div>
+</aside>
+
+<main class="main">
+
+<section class="hero">
+  <h1>Motor Insurance API Gateway &mdash; Technical Reference</h1>
+  <p>Developer specification for the Zimnat-controlled gateway that masks IceCash APIs, orchestrates payment-first policy issuance, handles TPILICUpdate and TPILICResult polling, generates receipts and documents, and dispatches notifications across all motor insurance quote paths.</p>
+  <div class="meta-grid">
+    <div class="meta"><span>Gateway base path</span><b>/api/v2/motor</b></div>
+    <div class="meta"><span>Integration partner</span><b>IceCash (ZINARA/ZBC)</b></div>
+    <div class="meta"><span>Policy trigger</span><b>Payment success only</b></div>
+    <div class="meta"><span>Quote paths</span><b>Licence / Insurance / Combined / Comprehensive</b></div>
+  </div>
+</section>
+
+<!-- 1. OVERVIEW -->
+<section id="overview" class="card">
+  <div class="kicker">Purpose</div>
+  <h2>1. Executive Overview</h2>
+  <p>The customer portal, branch screens, mobile apps, and internal systems must call Zimnat Gateway APIs only. The gateway owns IceCash authentication, request transformation, quote session storage, payment orchestration, TPILICUpdate submission, TPILICResult polling, document generation, and notifications.</p>
+  <div class="callout ok"><b>Primary rule:</b> IceCash is an implementation detail behind the gateway. Consuming channels must never call IceCash directly or store IceCash credentials. The LocationID, InsuranceCompanyID, and IceCash tokens are server-side only.</div>
+  <div class="flow">
+    <div class="node">Customer / Branch UI</div><div class="arrow">&rarr;</div>
+    <div class="node">Zimnat Gateway</div><div class="arrow">&rarr;</div>
+    <div class="node">Payment Service</div><div class="arrow">&rarr;</div>
+    <div class="node">IceCash (ZINARA)</div><div class="arrow">&rarr;</div>
+    <div class="node">Docs / Notifications</div>
+  </div>
+  <h3>Four quote paths</h3>
+  <table>
+    <tr><th>Path</th><th>Endpoint</th><th>IceCash call</th><th>Portal available</th></tr>
+    <tr><td>Licence Only</td><td><code>/api/v2/motor/quote/licence</code></td><td>TPILICQuote &rarr; TPILICUpdate</td><td>No &mdash; backend only</td></tr>
+    <tr><td>Insurance Only</td><td><code>/api/v2/motor/quote/insurance</code></td><td>TPILICQuote &rarr; TPILICUpdate</td><td>Yes (RTA, FTP)</td></tr>
+    <tr><td>Combined</td><td><code>/api/v2/motor/quote/combined</code></td><td>TPILICQuote &rarr; TPILICUpdate</td><td>Yes (RTA+Licence, RTA+Licence+Radio)</td></tr>
+    <tr><td>Comprehensive</td><td><code>/api/v2/motor/comprehensive/quote</code></td><td>Local rating + TPILICQuote &rarr; TPILICUpdate</td><td>Yes (COMP)</td></tr>
+  </table>
+  <h3>Bundle inference rule</h3>
+  <p>The gateway infers the bundle from field presence. There are no explicit bundle flags.</p>
+  <table>
+    <tr><th>Fields present in request</th><th>Bundle inferred</th></tr>
+    <tr><td>No <code>licFrequency</code>, no <code>radioTvFrequency</code></td><td>Insurance only</td></tr>
+    <tr><td><code>licFrequency</code> present, no <code>radioTvFrequency</code></td><td>Insurance + ZINARA licence</td></tr>
+    <tr><td><code>licFrequency</code> + <code>radioTvFrequency</code> both present</td><td>Insurance + ZINARA licence + ZBC radio</td></tr>
+  </table>
+  <div class="callout warn"><b>Quote amendment rule:</b> There is no pre-payment quote update endpoint. If a customer needs to change any detail before paying, they must generate a new quote. The <code>/update</code> endpoint is reserved exclusively for post-payment IceCash approval.</div>
+</section>
+
+<!-- 2. ARCHITECTURE -->
+<section id="architecture" class="card">
+  <div class="kicker">Architecture</div>
+  <h2>2. Target Architecture</h2>
+  <div class="grid2">
+    <div>
+      <h3>Public API layer</h3>
+      <p>Business-friendly Zimnat contracts consumed by portal, branch, and mobile. No IceCash concepts exposed.</p>
+      <span class="pill">JWT validation</span><span class="pill">Stable product models</span><span class="pill">No IceCash tokens</span><span class="pill">No LocationID</span>
+    </div>
+    <div>
+      <h3>Private orchestration layer</h3>
+      <p>IceCash token management, quote session store, payment success handling, TPILICUpdate, TPILICResult polling, document generation, notification dispatch.</p>
+      <span class="pill">Token cache</span><span class="pill">Quote session store</span><span class="pill">Idempotency</span><span class="pill">Ops alert queue</span>
+    </div>
+  </div>
+<pre>Portal / Branch UI
+  &rarr; calls /api/v2/motor/quote/*          (public)
+  &rarr; calls /api/v1/payments/ecocash/*     (public, shared)
+  &rarr; calls /api/v1/notify/send            (public, shared)
+
+Gateway / Orchestrator
+  &rarr; calls IceCash TPILICQuote            (internal, quote stage)
+  &rarr; calls IceCash TPILICUpdate           (internal, post-payment)
+  &rarr; calls IceCash TPILICResult           (internal, polling)
+  &rarr; calls document generation service   (internal)
+  &rarr; calls notification service          (internal)
+
+IceCash constants (server-side only):
+  InsuranceCompanyID : 24
+  PaymentMethod      : 3  (EcoCash)
+  DeliveryMethod     : 2  (OFFICE COLLECTION)
+  LicenceCert        : 0
+  LocationID         : [OI-001 &mdash; environment variable]</pre>
+</section>
+
+<!-- 3. SCENARIO NAVIGATOR -->
+<section id="navigator" class="card">
+  <div class="kicker">Scenario Navigator</div>
+  <h2>3. Choose Your Scenario</h2>
+  <p>Select your quote path and payment method. Each cell links directly to the full end-to-end sequence for that scenario. Card Swipe orchestration is identical to Cash &mdash; those cells reference the Cash sequence with the field delta noted.</p>
+  <div class="scenario-grid">
+    <div class="sg-header" style="background:#243b2f">Quote Path</div>
+    <div class="sg-header">EcoCash (online)</div>
+    <div class="sg-header">Cash (branch)</div>
+    <div class="sg-header">Card Swipe (branch)</div>
+
+    <div class="sg-rowlabel">Licence Only<br><span style="font-size:11px;color:var(--muted);font-weight:400">ZINARA + ZBC only<br>Not portal-facing</span></div>
+    <div class="sg-cell"><a href="#A1">A1</a><span class="sc-desc">Licence + EcoCash</span></div>
+    <div class="sg-cell"><a href="#A2">A2</a><span class="sc-desc">Licence + Cash</span></div>
+    <div class="sg-cell card-ref"><a href="#A2">A3 &rarr; A2</a><span class="sc-desc">Same as A2<br>paymentSource: CARD_SWIPE</span></div>
+
+    <div class="sg-rowlabel">Insurance Only<br><span style="font-size:11px;color:var(--muted);font-weight:400">RTA or FTP<br>Portal-facing</span></div>
+    <div class="sg-cell"><a href="#B1">B1</a><span class="sc-desc">Insurance + EcoCash</span></div>
+    <div class="sg-cell"><a href="#B2">B2</a><span class="sc-desc">Insurance + Cash</span></div>
+    <div class="sg-cell card-ref"><a href="#B2">B3 &rarr; B2</a><span class="sc-desc">Same as B2<br>paymentSource: CARD_SWIPE</span></div>
+
+    <div class="sg-rowlabel">Combined<br><span style="font-size:11px;color:var(--muted);font-weight:400">RTA + Licence (+ Radio)<br>Portal-facing</span></div>
+    <div class="sg-cell"><a href="#C1">C1</a><span class="sc-desc">Combined + EcoCash</span></div>
+    <div class="sg-cell"><a href="#C2">C2</a><span class="sc-desc">Combined + Cash</span></div>
+    <div class="sg-cell card-ref"><a href="#C2">C3 &rarr; C2</a><span class="sc-desc">Same as C2<br>paymentSource: CARD_SWIPE</span></div>
+
+    <div class="sg-rowlabel">Comprehensive<br><span style="font-size:11px;color:var(--muted);font-weight:400">COMP &mdash; locally rated<br>Portal-facing</span></div>
+    <div class="sg-cell"><a href="#D1">D1</a><span class="sc-desc">Comprehensive + EcoCash</span></div>
+    <div class="sg-cell"><a href="#D2">D2</a><span class="sc-desc">Comprehensive + Cash</span></div>
+    <div class="sg-cell card-ref"><a href="#D2">D3 &rarr; D2</a><span class="sc-desc">Same as D2<br>paymentSource: CARD_SWIPE</span></div>
+  </div>
+</section>
+
+<!-- 4. SEQUENCE DIAGRAMS -->
+<section id="sequences" class="card">
+  <div class="kicker">Sequence Diagrams</div>
+  <h2>4. End-to-End Sequence Diagrams</h2>
+  <p>Each sequence is self-contained. <span class="public">PUBLIC</span> steps are called by the portal or branch UI. <span class="internal">INTERNAL</span> steps are gateway-to-IceCash only and never called by consuming channels directly.</p>
+
+  <!-- A1 -->
+  <h3 id="A1">Scenario A1 &mdash; Licence Only + EcoCash</h3>
+  <span class="public">Licence path</span> &nbsp; <span class="pill">ZINARA licence + ZBC radio</span> &nbsp; <span class="pill">EcoCash USSD push</span>
+<pre>Customer UI              Gateway                    EcoCash              IceCash (ZINARA)         Docs / Notify
+    |                       |                           |                      |                       |
+    | POST /quote/licence   |                           |                      |                       |
+    |----------------------&gt;| INTERNAL: TPILICQuote    |                      |                       |
+    |                       |---------------------------------------------&gt;  |                       |
+    |                       |  Returns: referenceId, licenseFee,              |                       |
+    |                       |           arrearsAmt, penaltiesAmt,             |                       |
+    |                       |           licenceExpiryDate, radioFee           |                       |
+    |&lt;----------------------| 200 {quotes[0]: referenceId, totalAmount}      |                       |
+    |                       |                           |                      |                       |
+    | POST /payments/       |                           |                      |                       |
+    |   ecocash/initiate    |                           |                      |                       |
+    |----------------------&gt;|---------------------------&gt;|                      |                       |
+    |&lt;----------------------| {status: PENDING}         |                      |                       |
+    |                       |                           |                      |                       |
+    | GET /payments/        |                           |                      |                       |
+    |   ecocash/status/     |                           |                      |                       |
+    |   quote/{quoteId}     |---------------------------&gt;|                      |                       |
+    |&lt;----------------------| {paymentStatus: PENDING}  |                      |                       |
+    |                       |&lt;--------------------------| EcoCash SUCCESS callback                     |
+    |                       |                           |                      |                       |
+    |                       | INTERNAL: POST /quote/{quoteId}/update           |                       |
+    |                       |   (TPILICUpdate)          |                      |                       |
+    |                       |---------------------------------------------&gt;  |                       |
+    |                       |  PaymentMethod:3, DeliveryMethod:2,             |                       |
+    |                       |  LicenceCert:0, LocationID:[OI-001],            |                       |
+    |                       |  InsuranceCompanyID:24                          |                       |
+    |                       |                           |                      |                       |
+    |                       | INTERNAL: Poll TPILICResult (max 5 x 5s)        |                       |
+    |                       |---------------------------------------------&gt;  |                       |
+    |                       |&lt;---------------------------------------------   |                       |
+    |                       |  policyNumber, licenceReceiptId,                |                       |
+    |                       |  confirmedStartDate, confirmedEndDate           |                       |
+    |                       |                           |       INTERNAL: Generate receipt + documents |
+    |                       |-------------------------------------------------------------&gt;          |
+    |                       |       INTERNAL: Dispatch email + SMS notifications               |       |
+    |                       |-------------------------------------------------------------&gt;          |
+    |                       |                           |                      |                       |
+    | GET /payments/        |                           |                      |                       |
+    |   ecocash/status/     |                           |                      |                       |
+    |   quote/{quoteId}     |---------------------------&gt;|                      |                       |
+    |&lt;----------------------| {policyStatus: ACTIVE,    |                      |                       |
+    |                       |  digitalPolicyNumber,     |                      |                       |
+    |                       |  licenceReceiptId, docs}  |                      |                       |</pre>
+
+  <!-- A2 -->
+  <h3 id="A2">Scenario A2 &mdash; Licence Only + Cash &nbsp; <span style="font-size:12px;color:var(--muted);font-weight:400">(A3: identical, paymentSource: CARD_SWIPE, add terminalId + approvalCode)</span></h3>
+  <span class="public">Licence path</span> &nbsp; <span class="pill">Branch assisted sale</span> &nbsp; <span class="pill">Cash or Card Swipe</span>
+<pre>Branch Staff UI          Gateway                    IceCash (ZINARA)         Docs / Notify
+    |                       |                              |                       |
+    | POST /quote/licence   |                              |                       |
+    |----------------------&gt;| INTERNAL: TPILICQuote       |                       |
+    |                       |-----------------------------&gt;|                       |
+    |&lt;----------------------| {quotes[0]: referenceId, totalAmount}               |
+    |                       |                              |                       |
+    | POST /motor/          |                              |                       |
+    |   payments/confirm    |                              |                       |
+    |   {paymentSource:CASH}|                              |                       |
+    |----------------------&gt;| Validate amount + reference |                       |
+    |                       |                              |                       |
+    |                       | INTERNAL: POST /quote/{quoteId}/update               |
+    |                       |   (TPILICUpdate)             |                       |
+    |                       |-----------------------------&gt;|                       |
+    |                       | INTERNAL: Poll TPILICResult  |                       |
+    |                       |-----------------------------&gt;|                       |
+    |                       |&lt;-----------------------------                        |
+    |                       |   policyNumber, licenceReceiptId                    |
+    |                       |              INTERNAL: Generate receipt + documents  |
+    |                       |-----------------------------------------------------&gt;|
+    |                       |              INTERNAL: Dispatch notifications        |
+    |                       |-----------------------------------------------------&gt;|
+    |&lt;----------------------| {success: true, digitalPolicyNumber, licenceReceiptId}|</pre>
+
+  <!-- B1 -->
+  <h3 id="B1">Scenario B1 &mdash; Insurance Only + EcoCash</h3>
+  <span class="public">Insurance path</span> &nbsp; <span class="pill">RTA or FTP</span> &nbsp; <span class="pill">EcoCash USSD push</span>
+<pre>Customer UI              Gateway                    EcoCash              IceCash               Docs / Notify
+    |                       |                           |                      |                       |
+    | POST /quote/insurance |                           |                      |                       |
+    |----------------------&gt;| INTERNAL: TPILICQuote    |                      |                       |
+    |                       |---------------------------------------------&gt;  |                       |
+    |                       |  Returns: referenceId, insurancePremium,        |                       |
+    |                       |           stampDuty, governmentLevy             |                       |
+    |                       |  vehicle: make, model from VRN lookup           |                       |
+    |&lt;----------------------| 200 {quotes[0]: referenceId,                    |                       |
+    |                       |      status:pending, totalAmount}               |                       |
+    |                       |                           |                      |                       |
+    | POST /payments/ecocash/initiate                   |                      |                       |
+    |  {transactionReference: quoteId,                  |                      |                       |
+    |   productType: MOTOR_INSURANCE,                   |                      |                       |
+    |   amount: totalAmount}                            |                      |                       |
+    |----------------------&gt;|---------------------------&gt;|                      |                       |
+    |&lt;----------------------| {status: PENDING}         |                      |                       |
+    |                       |                           |                      |                       |
+    | GET /ecocash/status/quote/{quoteId} [poll 5s]     |                      |                       |
+    |----------------------&gt;|---------------------------&gt;|                      |                       |
+    |&lt;----------------------| {paymentStatus: PENDING}  |                      |                       |
+    |                       |&lt;--------------------------| EcoCash SUCCESS callback                     |
+    |                       |                           |                      |                       |
+    |                       | INTERNAL: POST /quote/{quoteId}/update (approval)|                       |
+    |                       |   TPILICUpdate:                                 |                       |
+    |                       |   PaymentMethod:3, DeliveryMethod:2,            |                       |
+    |                       |   LicenceCert:0, LocationID:[OI-001],           |                       |
+    |                       |   InsuranceCompanyID:24                         |                       |
+    |                       |---------------------------------------------&gt;  |                       |
+    |                       | INTERNAL: Poll TPILICResult (max 5 x 5s)        |                       |
+    |                       |---------------------------------------------&gt;  |                       |
+    |                       |&lt;---------------------------------------------   |                       |
+    |                       |  policyNumber, confirmedStartDate, endDate      |                       |
+    |                       |              INTERNAL: Generate cover note + schedule + receipt          |
+    |                       |-------------------------------------------------------------&gt;          |
+    |                       |              INTERNAL: Email (cover note, schedule, receipt)             |
+    |                       |              INTERNAL: SMS (cover note link)            |               |
+    |                       |-------------------------------------------------------------&gt;          |
+    | GET /ecocash/status/quote/{quoteId}               |                      |                       |
+    |&lt;----------------------| {paymentStatus: SUCCESS,  |                      |                       |
+    |                       |  policyStatus: ACTIVE,    |                      |                       |
+    |                       |  digitalPolicyNumber,     |                      |                       |
+    |                       |  documents: {coverNote,   |                      |                       |
+    |                       |    schedule, receipt}}    |                      |                       |</pre>
+
+  <!-- B2 -->
+  <h3 id="B2">Scenario B2 &mdash; Insurance Only + Cash &nbsp; <span style="font-size:12px;color:var(--muted);font-weight:400">(B3: identical, paymentSource: CARD_SWIPE, add terminalId + approvalCode)</span></h3>
+  <span class="public">Insurance path</span> &nbsp; <span class="pill">Branch assisted sale</span>
+<pre>Branch Staff UI          Gateway                    IceCash               Docs / Notify
+    |                       |                              |                       |
+    | POST /quote/insurance |                              |                       |
+    |----------------------&gt;| INTERNAL: TPILICQuote       |                       |
+    |                       |-----------------------------&gt;|                       |
+    |&lt;----------------------| {quotes[0]: referenceId, insurancePremium, totalAmount}|
+    |                       |                              |                       |
+    | POST /motor/payments/confirm                         |                       |
+    |  {quoteId, paymentSource:CASH, amount, cashierUserId, branchCode}            |
+    |----------------------&gt;| Validate + record payment   |                       |
+    |                       |                              |                       |
+    |                       | INTERNAL: POST /quote/{quoteId}/update (TPILICUpdate)|
+    |                       |-----------------------------&gt;|                       |
+    |                       | INTERNAL: Poll TPILICResult  |                       |
+    |                       |-----------------------------&gt;|                       |
+    |                       |&lt;-----------------------------                        |
+    |                       |   policyNumber, confirmedStartDate                  |
+    |                       |              INTERNAL: Generate documents            |
+    |                       |-----------------------------------------------------&gt;|
+    |                       |              INTERNAL: Notify                        |
+    |                       |-----------------------------------------------------&gt;|
+    |&lt;----------------------| {success: true, digitalPolicyNumber, docs}           |</pre>
+
+  <!-- C1 -->
+  <h3 id="C1">Scenario C1 &mdash; Combined + EcoCash</h3>
+  <span class="public">Combined path</span> &nbsp; <span class="pill">Insurance + ZINARA licence (+ Radio)</span> &nbsp; <span class="pill">EcoCash</span>
+<pre>Customer UI              Gateway                    EcoCash              IceCash               Docs / Notify
+    |                       |                           |                      |                       |
+    | POST /quote/combined  |                           |                      |                       |
+    |  {licFrequency, radioTvUsage, radioTvFrequency}  |                      |                       |
+    |----------------------&gt;| INTERNAL: TPILICQuote    |                      |                       |
+    |                       |---------------------------------------------&gt;  |                       |
+    |                       |  Returns: referenceId, insurancePremium,        |                       |
+    |                       |           licenseFee, radioFee,                 |                       |
+    |                       |           arrearsAmt, penaltiesAmt,             |                       |
+    |                       |           licenceExpiryDate                     |                       |
+    |                       |  grandTotal = insurancePremium + totalAmount    |                       |
+    |&lt;----------------------| 200 {quotes[0]: referenceId, status:success,    |                       |
+    |                       |      insurancePremium, licenseFee, radioFee,    |                       |
+    |                       |      policy:{arrearsAmt, penaltiesAmt,          |                       |
+    |                       |        licenseExpiryDate}}                      |                       |
+    |                       |                           |                      |                       |
+    | [Portal surfaces amber arrears notice if arrearsAmt &gt; 0]               |                       |
+    |                       |                           |                      |                       |
+    | POST /payments/ecocash/initiate                   |                      |                       |
+    |  {amount: grandTotal, productType: MOTOR_INSURANCE}                     |                       |
+    |----------------------&gt;|---------------------------&gt;|                      |                       |
+    |&lt;----------------------| {status: PENDING}         |                      |                       |
+    | [poll]                |&lt;--------------------------| EcoCash SUCCESS callback                     |
+    |                       |                           |                      |                       |
+    |                       | INTERNAL: POST /quote/{quoteId}/update (TPILICUpdate)                   |
+    |                       |---------------------------------------------&gt;  |                       |
+    |                       | INTERNAL: Poll TPILICResult                     |                       |
+    |                       |&lt;---------------------------------------------   |                       |
+    |                       |  policyNumber, licenceReceiptId                 |                       |
+    |                       |              INTERNAL: Cover note + schedule + ZINARA receipt            |
+    |                       |-------------------------------------------------------------&gt;          |
+    |                       |              INTERNAL: Email + SMS (incl. licenceReceiptId)             |
+    |                       |-------------------------------------------------------------&gt;          |
+    | GET /ecocash/status/quote/{quoteId}               |                      |                       |
+    |&lt;----------------------| {policyStatus: ACTIVE,    |                      |                       |
+    |                       |  digitalPolicyNumber,     |                      |                       |
+    |                       |  licenceReceiptId,        |                      |                       |
+    |                       |  documents: {coverNote,   |                      |                       |
+    |                       |    schedule, receipt}}    |                      |                       |</pre>
+
+  <!-- C2 -->
+  <h3 id="C2">Scenario C2 &mdash; Combined + Cash &nbsp; <span style="font-size:12px;color:var(--muted);font-weight:400">(C3: identical, paymentSource: CARD_SWIPE)</span></h3>
+<pre>Branch Staff UI          Gateway                    IceCash               Docs / Notify
+    | POST /quote/combined  |                              |                       |
+    |----------------------&gt;| INTERNAL: TPILICQuote       |                       |
+    |                       |-----------------------------&gt;|                       |
+    |&lt;----------------------| {referenceId, insurancePremium, licenseFee, radioFee, grandTotal}       |
+    |                       |                              |                       |
+    | POST /motor/payments/confirm {paymentSource:CASH, amount:grandTotal}         |
+    |----------------------&gt;| Validate + record payment   |                       |
+    |                       | INTERNAL: TPILICUpdate      |                       |
+    |                       |-----------------------------&gt;|                       |
+    |                       | INTERNAL: TPILICResult poll  |                       |
+    |                       |&lt;-----------------------------                        |
+    |                       |   policyNumber, licenceReceiptId                    |
+    |                       |              INTERNAL: Docs + Notify                 |
+    |                       |-----------------------------------------------------&gt;|
+    |&lt;----------------------| {success: true, digitalPolicyNumber, licenceReceiptId, docs}            |</pre>
+
+  <!-- D1 -->
+  <h3 id="D1">Scenario D1 &mdash; Comprehensive + EcoCash</h3>
+  <span class="public">Comprehensive path</span> &nbsp; <span class="pill">Local rating + IceCash</span> &nbsp; <span class="pill">Merged response</span>
+<pre>Customer UI              Gateway (local rating)     EcoCash              IceCash               Docs / Notify
+    |                       |                           |                      |                       |
+    | POST /comprehensive/quote                         |                      |                       |
+    |  {vehicleValue, durationMonths,                   |                      |                       |
+    |   licFrequency, radioTvUsage, radioTvFrequency}  |                      |                       |
+    |----------------------&gt;|                           |                      |                       |
+    |                       | LOCAL RATING ENGINE:      |                      |                       |
+    |                       |  basePremium = 5% x vehicleValue x (dur/12)     |                       |
+    |                       |  stampDuty = 5% x basePremium                   |                       |
+    |                       |  govtLevy = 12% x RTAbaseline x (dur/12)        |                       |
+    |                       |  totalInsuranceAmount = sum of above            |                       |
+    |                       |                           |                      |                       |
+    |                       | INTERNAL: TPILICQuote (insuranceType:1 RTA)     |                       |
+    |                       |---------------------------------------------&gt;  |                       |
+    |                       |  Returns: IceCash vehicle details,              |                       |
+    |                       |           licenseFee, radioFee,                 |                       |
+    |                       |           arrearsAmt, penaltiesAmt              |                       |
+    |                       |                           |                      |                       |
+    |                       | MERGE: local premiumBreakdown + icecash{}        |                       |
+    |                       |  totals.grandTotal =                            |                       |
+    |                       |    totalInsuranceAmount + licenseFee + radioFee |                       |
+    |                       |                           |                      |                       |
+    |&lt;----------------------| 200 {referenceId: CMP-xxx,|                      |                       |
+    |                       |  premiumBreakdown: {...}, |                      |                       |
+    |                       |  icecash: {vehicle, licence},                   |                       |
+    |                       |  totals: {grandTotal},    |                      |                       |
+    |                       |  riskAssessment: {...}}   |                      |                       |
+    |                       |                           |                      |                       |
+    | [Portal surfaces amber notice if arrearsAmt &gt; 0] |                      |                       |
+    |                       |                           |                      |                       |
+    | POST /payments/ecocash/initiate                   |                      |                       |
+    |  {amount: totals.grandTotal}                      |                      |                       |
+    |----------------------&gt;|---------------------------&gt;|                      |                       |
+    |&lt;----------------------| {status: PENDING}         |                      |                       |
+    | [poll]                |&lt;--------------------------| EcoCash SUCCESS callback                     |
+    |                       |                           |                      |                       |
+    |                       | INTERNAL: POST /comprehensive/quote/{quoteId}/update (TPILICUpdate)     |
+    |                       |---------------------------------------------&gt;  |                       |
+    |                       | INTERNAL: Poll TPILICResult (max 5 x 5s)        |                       |
+    |                       |&lt;---------------------------------------------   |                       |
+    |                       |   policyNumber, licenceReceiptId,               |                       |
+    |                       |   confirmedStartDate, confirmedEndDate          |                       |
+    |                       |              INTERNAL: Cover note (incl. IceCash policyNumber)          |
+    |                       |              INTERNAL: Policy schedule                                  |
+    |                       |              INTERNAL: ZINARA receipt                                   |
+    |                       |-------------------------------------------------------------&gt;          |
+    |                       |              INTERNAL: Email + SMS notifications                        |
+    |                       |-------------------------------------------------------------&gt;          |
+    | GET /ecocash/status/quote/{quoteId}               |                      |                       |
+    |&lt;----------------------| {policyStatus: ACTIVE,    |                      |                       |
+    |                       |  digitalPolicyNumber,     |                      |                       |
+    |                       |  licenceReceiptId,        |                      |                       |
+    |                       |  documents: {coverNote,   |                      |                       |
+    |                       |    schedule, receipt}}    |                      |                       |</pre>
+
+  <!-- D2 -->
+  <h3 id="D2">Scenario D2 &mdash; Comprehensive + Cash &nbsp; <span style="font-size:12px;color:var(--muted);font-weight:400">(D3: identical, paymentSource: CARD_SWIPE)</span></h3>
+<pre>Branch Staff UI          Gateway                    IceCash               Docs / Notify
+    | POST /comprehensive/quote                            |                       |
+    |----------------------&gt;| Local rating + TPILICQuote  |                       |
+    |                       |-----------------------------&gt;|                       |
+    |&lt;----------------------| Merged response (premiumBreakdown + icecash + totals)|
+    |                       |                              |                       |
+    | POST /motor/payments/confirm {paymentSource:CASH, amount:grandTotal}         |
+    |----------------------&gt;| Validate + record payment   |                       |
+    |                       | INTERNAL: TPILICUpdate      |                       |
+    |                       |-----------------------------&gt;|                       |
+    |                       | INTERNAL: TPILICResult poll  |                       |
+    |                       |&lt;-----------------------------                        |
+    |                       |   policyNumber, licenceReceiptId                    |
+    |                       |              INTERNAL: Documents + Notifications     |
+    |                       |-----------------------------------------------------&gt;|
+    |&lt;----------------------| {success:true, digitalPolicyNumber, licenceReceiptId, docs}             |</pre>
+</section>
+
+<!-- 5. ENUMS -->
+<section id="enums" class="card endpoint">
+  <div class="kicker">Reference Data</div>
+  <h2>5. Enums and Reference Data</h2>
+  <h3><span class="method get">GET</span> <code>/api/v1/enums</code> &nbsp; <span class="public">PUBLIC</span></h3>
+  <p>Returns all IceCash reference lookup tables. Call once at startup and cache. Used to populate dropdowns, validate codes, and derive IceCash field values at quote time.</p>
+  <table>
+    <tr><th>Key field</th><th>Used for</th><th>Key codes</th></tr>
+    <tr><td><code>vehicleTypes</code></td><td>VehicleType dropdown, Mappings (B)</td><td>1&ndash;37 (all codes)</td></tr>
+    <tr><td><code>insuranceTypes</code></td><td>Cover type mapping</td><td>1=RTA, 2=FTP, 3=FTPF, 4=FTPFT(COMP)</td></tr>
+    <tr><td><code>paymentMethods</code></td><td>TPILICUpdate PaymentMethod</td><td>1=Cash, 3=EcoCash, 7=Card</td></tr>
+    <tr><td><code>deliveryMethods</code></td><td>TPILICUpdate DeliveryMethod</td><td>2=OFFICE COLLECTION (portal default)</td></tr>
+    <tr><td><code>radioTvUsage</code></td><td>RadioTVUsage on combined/comprehensive</td><td>1=Private, 2=Company, 3=TV fitted</td></tr>
+    <tr><td><code>frequencies</code></td><td>LicFrequency &rarr; months mapping</td><td>code 1=4mo, 2=6mo, 3=12mo, 6=8mo</td></tr>
+    <tr><td><code>insuranceCompanies</code></td><td>InsuranceCompanyID confirmation</td><td>24 = ZIMNAT LION INSURANCE CO.</td></tr>
+    <tr><td><code>taxClasses</code></td><td>Reference only &mdash; not required on quote body</td><td>57 classes across 37 vehicle types</td></tr>
+    <tr><td><code>suburbsTowns</code></td><td>suburbID in owner/policyHolder</td><td>384 entries &mdash; 28=Borrowdale Harare</td></tr>
+  </table>
+  <div class="callout warn"><b>Known defect:</b> vehicleType codes 2, 3, and 4 return <code>use: "Private Use"</code> instead of their correct values. Portal must use its own VehicleType mapping table and must not rely on the <code>use</code> field from this endpoint.</div>
+  <h3>IceCash constants (never from enums &mdash; server-side config only)</h3>
+  <table>
+    <tr><th>Constant</th><th>Value</th><th>Source</th></tr>
+    <tr><td>InsuranceCompanyID</td><td>24</td><td>Appendix &mdash; Insurance Company IDs</td></tr>
+    <tr><td>PaymentMethod (EcoCash)</td><td>3</td><td>Appendix a.1</td></tr>
+    <tr><td>DeliveryMethod</td><td>2 (OFFICE COLLECTION)</td><td>Appendix a.3</td></tr>
+    <tr><td>LicenceCert</td><td>0 (no IceCash PDF)</td><td>Design decision</td></tr>
+    <tr><td>LocationID</td><td>[OI-001] &mdash; env variable</td><td>ZINARA-assigned, env-specific</td></tr>
+  </table>
+</section>
+
+<!-- 6. COVERAGE OPTIONS -->
+<section id="coverage" class="card endpoint">
+  <div class="kicker">Configuration</div>
+  <h2>6. Coverage Options</h2>
+  <h3><span class="method get">GET</span> <code>/api/v2/motor/comprehensive/coverage-options</code> &nbsp; <span class="public">PUBLIC</span></h3>
+  <p>Returns all product configuration required to render the portal UI. Call at session start and cache for the session.</p>
+  <div class="callout crit"><b>KD-001 BLOCKING:</b> Current response has <code>stampDutyRate: 0.03</code> and <code>governmentLevyRate: 0.05</code> &mdash; both are wrong and swapped. Correct values: stampDutyRate: 0.05 (5%), governmentLevyRate: 0.12 (12%). Do not use current response for premium calculations until fixed.</div>
+  <h4>Key sections in the corrected response</h4>
+  <table>
+    <tr><th>Section</th><th>Purpose</th></tr>
+    <tr><td><code>insuranceTypes[]</code></td><td>Array of 3 offered types. Each carries <code>pricingType</code> so portal knows whether to collect declaredValue.</td></tr>
+    <tr><td><code>vehicleTypes{}</code></td><td>All 37 IceCash codes. STANDARD scheme (codes 1,6,7,19) carry per-cover-type rates. NON_STANDARD carry <code>rates:null</code> &mdash; IceCash prices these.</td></tr>
+    <tr><td><code>allowedDurations[]</code></td><td>[4,5,6,7,8,9,10,11,12] &mdash; all durations including 8 months.</td></tr>
+    <tr><td><code>licenceFrequencyCodes{}</code></td><td>Maps duration months to IceCash Appendix c.1 LicFrequency codes.</td></tr>
+    <tr><td><code>bundleOptions[]</code></td><td>Three bundle options: INSURANCE_ONLY, INSURANCE_LICENCE, INSURANCE_LICENCE_RADIO.</td></tr>
+    <tr><td><code>radioTVUsageCodes{}</code></td><td>Codes 1/2/3 with derivation rule. Private VehicleTypes (1-7,19-21) &rarr; 1. Commercial &rarr; 2. TV toggle &rarr; 3.</td></tr>
+    <tr><td><code>optionalBenefits{}</code></td><td>All flat_annual. windscreen $35, accessories $50, excessBuyDown $80, carHire $120, roadsideAssistance $40.</td></tr>
+    <tr><td><code>paymentMethods[]</code></td><td>All IceCash payment methods with <code>customerFacing</code> flag. Filter by <code>customerFacing:true</code> for UI.</td></tr>
+    <tr><td><code>deliveryMethods[]</code></td><td>All delivery methods including EMAIL(3) and SMS(4) confirmed from enums.</td></tr>
+    <tr><td><code>statutoryCharges{}</code></td><td>stampDutyRate:0.05, governmentLevyRate:0.12 (corrected).</td></tr>
+  </table>
+</section>
+
+<!-- 7. QUOTE APIs -->
+<section id="quotes" class="card endpoint">
+  <div class="kicker">Quote APIs</div>
+  <h2>7. Quote APIs</h2>
+
+  <h3>7.1 <span class="method post">POST</span> <code>/api/v2/motor/quote/licence</code> &nbsp; <span class="internal">INTERNAL / TESTING</span></h3>
+  <p>ZINARA licence and ZBC radio only. Not portal-facing. Available for direct testing and backend automation.</p>
+<pre>// Request
+{
+  "externalReference": "{{$randomBankAccount}}",
+  "customerReference": "{{masterId}}",
+  "currency": "USD",
+  "vehicles": [{
+    "vrn": "JAN00028",
+    "licFrequency": "3",
+    "radioTvUsage": "1",
+    "radioTvFrequency": "1",
+    "currency": "USD",
+    "owner": {
+      "idNumber": "63-184337B05", "idType": "1",
+      "firstName": "Ropa", "lastName": "Nyagwaya",
+      "msisdn": "263775461117", "email": "rchirongoma@gmail.com",
+      "address1": "14 Borrowdale Road", "town": "HARARE", "suburbID": 28
+    }
+  }],
+  "callbackUrl": "{{callbackUrl}}"
+}
+
+// Response (key fields)
+{
+  "data": {
+    "quotes": [{
+      "vrn": "JAN00028",
+      "referenceId": "22512",
+      "licenseFee": 2190, "radioFee": 0, "totalAmount": 2190,
+      "status": "success",
+      "expiresAt": "2026-08-20T13:30:30.000Z",
+      "policy": {
+        "insuranceType": "LICENSE",
+        "licenseExpiryDate": "2026-05-31T00:00:00.000Z",
+        "arrearsAmt": 300, "penaltiesAmt": 80,
+        "administrationAmt": 10, "totalLicAmt": 2190,
+        "totalRadioTvAmt": 0
+      }
+    }]
+  }
+}</pre>
+  <div class="callout warn">Note: <code>radioTvFrequency</code> is required on this endpoint even for radio-only bundles. All numeric codes must be sent as strings.</div>
+
+  <h3>7.2 <span class="method post">POST</span> <code>/api/v2/motor/quote/insurance</code> &nbsp; <span class="public">PUBLIC</span></h3>
+  <p>RTA or FTP insurance only. No ZINARA licence. IceCash overrides <code>vehicleValue</code> from VRN lookup.</p>
+<pre>// Request
+{
+  "externalReference": "{{$randomBankAccount}}",
+  "customerReference": "{{masterId}}",
+  "currency": "USD",
+  "vehicles": [{
+    "vrn": "JAN00028",
+    "vehicleType": "1", "insuranceType": "1",
+    "vehicleValue": "0", "durationMonths": "4",
+    "owner": {
+      "idNumber": "63-184337B05", "idType": "1",
+      "firstName": "Ropa", "lastName": "Nyagwaya",
+      "msisdn": "263775461117", "email": "rchirongoma@gmail.com",
+      "address1": "14 Borrowdale Road", "town": "HARARE", "suburbID": 28
+    },
+    "policyHolder": {}
+  }],
+  "callbackUrl": "{{callbackUrl}}"
+}
+
+// Response (key fields)
+{
+  "data": {
+    "quotes": [{
+      "vrn": "JAN00028",
+      "referenceId": "139278",
+      "insurancePremium": 35.60, "licenseFee": 0,
+      "radioFee": 0, "totalAmount": 35.60,
+      "status": "pending",
+      "expiresAt": "2026-08-20T15:56:42.000Z",
+      "vehicle": { "make": "ADMIRAL", "model": "LY 125 T 15",
+                   "vehicleValue": 25000 },
+      "policy": {
+        "insuranceType": "1",
+        "startDate": "2026-11-27T00:00:00.000Z",
+        "endDate": "2027-03-26T00:00:00.000Z",
+        "durationMonths": "4",
+        "stampDuty": 2.00, "governmentLevy": 3.60,
+        "premiumAmount": 35.60
+      },
+      "customerReference": "{{masterId}}"
+    }]
+  }
+}</pre>
+  <div class="callout"><b>Note:</b> Status is <code>pending</code> on insurance path (async IceCash step outstanding). Status is <code>success</code> on licence path (resolves immediately). All field values sent as strings. <code>vehicleValue:0</code> is valid &mdash; IceCash overrides from VRN lookup.</div>
+
+  <h3>7.3 <span class="method post">POST</span> <code>/api/v2/motor/quote/combined</code> &nbsp; <span class="public">PUBLIC</span></h3>
+  <p>Insurance + ZINARA licence (+ radio). Bundle inferred from <code>licFrequency</code> and <code>radioTvFrequency</code> field presence. Owner and policyHolder may differ &mdash; <code>suburbID</code> sits inside each person object.</p>
+<pre>// Request
+{
+  "externalReference": "{{$randomBankAccount}}",
+  "customerReference": "{{masterId}}",
+  "currency": "USD",
+  "vehicles": [{
+    "vrn": "JAN00028",
+    "vehicleType": "1", "insuranceType": "1",
+    "licFrequency": "3", "radioTvUsage": "1", "radioTvFrequency": "1",
+    "vehicleValue": "0", "durationMonths": "4",
+    "owner": {
+      "idNumber": "63184337B05", "idType": "1",
+      "firstName": "Ropa", "lastName": "Nyagwaya",
+      "msisdn": "263775461117", "email": "rchirongoma@gmail.com",
+      "address1": "14 Borrowdale Road", "town": "HARARE", "suburbID": 28
+    },
+    "policyHolder": {
+      "idNumber": "63184337B06", "idType": "1",
+      "firstName": "Ropafadzo", "lastName": "Chirongoma",
+      "msisdn": "263775461117", "email": "rchirongoma@gmail.com",
+      "address1": "14 Borrowdale Road", "town": "HARARE", "suburbID": 28,
+      "entityType": "Personal", "companyName": ""
+    }
+  }],
+  "callbackUrl": "{{callbackUrl}}"
+}
+
+// Response (key fields)
+{
+  "data": {
+    "quotes": [{
+      "referenceId": "10992",
+      "insurancePremium": 35.60,
+      "licenseFee": 2000.00, "radioFee": 35.00, "totalAmount": 2035.00,
+      "status": "success",
+      "policy": {
+        "insuranceType": "1",
+        "arrearsAmt": 150.00, "penaltiesAmt": 40.00,
+        "transactionAmt": 1800.00, "totalLicAmt": 2000.00,
+        "totalRadioTvAmt": 35.00,
+        "licenseExpiryDate": "2026-05-31T00:00:00.000Z"
+      }
+    }]
+  }
+}
+
+// IMPORTANT: grandTotal is not returned directly.
+// grandTotal = insurancePremium + totalAmount
+// grandTotal = 35.60 + 2035.00 = 2070.60
+// Use grandTotal as the payment amount.</pre>
+  <div class="callout crit"><b>Open defect:</b> <code>customerReference</code> in the response echoes <code>externalReference</code> instead of the submitted <code>masterId</code>. Backend fix required before go-live.</div>
+
+  <h3>7.4 <span class="method post">POST</span> <code>/api/v2/motor/comprehensive/quote</code> &nbsp; <span class="public">PUBLIC</span></h3>
+  <p>Comprehensive cover. Local rating engine calculates premium. Gateway internally calls TPILICQuote with <code>insuranceType:1</code> (RTA) for the ZINARA component. Response is a merged object with separate <code>premiumBreakdown</code> (local) and <code>icecash</code> (partner) sections. Use <code>totals.grandTotal</code> as the payment amount.</p>
+<pre>// Request
+{
+  "externalReference": "{{$randomBankAccount}}",
+  "customerReference": "{{masterId}}",
+  "currency": "USD",
+  "policyType": "Motor",
+  "vehicles": [{
+    "vrn": "JAN00028",
+    "vehicleType": "1", "vehicleValue": "20000",
+    "insuranceType": "1", "durationMonths": "4",
+    "licFrequency": "1", "radioTvUsage": "1", "radioTvFrequency": "1",
+    "owner": {
+      "idNumber": "63-184337B05", "idType": "1",
+      "firstName": "Ropa", "lastName": "Nyagwaya",
+      "msisdn": "263775461117", "email": "rchirongoma@gmail.com",
+      "address1": "14 Borrowdale Road", "town": "HARARE", "suburbID": 28
+    },
+    "policyHolder": {
+      "idNumber": "63-184337B06", "idType": "1",
+      "firstName": "Ropafadzo", "lastName": "Chirongoma",
+      "msisdn": "263775461117", "email": "rchirongoma@gmail.com",
+      "address1": "14 Borrowdale Road", "town": "HARARE", "suburbID": 28,
+      "entityType": "Personal", "companyName": ""
+    }
+  }],
+  "callbackUrl": "{{callbackUrl}}"
+}
+
+// Target response (recommended shape)
+{
+  "data": {
+    "customerReference": "{{masterId}}",
+    "quotes": [{
+      "referenceId": "CMP-1787138450462-580513F4",
+      "status": "pending",
+      "premiumBreakdown": {
+        "basePremium": 333.33, "durationFactor": 0.33,
+        "subTotalPremium": 333.33,
+        "stampDuty": 16.67,       // 5% of basePremium (KD-001 corrected)
+        "governmentLevy": 3.60,   // 12% of prorated RTA baseline
+        "totalInsuranceAmount": 353.60,
+        "optionalBenefitsCost": {
+          "windscreenCover": 0, "accessories": 0,
+          "excessBuyDown": 0, "carHire": 0, "roadsideAssistance": 0
+        }
+      },
+      "icecash": {
+        "combinedId": "11031", "licenceId": "22505", "insuranceId": "139262",
+        "vehicle": { "make": "ADMIRAL", "model": "LY 125 T 15",
+                     "vehicleValue": 25000, "taxClass": 4 },
+        "licence": {
+          "licExpiryDate": "2026-05-31T00:00:00.000Z",
+          "arrearsAmt": 300.00, "penaltiesAmt": 80.00,
+          "totalLicAmt": 2190.00, "totalRadioTvAmt": 35.00,
+          "totalLicenceAndRadioAmt": 2225.00
+        }
+      },
+      "totals": {
+        "insuranceTotal": 353.60,
+        "licenceTotal": 2190.00, "radioTotal": 35.00,
+        "grandTotal": 2578.60   // use this for payment amount
+      },
+      "policy": {
+        "insuranceType": 4, "insuranceTypeCode": "FTPFT",
+        "insuranceTypeDescription": "Comprehensive Cover",
+        "startDate": "2026-11-27T00:00:00.000Z",
+        "endDate": "2027-03-26T00:00:00.000Z",
+        "durationMonths": 4
+      },
+      "riskAssessment": {
+        "requiresManualUnderwriting": false, "underwritingFlags": []
+      }
+    }]
+  }
+}</pre>
+
+  <h3>7.5 <span class="method get">GET</span> <code>/api/v2/motor/quote/{{quoteId}}</code> &nbsp; <span class="public">PUBLIC</span></h3>
+  <p>Retrieve any quote by its <code>referenceId</code>. The backend determines quote type from the ID. Refreshes premium figures in collection variables.</p>
+
+  <h3>7.6 <span class="method post">POST</span> <code>/api/v2/motor/quote/{{quoteId}}/decline</code> &nbsp; <span class="public">PUBLIC</span></h3>
+  <p>Customer declines the quote before payment. Quote status moves to <code>declined</code>. To change any details, a new quote must be generated &mdash; there is no pre-payment amendment path.</p>
+</section>
+
+<!-- 8. PAYMENT APIs -->
+<section id="payments" class="card endpoint">
+  <div class="kicker">Payment APIs</div>
+  <h2>8. Payment APIs</h2>
+
+  <h3>8.1 <span class="method post">POST</span> <code>/api/v1/payments/ecocash/initiate</code> &nbsp; <span class="public">PUBLIC &mdash; shared endpoint</span></h3>
+  <p>No IceCash call at this stage. IceCash policy creation happens only after successful payment confirmation. <code>clientCorrelator</code> in the response is confirmed equal to <code>quoteId</code>.</p>
+<pre>{
+  "transactionReference": "{{quoteId}}",
+  "referenceType": "QUOTATION",
+  "amount": {{grandTotal}},
+  "currency": "USD",
+  "customerMsisdn": "{{customerMsisdn}}",
+  "customerName": "{{customerFirstName}} {{customerLastName}}",
+  "productType": "MOTOR_INSURANCE",
+  "onBehalfOf": "ZGI"
+}
+
+// Response
+{ "status": "PENDING", "clientCorrelator": "{{quoteId}}" }</pre>
+
+  <h3>8.2 <span class="method get">GET</span> <code>/api/v1/payments/ecocash/status/quote/{{quoteId}}</code> &nbsp; <span class="public">PUBLIC &mdash; shared endpoint</span></h3>
+  <p>Portal polls every 5 seconds, maximum 10 attempts. Two states surfaced: payment status and policy status.</p>
+<pre>// Pending (before callback)
+{ "paymentStatus": "PENDING", "policyStatus": "NOT_CREATED",
+  "digitalPolicyNumber": null }
+
+// Complete (after full orchestration)
+{ "paymentStatus": "SUCCESS", "policyStatus": "ACTIVE",
+  "digitalPolicyNumber": "MTR-POL-20260819-139278",
+  "licenceReceiptId": "LIC-RCT-7891234",
+  "documents": {
+    "coverNote": "https://docs.zimnat.co.zw/ZGI/motor/...",
+    "schedule": "https://docs.zimnat.co.zw/ZGI/motor/...",
+    "receipt": "https://docs.zimnat.co.zw/ZGI/motor/..."
+  }
+}</pre>
+
+  <h3>8.3 <span class="method post">POST</span> <code>/api/v1/motor/payments/confirm</code> &mdash; Cash &nbsp; <span class="public">PUBLIC</span></h3>
+  <p>Branch-only. Triggers the same post-payment orchestration as EcoCash callback. Officer must confirm receipt before policy is created.</p>
+<pre>{
+  "quoteId": "{{quoteId}}",
+  "paymentSource": "CASH",
+  "amount": {{grandTotal}},
+  "currency": "USD",
+  "amountReceived": {{grandTotal}},
+  "changeGiven": 0,
+  "cashierUserId": "{{cashierUserId}}",
+  "branchCode": "{{branchCode}}",
+  "transactionReference": "CASH-HRE-20260819-0001"
+}</pre>
+
+  <h3>8.4 <span class="method post">POST</span> <code>/api/v1/motor/payments/confirm</code> &mdash; Card Swipe &nbsp; <span class="public">PUBLIC</span></h3>
+  <p>Same endpoint as cash confirm. Orchestration is identical. Add <code>terminalId</code> and <code>approvalCode</code> in place of cash fields.</p>
+<pre>{
+  "quoteId": "{{quoteId}}",
+  "paymentSource": "CARD_SWIPE",
+  "amount": {{grandTotal}},
+  "currency": "USD",
+  "terminalId": "{{terminalId}}",
+  "transactionReference": "{{cardTransactionReference}}",
+  "approvalCode": "{{cardApprovalCode}}",
+  "cashierUserId": "{{cashierUserId}}",
+  "branchCode": "{{branchCode}}"
+}</pre>
+</section>
+
+<!-- 9. ORCHESTRATION -->
+<section id="orchestration" class="card endpoint">
+  <div class="kicker">Backend Only</div>
+  <h2>9. Post-Payment Orchestration</h2>
+  <p>Triggered by EcoCash SUCCESS callback or branch payment confirm. Never called directly by the portal. The gateway executes this sequence internally after payment is confirmed.</p>
+  <div class="callout crit"><b>Idempotency requirement:</b> If this flow is triggered again for the same <code>quoteId</code> and <code>paymentTransactionId</code>, the gateway must return the existing policy and must not submit a second TPILICUpdate to IceCash.</div>
+
+  <h3>Step 1 &mdash; TPILICUpdate</h3>
+  <p><span class="internal">INTERNAL</span> &nbsp; <span class="method post">POST</span> <code>/api/v2/motor/quote/{{quoteId}}/update</code></p>
+<pre>// Gateway submits to IceCash:
+{
+  "Function": "TPILICUpdate",
+  "PaymentMethod": 3,        // EcoCash (Appendix a.1) &mdash; or 1/7 for branch
+  "DeliveryMethod": 2,       // OFFICE COLLECTION (Appendix a.3)
+  "LicenceCert": 0,          // No IceCash PDF
+  "LocationID": "[OI-001]",  // Environment variable &mdash; ZINARA-assigned
+  "InsuranceCompanyID": 24,  // Zimnat Lion
+  "Quotes": [{ "CombinedID": "{{icecashCombinedId}}", "Status": 1 }]
+}
+
+// Approval response
+{ "Result": 1, "icecashReference": "ICE-REF-20260819-00421" }
+
+// Rejection &mdash; ICECASH_APPROVAL_FAILED
+{ "Result": 0, "Message": "Quote approval failed" }
+// &rarr; Raise ops alert. No documents generated. Payment reconciliation required.</pre>
+
+  <h3>Step 2 &mdash; TPILICResult polling</h3>
+  <p><span class="internal">INTERNAL</span> &nbsp; Poll every 5 seconds &mdash; maximum 5 attempts.</p>
+<pre>// Confirmed response
+{
+  "PolicyNumber": "ICCBZ2600-139278",
+  "ReceiptID": "LIC-RCT-7891234",
+  "StartDate": "20261127",
+  "EndDate": "20270326",
+  "dateSource": "ICECASH_CONFIRMED"
+}
+
+// If 5 attempts exhausted without confirmation:
+// &rarr; Raise ops alert: ICECASH_RESULT_TIMEOUT
+// &rarr; Do not generate documents until result confirmed
+// &rarr; Schedule retry job (max 3 retries, 30s apart)</pre>
+
+  <h3>Step 3 &mdash; Document generation</h3>
+  <p><span class="internal">INTERNAL</span> Documents generated per quote path after TPILICResult confirmed.</p>
+  <table>
+    <tr><th>Quote path</th><th>Documents generated</th><th>Includes</th></tr>
+    <tr><td>Licence Only</td><td>ZINARA receipt</td><td>licenceReceiptId, collection instructions</td></tr>
+    <tr><td>Insurance Only</td><td>Cover note + Policy schedule + Payment receipt</td><td>VRN, make/model from VRN lookup, IceCash policyNumber, cover period</td></tr>
+    <tr><td>Combined</td><td>Cover note + Policy schedule + Payment receipt + ZINARA receipt</td><td>All of above + licenceReceiptId</td></tr>
+    <tr><td>Comprehensive</td><td>Cover note + Policy schedule + Payment receipt + ZINARA receipt</td><td>All of above + premiumBreakdown, riskAssessment</td></tr>
+  </table>
+  <div class="callout ok">Cover note must include: VRN, Make/Model (from IceCash VRN lookup), InsuranceType, cover period (ICECASH_CONFIRMED dates), IceCash PolicyNumber, licenceReceiptId (if bundled).</div>
+
+  <h3>Step 4 &mdash; Notification dispatch</h3>
+  <p><span class="internal">INTERNAL</span> Dispatched immediately after documents are ready.</p>
+  <table>
+    <tr><th>Channel</th><th>Template</th><th>Recipient</th></tr>
+    <tr><td>Email</td><td>MOTOR_POLICY_DOCUMENTS</td><td>policyHolder.email &mdash; cover note URL, schedule URL, receipt URL</td></tr>
+    <tr><td>SMS</td><td>MOTOR_POLICY_LINK</td><td>policyHolder.msisdn &mdash; cover note link + licenceReceiptId (if bundled)</td></tr>
+  </table>
+
+  <h3>Variable chain</h3>
+  <div class="var-chain">masterId
+  &rarr; quoteId          (referenceId from quote response)
+    &rarr; grandTotal      (insurancePremium + totalAmount for combined/comp)
+      &rarr; clientCorrelator  (confirmed = quoteId in EcoCash response)
+        &rarr; paymentStatus
+        &rarr; policyStatus
+          &rarr; icecashCombinedId    (from quote response)
+          &rarr; icecashApprovalStatus
+          &rarr; icecashReference
+            &rarr; icecashPolicyNumber   (from TPILICResult)
+            &rarr; licenceReceiptId      (from TPILICResult)
+              &rarr; digitalPolicyNumber
+                &rarr; documentCoverNoteUrl
+                &rarr; documentScheduleUrl
+                &rarr; documentReceiptUrl</div>
+</section>
+
+<!-- 10. POLICY AND DOCUMENTS -->
+<section id="policy" class="card endpoint">
+  <div class="kicker">Policy Retrieval</div>
+  <h2>10. Policy and Document Retrieval</h2>
+
+  <h3><span class="method get">GET</span> <code>/api/v2/motor/comprehensive/policy/{{digitalPolicyNumber}}</code> &nbsp; <span class="public">PUBLIC</span></h3>
+  <p>Full policy record. Response should come from the Zimnat policy store. Available even if IceCash is temporarily unreachable, provided policy has already been stored internally.</p>
+<pre>{
+  "digitalPolicyNumber": "MTR-POL-20260819-139278",
+  "quotationNumber": "139278",
+  "policyType": "MOTOR_INSURANCE",
+  "masterId": "GR_20260315_00001",
+  "status": "ACTIVE",
+  "vehicle": { "vrn": "JAN00028", "make": "ADMIRAL", "model": "LY 125 T 15" },
+  "cover": { "insuranceType": "RTA", "startDate": "2026-11-27", "endDate": "2027-03-26" },
+  "icecash": { "policyNumber": "ICCBZ2600-139278", "licenceReceiptId": "LIC-RCT-7891234" },
+  "payment": { "paymentSource": "ECOCASH", "paymentTransactionId": "ECO-TXN-..." },
+  "documents": {
+    "coverNote": "https://docs.zimnat.co.zw/ZGI/motor/.../cover_note.pdf",
+    "schedule": "https://docs.zimnat.co.zw/ZGI/motor/.../schedule.pdf",
+    "receipt": "https://docs.zimnat.co.zw/ZGI/motor/.../receipt.pdf"
+  }
+}</pre>
+
+  <h3><span class="method get">GET</span> <code>.../policy/{{digitalPolicyNumber}}/cover-note</code></h3>
+  <h3><span class="method get">GET</span> <code>.../policy/{{digitalPolicyNumber}}/schedule</code></h3>
+  <h3><span class="method get">GET</span> <code>.../policy/{{digitalPolicyNumber}}/receipt</code></h3>
+  <p>Individual document endpoints. Return document URL or binary. Test with <code>200 or 404</code> accepted &mdash; 404 valid if document not yet generated.</p>
+</section>
+
+<!-- 11. NOTIFICATIONS -->
+<section id="notifications" class="card endpoint">
+  <div class="kicker">Notifications</div>
+  <h2>11. Notifications</h2>
+  <h3><span class="method post">POST</span> <code>/api/v1/notify/send</code> &mdash; Email &nbsp; <span class="public">PUBLIC &mdash; shared endpoint</span></h3>
+<pre>{
+  "channel": "EMAIL",
+  "recipient": "{{customerEmail}}",
+  "templateCode": "MOTOR_POLICY_DOCUMENTS",
+  "referenceType": "POLICY",
+  "referenceNumber": "{{digitalPolicyNumber}}",
+  "payload": {
+    "customerName": "{{customerFirstName}} {{customerLastName}}",
+    "digitalPolicyNumber": "{{digitalPolicyNumber}}",
+    "coverNoteUrl": "{{documentCoverNoteUrl}}",
+    "scheduleUrl": "{{documentScheduleUrl}}",
+    "receiptUrl": "{{documentReceiptUrl}}",
+    "licenceReceiptId": "{{licenceReceiptId}}"
+  }
+}</pre>
+  <h3><span class="method post">POST</span> <code>/api/v1/notify/send</code> &mdash; SMS &nbsp; <span class="public">PUBLIC &mdash; shared endpoint</span></h3>
+<pre>{
+  "channel": "SMS",
+  "recipient": "{{customerMsisdn}}",
+  "templateCode": "MOTOR_POLICY_LINK",
+  "referenceType": "POLICY",
+  "referenceNumber": "{{digitalPolicyNumber}}",
+  "payload": {
+    "customerName": "{{customerFirstName}}",
+    "digitalPolicyNumber": "{{digitalPolicyNumber}}",
+    "coverNoteUrl": "{{documentCoverNoteUrl}}",
+    "licenceReceiptId": "{{licenceReceiptId}}"
+  }
+}</pre>
+  <div class="callout ok">For Licence Only and Combined paths: SMS must include <code>licenceReceiptId</code> and collection instructions so the customer knows where to present their proof of payment for the ZINARA disc.</div>
+</section>
+
+<!-- 12. ERRORS -->
+<section id="errors" class="card">
+  <div class="kicker">Errors and Retries</div>
+  <h2>12. Errors and Retries</h2>
+  <table>
+    <tr><th>Error</th><th>Code</th><th>Gateway action</th><th>Portal action</th></tr>
+    <tr>
+      <td>Token expired</td><td><code>EXPIRED_TOKEN</code></td>
+      <td>Auto-refresh token and replay original request <b>(not yet implemented &mdash; known defect)</b></td>
+      <td>Show generic error. Retry after re-auth.</td>
+    </tr>
+    <tr>
+      <td>IceCash unavailable at quote</td><td><code>ICECASH_TIMEOUT</code></td>
+      <td>Return partial quote with <code>status: UNAVAILABLE</code> for affected vehicles</td>
+      <td>Surface unavailable notice. Allow retry.</td>
+    </tr>
+    <tr>
+      <td>IceCash approval failed</td><td><code>ICECASH_APPROVAL_FAILED</code></td>
+      <td>Raise ops alert. Do not generate documents. Log for manual reconciliation.</td>
+      <td>Show payment received but policy activation in progress. Do not show failure to customer until ops resolves.</td>
+    </tr>
+    <tr>
+      <td>TPILICResult timeout</td><td><code>ICECASH_RESULT_TIMEOUT</code></td>
+      <td>Raise ops alert. Schedule retry (max 3, 30s apart).</td>
+      <td>policyStatus: PENDING. Poll again.</td>
+    </tr>
+    <tr>
+      <td>EcoCash callback not received</td><td>&mdash;</td>
+      <td>Portal polling exhausts 10 attempts. Gateway checks ledger independently.</td>
+      <td>Show timeout. Advise customer not to retry payment. Contact support.</td>
+    </tr>
+    <tr>
+      <td>Duplicate payment trigger</td><td>&mdash;</td>
+      <td>Idempotency guard: detect same quoteId + paymentTransactionId. Return existing policy.</td>
+      <td>No action needed &mdash; transparent to portal.</td>
+    </tr>
+  </table>
+</section>
+
+<!-- 13. SECURITY -->
+<section id="security" class="card">
+  <div class="kicker">Security</div>
+  <h2>13. Security</h2>
+  <div class="grid2">
+    <div>
+      <h3>Public API layer</h3>
+      <ul>
+        <li>JWT validation on every public endpoint</li>
+        <li>JWT carries <code>masterId</code> &mdash; must match <code>customerReference</code> in quote requests</li>
+        <li>Rate limiting on quote and payment endpoints</li>
+        <li>All values sent as strings to IceCash &mdash; gateway handles type coercion</li>
+      </ul>
+    </div>
+    <div>
+      <h3>IceCash integration layer</h3>
+      <ul>
+        <li>IceCash credentials &mdash; server-side only, never in API responses</li>
+        <li>LocationID &mdash; environment variable, never hardcoded, never logged</li>
+        <li>InsuranceCompanyID (24) &mdash; server-side constant</li>
+        <li>EcoCash callback endpoint &mdash; IP allowlisted to EcoCash CIDR ranges</li>
+        <li>Idempotency key on all orchestration triggers</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout crit"><b>OI-001 LocationID:</b> This is a ZINARA-assigned, environment-specific value. It must be stored as an environment variable (dev/staging/production each have a different value). It must never appear in logs, responses, or frontend payloads. Obtain from IceCash partner account owner before live testing TPILICUpdate.</div>
+</section>
+
+<!-- 14. LIMITATIONS -->
+<section id="limitations" class="card">
+  <div class="kicker">Known Limitations and Open Items</div>
+  <h2>14. Known Limitations and Open Items</h2>
+
+  <div class="oi"><span class="oi-id">OI-001</span><div><b>LocationID pending.</b> ZINARA-assigned, environment-specific. Required on every TPILICUpdate. Blocks live testing of post-payment orchestration. Obtain from IceCash partner account owner.</div></div>
+
+  <div class="defect"><span class="defect-id">KD-001</span><div><b>stampDuty and governmentLevy swapped in coverage-options.</b> Current response: stampDutyRate:0.03, governmentLevyRate:0.05. Correct: stampDutyRate:0.05 (5%), governmentLevyRate:0.12 (12%). <b>BLOCKING</b> &mdash; portal will display incorrect premium breakdown until fixed.</div></div>
+
+  <div class="defect"><span class="defect-id">KD-002</span><div><b>insuranceType returned as single object, not array.</b> coverage-options returns a single insuranceType object. Should be an array of 3 offered types (RTA, FTP, COMP) each with pricingType field.</div></div>
+
+  <div class="defect"><span class="defect-id">KD-003</span><div><b>vehicleTypes uses multiplier model.</b> Multipliers are not the correct rating approach. Should be per-vehicle-type, per-cover-type actual rates for STANDARD scheme codes (1,6,7,19). All other 33 codes should carry rates:null.</div></div>
+
+  <div class="defect"><span class="defect-id">KD-004</span><div><b>customerReference echoes externalReference.</b> On combined and comprehensive paths, the response customerReference field returns the externalReference value instead of the submitted masterId. Backend must pass masterId through to IceCash for cross-system linkage.</div></div>
+
+  <div class="defect"><span class="defect-id">KD-005</span><div><b>Token auto-refresh not implemented.</b> EXPIRED_TOKEN causes request failure. Gateway must automatically refresh the token and replay the original request without surfacing the error to consuming channels.</div></div>
+
+  <div class="defect"><span class="defect-id">KD-006</span><div><b>suburbId casing inconsistent.</b> owner returns suburbId (lowercase d), policyHolder returns suburbID (uppercase D). Correct field name is suburbID throughout.</div></div>
+
+  <div class="defect"><span class="defect-id">KD-007</span><div><b>InsuranceType code 3 mapping unconfirmed.</b> Real API response for insurance-only returns InsuranceType:"3" for a vehicle with declared value $25,000, suggesting code 3 may be Comprehensive in practice. Appendix a.2 lists code 3 as FTPF. Needs confirmation with IceCash before mapping is finalised.</div></div>
+
+  <div class="defect"><span class="defect-id">KD-008</span><div><b>InnBucks and OneMoney IceCash payment method codes unknown.</b> IceCash paymentMethods list includes EcoCash (3), Netone (5), Telecel (6) but no InnBucks or OneMoney codes. TPILICUpdate PaymentMethod field requires a valid IceCash code. Confirm with IceCash what code to submit when customer pays via InnBucks or OneMoney.</div></div>
+
+  <div class="defect"><span class="defect-id">KD-009</span><div><b>vehicleType use field incorrect in enums.</b> Codes 2, 3, and 4 return use:"Private Use" instead of "Business use", "Fleet", "Private Hire". Portal must use its own mapping table. Backend seed data fix required.</div></div>
+
+  <div class="defect"><span class="defect-id">KD-010</span><div><b>Comprehensive response missing IceCash section.</b> Current response does not include the merged IceCash vehicle and licence data. The recommended response shape (Section 7.4) defines the target structure including icecash{} and totals{} sections. Backend implementation required.</div></div>
+</section>
+
+<!-- 15. CHECKLIST -->
+<section id="checklist" class="card">
+  <div class="kicker">Go-live Checklist</div>
+  <h2>15. Go-live Checklist</h2>
+  <p>All items must be green before processing live transactions.</p>
+  <table>
+    <tr><th>#</th><th>Item</th><th>Owner</th><th>Status</th></tr>
+    <tr><td>1</td><td>OI-001: LocationID obtained from IceCash partner account owner and set in all environment configs</td><td>Taurai / IceCash</td><td><span class="status status-crit">BLOCKING</span></td></tr>
+    <tr><td>2</td><td>KD-001: stampDutyRate and governmentLevyRate corrected in coverage-options (0.05 and 0.12)</td><td>Backend</td><td><span class="status status-crit">BLOCKING</span></td></tr>
+    <tr><td>3</td><td>KD-005: Token auto-refresh implemented on gateway</td><td>Backend</td><td><span class="status status-warn">HIGH</span></td></tr>
+    <tr><td>4</td><td>KD-004: customerReference carries masterId through all quote paths and IceCash submission</td><td>Backend</td><td><span class="status status-warn">HIGH</span></td></tr>
+    <tr><td>5</td><td>KD-010: Comprehensive response includes icecash{} and totals{} sections per recommended shape</td><td>Backend</td><td><span class="status status-warn">HIGH</span></td></tr>
+    <tr><td>6</td><td>KD-007: InsuranceType code 3 mapping confirmed with IceCash (FTPF or COMP)</td><td>IceCash</td><td><span class="status status-warn">HIGH</span></td></tr>
+    <tr><td>7</td><td>KD-008: InnBucks and OneMoney IceCash PaymentMethod codes confirmed</td><td>IceCash</td><td><span class="status status-warn">HIGH</span></td></tr>
+    <tr><td>8</td><td>EcoCash callback URL registered and IP allowlist configured in EcoCash dashboard</td><td>Ops / EcoCash</td><td><span class="status status-warn">HIGH</span></td></tr>
+    <tr><td>9</td><td>callbackUrl environment variable set correctly per environment (dev/staging/prod)</td><td>Backend</td><td><span class="status status-warn">HIGH</span></td></tr>
+    <tr><td>10</td><td>Idempotency guard tested: duplicate TPILICUpdate for same quoteId does not create second IceCash submission</td><td>QA</td><td><span class="status status-blue">TODO</span></td></tr>
+    <tr><td>11</td><td>ICECASH_APPROVAL_FAILED ops alert confirmed: alert fires, no documents generated, payment logged for reconciliation</td><td>QA / Ops</td><td><span class="status status-blue">TODO</span></td></tr>
+    <tr><td>12</td><td>TPILICResult retry job confirmed: 3 retries at 30s intervals, ops alert on exhaustion</td><td>Backend / QA</td><td><span class="status status-blue">TODO</span></td></tr>
+    <tr><td>13</td><td>KD-001 to KD-003: coverage-options corrected response deployed and validated</td><td>Backend</td><td><span class="status status-blue">TODO</span></td></tr>
+    <tr><td>14</td><td>KD-006: suburbID casing consistent throughout all responses (uppercase D)</td><td>Backend</td><td><span class="status status-blue">TODO</span></td></tr>
+    <tr><td>15</td><td>KD-009: vehicleType use field corrected in enums seed data</td><td>Backend</td><td><span class="status status-blue">TODO</span></td></tr>
+    <tr><td>16</td><td>All 12 scenarios (A1&ndash;D3) executed in staging with passing Postman test scripts</td><td>QA</td><td><span class="status status-blue">TODO</span></td></tr>
+    <tr><td>17</td><td>Document generation verified: cover note includes make/model from IceCash VRN lookup and licenceReceiptId</td><td>QA</td><td><span class="status status-blue">TODO</span></td></tr>
+    <tr><td>18</td><td>Email and SMS notifications verified in staging with correct template codes</td><td>QA</td><td><span class="status status-blue">TODO</span></td></tr>
+    <tr><td>19</td><td>IceCash InsuranceCompanyID 24 (Zimnat Lion) active and verified in target environment</td><td>IceCash / Ops</td><td><span class="status status-blue">TODO</span></td></tr>
+    <tr><td>20</td><td>Arrears amber notice confirmed on portal for all VRNs with arrearsAmt &gt; 0</td><td>QA / Portal</td><td><span class="status status-blue">TODO</span></td></tr>
+  </table>
+  <div style="margin-top:18px;font-size:12px;color:var(--muted)">Motor Insurance API Gateway Technical Reference &mdash; ZGI &mdash; Zimnat Group &mdash; v1.0 &mdash; August 2026</div>
+</section>
+
+</main>
+</div>
+</body>
+</html>
