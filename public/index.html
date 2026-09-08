@@ -25,7 +25,7 @@ button,input,select{font:inherit}
 header{background:var(--white);border-bottom:1px solid var(--border);padding:0 28px;position:sticky;top:0;z-index:100}
 .head{max-width:900px;margin:auto;display:flex;justify-content:space-between;align-items:center;height:60px}
 .brand{display:flex;gap:11px;align-items:center}
-.logo{width:34px;height:34px;border-radius:8px;background:var(--gd);color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px;letter-spacing:.02em}
+.logo{height:30px;width:auto;display:block}
 .brand-text h1{margin:0;font-size:15px;font-weight:700;color:var(--text)}
 .brand-text p{margin:0;font-size:11px;color:var(--text3)}
 .head-actions{display:flex;align-items:center;gap:14px}
@@ -33,6 +33,18 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
 .icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--white);display:grid;place-items:center;cursor:pointer;color:var(--text2);transition:all .12s}
 .icon-btn:hover{background:var(--surface);color:var(--text)}
 .icon-btn svg{width:17px;height:17px}
+
+/* ── Profile menu ── */
+.profile-menu{position:relative}
+.profile-btn{border:none;background:none;padding:0;cursor:pointer;display:block}
+.profile-avatar{width:34px;height:34px;border-radius:50%;background:var(--gd);color:#fff;display:grid;place-items:center;font-weight:700;font-size:12.5px;letter-spacing:.02em}
+.profile-dropdown{display:none;position:absolute;right:0;top:calc(100% + 8px);background:var(--white);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);min-width:210px;padding:6px;z-index:150}
+.profile-dropdown.open{display:block}
+.profile-dropdown-head{padding:10px 12px 12px;border-bottom:1px solid var(--border);margin-bottom:6px}
+.profile-name{font-size:13px;font-weight:700;color:var(--text)}
+.profile-email{font-size:11.5px;color:var(--text3);margin-top:2px;word-break:break-all}
+.profile-dropdown-item{display:block;width:100%;text-align:left;background:none;border:none;padding:9px 12px;border-radius:7px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;transition:background .12s}
+.profile-dropdown-item:hover{background:var(--surface);color:var(--text)}
 
 /* ── Shell / stepper ── */
 .wizard-shell{max-width:980px;margin:32px auto 60px;padding:0 20px}
@@ -106,6 +118,11 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
 .val-wrap{display:flex;align-items:center;border:1.5px solid var(--g);border-radius:9px;overflow:hidden}
 .val-pre{padding:11px 13px;background:var(--gl);font-weight:700;color:var(--gd);font-size:14px;border-right:1.5px solid var(--g)}
 .val-inp{border:none;outline:none;padding:11px 13px;font-size:15px;font-weight:600;width:100%;background:var(--white)}
+.change-due-row{display:flex;justify-content:space-between;align-items:center;background:var(--gl);border:1px solid var(--gs);border-radius:9px;padding:10px 14px;margin-top:10px}
+.change-due-lbl{font-size:12.5px;font-weight:700;color:var(--gtext)}
+.change-due-val{font-size:16px;font-weight:800;color:var(--gd)}
+.change-due-row.insufficient{background:var(--redBg);border-color:var(--redBorder)}
+.change-due-row.insufficient .change-due-lbl,.change-due-row.insufficient .change-due-val{color:var(--red)}
 
 /* ── Buttons ── */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:var(--radiusSm);font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .12s;padding:11px 18px}
@@ -191,10 +208,6 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
 .provider-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
 .pb-ecocash{color:var(--g)}.pb-ecocash .provider-dot{background:var(--g)}
 .pb-ecocash.selected{background:var(--g);border-color:var(--g)}.pb-ecocash.selected .provider-dot{background:#fff}
-.pb-innbucks{color:#1A3A6A}.pb-innbucks .provider-dot{background:#1A3A6A}
-.pb-innbucks.selected{background:#1A3A6A;border-color:#1A3A6A}.pb-innbucks.selected .provider-dot{background:#fff}
-.pb-onemoney{color:#B25E00}.pb-onemoney .provider-dot{background:#B25E00}
-.pb-onemoney.selected{background:#B25E00;border-color:#B25E00}.pb-onemoney.selected .provider-dot{background:#fff}
 .pb-cash{color:var(--gd)}.pb-cash .provider-dot{background:var(--gd)}
 .pb-cash.selected{background:var(--gd);border-color:var(--gd)}.pb-cash.selected .provider-dot{background:#fff}
 .pb-card{color:#4A4A8A}.pb-card .provider-dot{background:#4A4A8A}
@@ -244,6 +257,20 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
 .doc-icon svg{width:16px;height:16px;stroke:var(--text2);fill:none;stroke-width:1.8}
 .doc-name{font-size:13px;font-weight:700}.doc-sub{font-size:11px;color:var(--text3)}
 
+.cover-note-card{border:1px solid var(--border);border-radius:var(--radiusLg);overflow:hidden;margin-bottom:20px;background:var(--white);box-shadow:var(--shadow)}
+.cover-note-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);background:var(--surface)}
+.cover-note-head h4{margin:0;font-size:13.5px;font-weight:700}
+.receipt-note-badge{display:flex;align-items:center;gap:9px;padding:11px 14px;background:var(--gl);border:1px solid var(--gs);border-radius:9px;margin-bottom:8px;font-size:12px;color:var(--gtext)}
+.receipt-note-badge .ref-num{margin:0}
+
+@media print{
+  header,.summary-panel,.summary-sheet,#v-policy .btn-row,#v-policy .cover-note-head button,
+  #v-policy .doc-box a,.resume-banner{display:none!important}
+  #v-policy .cover-note-head{border-bottom:none}
+  body,main.wizard-shell{background:#fff;margin:0;padding:0}
+  .card,.cover-note-card,.policy-summary{box-shadow:none;border-color:#ccc}
+}
+
 /* ── Modal (Settings) ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(10,25,17,.5);display:none;align-items:flex-start;justify-content:center;z-index:500;padding:60px 20px}
 .modal-overlay.open{display:flex}
@@ -284,6 +311,8 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
 
 /* ── Wizard + sticky summary layout ── */
 .wizard-layout{display:grid;grid-template-columns:1fr 300px;gap:26px;align-items:start}
+.wizard-layout.full-width{grid-template-columns:1fr}
+.wizard-layout.full-width .wizard-inner{max-width:none}
 .summary-panel{position:sticky;top:76px;background:var(--white);border:1px solid var(--border);border-radius:var(--radiusLg);box-shadow:var(--shadow);padding:20px;display:flex;flex-direction:column;gap:14px}
 .summary-panel h4{margin:0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text3)}
 .summary-line{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;font-size:12.5px;padding:8px 0;border-bottom:1px solid var(--border)}
@@ -334,15 +363,25 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
 <header>
   <div class="head">
     <div class="brand">
-      <div class="logo">ZGI</div>
+      <img class="logo" src="/assets/zimnat-logo.png" alt="Zimnat General Insurance">
       <div class="brand-text"><h1>Zimnat Motor Insurance</h1><p>Quote, pay and get covered in minutes</p></div>
     </div>
     <div class="head-actions">
       <button class="btn btn-ghost" style="padding:8px 14px;font-size:12.5px;min-height:36px" onclick="startNewQuote()">+ New quote</button>
       <a class="help-link" href="#">Need help?</a>
-      <button class="icon-btn" title="Connection settings" onclick="openSettings()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      </button>
+      <div class="profile-menu" id="profileMenu">
+        <button class="profile-btn" id="profileBtn" onclick="toggleProfileMenu()">
+          <span class="profile-avatar" id="profileAvatar">?</span>
+        </button>
+        <div class="profile-dropdown" id="profileDropdown">
+          <div class="profile-dropdown-head">
+            <div class="profile-name" id="profileName">—</div>
+            <div class="profile-email" id="profileEmail">—</div>
+          </div>
+          <button class="profile-dropdown-item" onclick="openSettings();closeProfileMenu()">Settings</button>
+          <button class="profile-dropdown-item" onclick="logout()">Log out</button>
+        </div>
+      </div>
     </div>
   </div>
 </header>
@@ -380,6 +419,30 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
           <label>InsuranceCompanyID</label>
           <input id="set-insuranceCompanyId" placeholder="24">
         </div>
+
+        <div class="settings-row" style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+          <label style="font-weight:800">EcoCash gateway</label>
+        </div>
+        <div class="settings-row">
+          <label>EcoCash mode</label>
+          <select id="set-ecocashMode">
+            <option value="simulated">Simulated (default)</option>
+            <option value="real">Real gateway</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <label>Gateway base URL</label>
+          <input id="set-ecocashBaseUrl" placeholder="http://196.29.38.218:3000">
+        </div>
+        <div class="settings-row">
+          <label>Gateway API key</label>
+          <input id="set-ecocashApiKey" type="password" placeholder="Leave blank to keep the currently saved key">
+        </div>
+        <div class="settings-row">
+          <label>Gateway partner code</label>
+          <input id="set-ecocashPartnerCode" placeholder="e.g. ROPFA">
+        </div>
+
         <div style="display:flex;gap:10px;margin-top:2px">
           <button class="btn btn-primary" onclick="saveSettings()">Save settings</button>
           <button class="btn btn-ghost" onclick="closeSettings()">Close</button>
@@ -397,7 +460,7 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
     <div><strong id="resumeBannerTitle">Welcome back</strong><span id="resumeBannerSub">We've restored your saved quote.</span></div>
   </div>
 
-<div class="wizard-layout">
+<div class="wizard-layout" id="wizardLayout">
 <div class="wizard-inner">
   <div class="progress-labels" id="progressLabels">
     <span>Vehicle</span><span>Cover</span><span>Duration</span><span>Details</span><span>Quote</span><span>Payment</span><span>Policy</span>
@@ -415,44 +478,19 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
       <div class="step-sub">Tell us what you're insuring and how it's used.</div>
 
       <div class="field-block">
+        <div class="field-label">Currency</div>
+        <div class="seg" style="max-width:220px">
+          <button type="button" class="seg-opt active" id="cur-USD" onclick="toggleCurrency('USD')">USD</button>
+          <button type="button" class="seg-opt" id="cur-ZWG" onclick="toggleCurrency('ZWG')">ZWG</button>
+        </div>
+      </div>
+
+      <div class="field-block">
         <div class="field-label">Registration number <div class="tip-wrap"><i class="tip-icon">i</i><div class="tip-box">Your vehicle's registration plate as shown on the logbook.</div></div></div>
         <input class="big-input" id="inpVRN" placeholder="e.g. ADA0010" oninput="onVRNType()" onblur="onVRNType()">
         <div class="field-error" id="err-vrn"><span>⚠</span><span>Enter at least 4 characters, letters and numbers only.</span></div>
       </div>
 
-      <div class="select-row">
-        <div class="field-block">
-          <div class="field-label">Vehicle type</div>
-          <select class="big-select" id="selType" onchange="onTypeChange()">
-            <option value="">Select type…</option>
-            <option>Private Car</option><option>Trailer</option><option>Commercial Vehicle</option>
-            <option>Taxis</option><option>Commercial Trailers</option><option>Motor Cycles</option>
-            <option>Omnibus and Commuters</option><option>School Bus</option><option>Staff Bus</option>
-            <option>Tractors/Fork Lifts</option><option>Tractors</option><option>Tractors/Combines</option>
-            <option>Ambulance, Fire Engine, Hearse</option><option>Agricultural Implements</option><option>Special Types</option>
-          </select>
-        </div>
-        <div class="field-block">
-          <div class="field-label">Vehicle use</div>
-          <select class="big-select" id="selUse" onchange="onUseChange()" disabled>
-            <option value="">Select type first…</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="sec-lbl" style="margin-top:6px">Stay in the loop</div>
-      <div class="select-row">
-        <div class="field-block">
-          <div class="field-label">Email address</div>
-          <input class="big-input" id="inpEmail" type="email" placeholder="you@example.com" value="rchirongoma@gmail.com" oninput="onContactType()" onblur="onContactType()">
-          <div class="field-error" id="err-email"><span>⚠</span><span>Enter a valid email address.</span></div>
-        </div>
-        <div class="field-block">
-          <div class="field-label">Mobile number</div>
-          <div class="mob-wrap"><span class="mob-flag">🇿🇼</span><input class="mob-input" id="inpMobile" type="tel" placeholder="263775461117" value="263775461117" oninput="onContactType()" onblur="onContactType()"></div>
-          <div class="field-error" id="err-mobile"><span>⚠</span><span>Enter a valid Zimbabwe mobile number.</span></div>
-        </div>
-      </div>
       <div class="save-note" id="saveNote"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span id="saveNoteText">We'll save your progress so you can pick up where you left off.</span></div>
 
       <button class="btn-full" id="veh-btn" disabled style="margin-top:22px" onclick="jumpTo('cover')">Continue to cover</button>
@@ -479,6 +517,10 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
           <div class="tv-label">This vehicle has a TV fitted</div>
           <button class="sw" id="tvSwitch" onclick="toggleTV()"></button>
         </div>
+        <div class="tv-row" id="usageRow" style="margin-top:8px">
+          <div class="tv-label">Usage: <strong id="usageRowLabel">Private use</strong></div>
+          <button class="sw" id="usageSwitch" onclick="toggleUsageCategory()"></button>
+        </div>
       </div>
 
       <div class="question" id="r-cover">
@@ -490,11 +532,16 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
             <div class="cc-desc">Statutory minimum cover required by law</div>
           </button>
           <button class="cover-card" id="cc-FTP" onclick="selectCover('FTP',this)">
+            <div class="cc-icon"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9 8 11 4.6-2 8-6 8-11V5z"/></svg></div>
+            <div class="cc-title">Full Third Party</div>
+            <div class="cc-desc">Third-party liability only — no fire or theft cover</div>
+          </button>
+          <button class="cover-card" id="cc-FTPF" onclick="selectCover('FTPF',this)">
             <div class="cc-icon"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9 8 11 4.6-2 8-6 8-11V5z"/><path d="m9 12 2 2 4-4"/></svg></div>
             <div class="cc-title">Third Party, Fire &amp; Theft</div>
             <div class="cc-desc">Adds fire and theft protection</div>
           </button>
-          <button class="cover-card" id="cc-COMP" onclick="selectCover('COMP',this)">
+          <button class="cover-card" id="cc-COMP" onclick="selectCover('COMP',this)" style="display:none">
             <div class="cc-icon"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9 8 11 4.6-2 8-6 8-11V5z"/><path d="M12 8v4l3 2"/></svg></div>
             <div class="cc-title">Comprehensive <span class="cbadge cbadge-rec" style="margin-left:4px">Recommended</span></div>
             <div class="cc-desc">Covers your own vehicle, theft and third party</div>
@@ -548,18 +595,63 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
       </div>
     </div>
 
-    <!-- STEP 4: Your Details -->
+    <!-- STEP 4: Customer Details -->
     <div id="v-details" class="view">
       <div class="step-eyebrow">Step 4 of 7</div>
-      <div class="step-title">Your details</div>
-      <div class="step-sub">Pre-filled from your profile</div>
-      <div class="det-card">
-        <div class="det-row"><span class="det-lbl">Full name</span><strong>Ropa Nyagwaya</strong></div>
-        <div class="det-row"><span class="det-lbl">ID number</span><strong>63-184337B05</strong></div>
-        <div class="det-row"><span class="det-lbl">Mobile</span><strong id="det-mobile">263775461117</strong></div>
-        <div class="det-row"><span class="det-lbl">Email</span><strong id="det-email">rchirongoma@gmail.com</strong></div>
-        <div class="det-row" style="border:none"><span class="det-lbl">Address</span><strong>14 Borrowdale Road, Harare</strong></div>
+      <div class="step-title">Customer details</div>
+      <div class="step-sub">Everything below is optional unless the policyholder is a company.</div>
+
+      <div class="tv-row" id="entityRow">
+        <div class="tv-label">Policyholder type: <strong id="entityRowLabel">Personal</strong></div>
+        <button class="sw" id="entitySwitch" onclick="toggleEntityType()"></button>
       </div>
+
+      <div class="field-block" id="companyNameBlock" style="display:none">
+        <div class="field-label">Company name</div>
+        <input class="big-input" id="inpCompanyName" placeholder="e.g. Acme Logistics (Pvt) Ltd" oninput="checkDetails()" autocomplete="off">
+      </div>
+
+      <div class="select-row">
+        <div class="field-block">
+          <div class="field-label">Email address</div>
+          <input class="big-input" id="inpEmail" type="email" placeholder="customer@example.com" oninput="onContactType()" onblur="onContactType()" autocomplete="off">
+          <div class="field-error" id="err-email"><span>⚠</span><span>Enter a valid email address.</span></div>
+        </div>
+        <div class="field-block">
+          <div class="field-label">Mobile number</div>
+          <div class="mob-wrap"><span class="mob-flag">🇿🇼</span><input class="mob-input" id="inpMobile" type="tel" placeholder="263 7X XXX XXXX" oninput="onContactType()" onblur="onContactType()" autocomplete="off"></div>
+          <div class="field-error" id="err-mobile"><span>⚠</span><span>Enter a valid Zimbabwe mobile number.</span></div>
+        </div>
+      </div>
+
+      <div class="select-row">
+        <div class="field-block">
+          <div class="field-label">First name</div>
+          <input class="big-input" id="inpFirstName" placeholder="e.g. Tendai" oninput="checkDetails()" autocomplete="off">
+        </div>
+        <div class="field-block">
+          <div class="field-label">Last name</div>
+          <input class="big-input" id="inpLastName" placeholder="e.g. Moyo" oninput="checkDetails()" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="field-block">
+        <div class="field-label">National ID number <span id="idRequiredHint" style="display:none;color:var(--amber);font-weight:600">(required for a company policyholder)</span></div>
+        <input class="big-input" id="inpIdNumber" placeholder="e.g. 63-123456A78" oninput="checkDetails()" autocomplete="off">
+      </div>
+
+      <div class="field-block">
+        <div class="field-label">Address</div>
+        <input class="big-input" id="inpAddress1" placeholder="e.g. 14 Borrowdale Road" oninput="checkDetails()" autocomplete="off">
+      </div>
+
+      <div class="field-block">
+        <div class="field-label">Suburb / town</div>
+        <select class="big-select" id="selSuburb" onchange="checkDetails()">
+          <option value="">Select suburb…</option>
+        </select>
+      </div>
+
       <div class="btn-row">
         <button class="btn btn-ghost" onclick="jumpTo('extras')">Back</button>
         <button class="btn-full" id="genQuoteBtn" onclick="submitQuote()">Get my quote</button>
@@ -589,15 +681,27 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
             <div class="detail-row"><div class="detail-label">Cover period</div><div class="detail-val" id="q-period">—</div></div>
             <div class="detail-row"><div class="detail-label">Duration</div><div class="detail-val" id="q-dur">—</div></div>
             <div class="detail-row"><div class="detail-label">Cover amount</div><div class="detail-val" id="q-cover-amt">—</div></div>
+            <div class="detail-divider" id="q-owner-divider" style="display:none"></div>
+            <div class="detail-row" id="q-owner-entity-row" style="display:none"><div class="detail-label">Entity type</div><div class="detail-val" id="q-owner-entity">—</div></div>
+            <div class="detail-row" id="q-owner-lastname-row" style="display:none"><div class="detail-label">Last name</div><div class="detail-val" id="q-owner-lastname">—</div></div>
+            <div class="detail-row" id="q-owner-id-row" style="display:none"><div class="detail-label">ID number</div><div class="detail-val" id="q-owner-id">—</div></div>
           </div>
           <div class="qc-amount">
             <div class="qa-label" id="q-amt-lbl">Total due</div>
             <div>
-              <div class="qa-currency">USD</div>
+              <div class="qa-currency" id="qa-currency">USD</div>
               <div class="qa-figure" id="q-total-fig">—</div>
             </div>
             <div class="qa-valid" id="q-expires">—</div>
           </div>
+        </div>
+      </div>
+
+      <div class="quote-card" style="margin-top:16px;margin-bottom:16px;display:none">
+        <div class="ref-row" id="q-refs">
+          <div class="ref-chip" id="q-combined-id-wrap"><div class="ref-chip-lbl">Combined ID</div><div class="ref-chip-val" id="q-combined-id">—</div></div>
+          <div class="ref-chip" id="q-lic-id-wrap"><div class="ref-chip-lbl">Licence ID</div><div class="ref-chip-val" id="q-lic-id">—</div></div>
+          <div class="ref-chip" id="q-ins-id-wrap"><div class="ref-chip-lbl">Insurance ID</div><div class="ref-chip-val" id="q-ins-id">—</div></div>
         </div>
       </div>
 
@@ -638,15 +742,6 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
         </div>
       </div>
 
-      <div class="quote-card" style="margin-bottom:4px">
-        <div class="ref-row" id="q-refs">
-          <div class="ref-chip" id="q-combined-id-wrap"><div class="ref-chip-lbl">Combined ID</div><div class="ref-chip-val" id="q-combined-id">—</div></div>
-          <div class="ref-chip" id="q-lic-id-wrap"><div class="ref-chip-lbl">Licence ID</div><div class="ref-chip-val" id="q-lic-id">—</div></div>
-          <div class="ref-chip" id="q-ins-id-wrap"><div class="ref-chip-lbl">Insurance ID</div><div class="ref-chip-val" id="q-ins-id">—</div></div>
-          <div class="ref-chip"><div class="ref-chip-lbl">Quote reference</div><div class="ref-chip-val" id="q-quote-id">—</div></div>
-        </div>
-      </div>
-
       <div class="notice red" id="q-blocked-notice" style="display:none;align-items:flex-start;gap:9px">
         <span>⛔</span>
         <div>
@@ -672,7 +767,10 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
         <div style="padding:0">
           <div class="bk-row"><span class="bk-label" id="pay-veh-lbl">Insurance premium</span><span class="bk-val" id="pay-ins-amt">—</span></div>
           <div class="bk-row" id="pay-lic-row"><span class="bk-label" id="pay-lic-lbl">ZINARA + ZBC radio</span><span class="bk-val" id="pay-lic-amt">—</span></div>
-          <div class="bk-row grand"><span class="bk-label">Total due today</span><span class="bk-val" id="pay-total">—</span></div>
+          <div class="bk-row grand"><span class="bk-label" id="pay-total-lbl">Total due today</span><span class="bk-val" id="pay-total">—</span></div>
+          <div class="bk-row" id="pay-receipt-row" style="display:none"><span class="bk-label">Receipt #</span><span class="bk-val" id="pay-receipt-no">—</span></div>
+          <div class="bk-row" id="pay-digital-row" style="display:none"><span class="bk-label">Digital policy #</span><span class="bk-val" id="pay-digital-no">—</span></div>
+          <div class="bk-row" id="pay-licence-receipt-row" style="display:none"><span class="bk-label">Licence receipt #</span><span class="bk-val" id="pay-licence-receipt-no">—</span></div>
         </div>
       </div>
 
@@ -681,8 +779,6 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
           <div class="pc-step-head"><span class="pc-step-num">1</span><span class="pc-step-title">Select payment method</span></div>
           <div class="provider-list">
             <div class="provider-badge pb-ecocash selected" id="badge-ecocash" onclick="selectProvider('ecocash')"><span class="provider-dot"></span>EcoCash</div>
-            <div class="provider-badge pb-innbucks" id="badge-innbucks" onclick="selectProvider('innbucks')"><span class="provider-dot"></span>InnBucks</div>
-            <div class="provider-badge pb-onemoney" id="badge-onemoney" onclick="selectProvider('onemoney')"><span class="provider-dot"></span>OneMoney</div>
             <div class="provider-badge pb-cash" id="badge-cash" onclick="selectProvider('cash')"><span class="provider-dot"></span>Cash</div>
             <div class="provider-badge pb-card" id="badge-card" onclick="selectProvider('card')"><span class="provider-dot"></span>Card</div>
           </div>
@@ -693,23 +789,39 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
           <div class="pc-step-head"><span class="pc-step-num">2</span><span class="pc-step-title">Confirm your mobile number</span></div>
           <div class="mob-wrap">
             <span class="mob-flag">🇿🇼</span>
-            <input class="mob-input" type="tel" id="mob-num" placeholder="263775461117" value="263775461117" oninput="checkNumber()">
+            <input class="mob-input" type="tel" id="mob-num" placeholder="263 7X XXX XXXX" oninput="checkNumber()">
           </div>
           <div class="field-hint" id="num-hint">A payment prompt will be sent to this number.</div>
         </div>
 
-        <!-- Cash: amount tendered -->
+        <!-- Cash: amount tendered + change due -->
         <div class="pc-section" id="section-cash" style="display:none">
           <div class="pc-step-head"><span class="pc-step-num">2</span><span class="pc-step-title">Amount tendered</span></div>
-          <div class="val-wrap"><span class="val-pre">USD</span><input class="val-inp" id="cash-amount" type="number" placeholder="e.g. 175.20" oninput="checkCashReady()"></div>
-          <div class="field-hint">A receipt number is generated once payment is recorded.</div>
+          <div class="val-wrap"><span class="val-pre" id="cash-currency-label">USD</span><input class="val-inp" id="cash-amount" type="number" placeholder="e.g. 175.20" oninput="checkCashReady()"></div>
+          <div class="field-hint" id="cash-hint">Enter at least the total due — change is calculated automatically.</div>
+          <div class="change-due-row" id="change-due-row" style="display:none">
+            <span class="change-due-lbl">Change due</span>
+            <span class="change-due-val" id="change-due-val">—</span>
+          </div>
         </div>
 
-        <!-- Card: RRN -->
+        <!-- Card: amount paid + POS terminal used + RRN -->
         <div class="pc-section" id="section-card" style="display:none">
-          <div class="pc-step-head"><span class="pc-step-num">2</span><span class="pc-step-title">Card transaction reference (RRN)</span></div>
-          <input class="big-input" id="card-rrn" placeholder="e.g. 123456789012" oninput="checkCardReady()">
-          <div class="field-hint">The Retrieval Reference Number from the POS machine slip.</div>
+          <div class="pc-step-head"><span class="pc-step-num">2</span><span class="pc-step-title">Amount paid</span></div>
+          <div class="val-wrap"><span class="val-pre" id="card-currency-label">USD</span><input class="val-inp" id="card-amount" type="number" placeholder="e.g. 175.20" oninput="checkCardReady()"></div>
+
+          <div class="field-block" style="margin-top:14px">
+            <div class="field-label">POS terminal used</div>
+            <select class="big-select" id="pos-terminal" onchange="checkCardReady()">
+              <option value="">Select terminal…</option>
+            </select>
+          </div>
+
+          <div class="field-block" style="margin-top:14px">
+            <div class="field-label">Card transaction reference (RRN)</div>
+            <input class="big-input" id="card-rrn" placeholder="e.g. 123456789012" oninput="checkCardReady()">
+          </div>
+          <div class="field-hint">Bank, terminal and RRN are all taken from the POS machine slip.</div>
         </div>
 
         <!-- Mobile money: consent -->
@@ -733,25 +845,17 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
 
       <!-- Cash/Card: accept + poll orchestration, shown live -->
       <div id="cashierOrch" style="display:none">
-        <div class="payment-card">
-          <div class="pc-section">
-            <div class="pc-step-head"><span class="pc-step-num" id="orch-step1-num">1</span><span class="pc-step-title">Accept quote with IceCash <span id="orch-step1-badge" class="cbadge" style="margin-left:6px"></span></span></div>
-            <div class="field-hint" id="orch-step1-detail">Submitting acceptance…</div>
-          </div>
-          <div class="pc-section">
-            <div class="pc-step-head"><span class="pc-step-num" id="orch-step2-num">2</span><span class="pc-step-title">Poll IceCash for policy confirmation <span id="orch-step2-badge" class="cbadge" style="margin-left:6px"></span></span></div>
-            <div class="field-hint" id="orch-step2-detail">Waiting on step 1…</div>
-          </div>
-        </div>
-        <div id="orchResultOk" style="display:none" class="notice ok">
-          <div><strong>Payment recorded.</strong> <span id="orchResultOkText"></span></div>
-        </div>
         <div id="orchResultFail" style="display:none" class="notice red">
           <div><strong>Issuance did not complete.</strong> <span id="orchResultFailText"></span></div>
         </div>
+        <div id="orchPending" class="pay-status">
+          <div class="pay-spinner"></div>
+          <div class="pay-status-title">Confirming with IceCash…</div>
+          <div class="pay-status-sub" id="orchPendingDetail">Submitting your payment…</div>
+        </div>
         <div class="btn-row" id="orchActions" style="display:none">
-          <button class="btn btn-ghost" onclick="retryCashier()">Try again</button>
-          <button class="btn btn-primary" id="orchViewPolicyBtn" style="display:none;flex:1" onclick="jumpTo('policy')">View policy</button>
+          <button class="btn btn-ghost" id="orchRetryBtn" style="display:none" onclick="retryCashier()">Try again</button>
+          <button class="btn-full" id="orchViewPolicyBtn" style="display:none" onclick="jumpTo('policy')">View policy</button>
         </div>
       </div>
 
@@ -762,7 +866,7 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
         <div id="pollList"></div>
       </div>
       <div id="payFailed" style="display:none">
-        <div class="notice red"><strong>Payment did not complete.</strong> No policy was created — you have not been charged.</div>
+        <div class="notice red"><strong>Payment did not complete.</strong> <span id="payFailedMsg">No policy was created — you have not been charged.</span></div>
         <button class="btn btn-primary" onclick="retryPay()">Try again</button>
       </div>
       <div id="payFinalising" style="display:none" class="pay-status">
@@ -772,7 +876,7 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
         <div id="icePollList"></div>
       </div>
 
-      <div class="btn-row" style="margin-top:18px">
+      <div class="btn-row" id="paymentBackRow" style="margin-top:18px">
         <button class="btn btn-ghost" onclick="jumpTo('quote')">Back to quote</button>
       </div>
     </div>
@@ -792,24 +896,24 @@ header{background:var(--white);border-bottom:1px solid var(--border);padding:0 2
         <div class="det-row"><span class="det-lbl">Cover</span><strong id="pol-cover">—</strong></div>
         <div class="det-row"><span class="det-lbl">Period</span><strong id="pol-period">—</strong></div>
         <div class="det-row"><span class="det-lbl">IceCash policy</span><span class="code-tag" id="pol-icecash-no">—</span></div>
-        <div class="det-row" style="border:none"><span class="det-lbl">Digital policy</span><span class="code-tag" id="pol-digital-no">—</span></div>
-      </div>
-      <div class="receipt-panel" id="pol-receipt" style="display:none">
-        <h4>ZINARA licence receipt</h4>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:5px">Present at any ZINARA Licensing Agent or arrange delivery.</div>
-        <div class="ref-num" id="pol-receipt-id">—</div>
-        <div style="font-size:11px;color:var(--text3);margin-top:5px;font-style:italic">Proof of insurance disc printed when you collect your licence disc.</div>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px">
-        <div class="sec-lbl" style="margin-top:0">Cover note</div>
-        <button class="btn btn-primary" style="padding:8px 14px;font-size:12px" onclick="printCoverNote()">🖨 Print cover note</button>
-      </div>
-      <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px;background:var(--surface)">
-        <iframe id="coverNoteFrame" title="Cover note" style="width:100%;height:520px;border:none;display:block;background:#e9e9e9"></iframe>
+        <div class="det-row"><span class="det-lbl">Digital policy</span><span class="code-tag" id="pol-digital-no">—</span></div>
+        <div class="det-row" style="border:none"><span class="det-lbl">Processed by</span><strong id="pol-processed-by">—</strong></div>
       </div>
 
-      <div class="sec-lbl" style="margin-top:16px">Documents</div>
-      <div class="doc-box"><div style="display:flex;align-items:center;gap:11px"><div class="doc-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div><div><div class="doc-name" id="pol-doc-name">Cover Note</div><div class="doc-sub">Open full-screen in a new tab</div></div></div><a class="btn btn-ghost" id="pol-doc-cover" target="_blank" href="#">View</a></div>
+      <div class="cover-note-card">
+        <div class="cover-note-head">
+          <h4>Cover note</h4>
+          <button class="btn btn-primary" style="padding:8px 14px;font-size:12px" onclick="printCoverNote()">🖨 Print</button>
+        </div>
+        <iframe id="coverNoteFrame" title="Cover note" style="width:100%;height:560px;border:none;display:block;background:#e9e9e9"></iframe>
+      </div>
+
+      <div class="receipt-note-badge" id="pol-receipt" style="display:none">
+        <span>📻</span>
+        <div>ZINARA licence receipt <span class="ref-num" id="pol-receipt-id">—</span> — present at any ZINARA Licensing Agent or arrange delivery.</div>
+      </div>
+
+      <div class="sec-lbl" style="margin-top:16px">Other documents</div>
       <div class="doc-box"><div style="display:flex;align-items:center;gap:11px"><div class="doc-icon"><svg viewBox="0 0 24 24"><path d="M9 12h6M9 16h6M9 8h6M5 4h14v16H5z"/></svg></div><div><div class="doc-name">Policy Schedule</div><div class="doc-sub">Full policy terms and cover details</div></div></div><a class="btn btn-ghost" id="pol-doc-schedule" target="_blank" href="#">View</a></div>
       <div class="doc-box"><div style="display:flex;align-items:center;gap:11px"><div class="doc-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M9 9h6v6H9z"/></svg></div><div><div class="doc-name">Payment Receipt</div><div class="doc-sub" id="pol-doc-receipt-sub">—</div></div></div><a class="btn btn-ghost" id="pol-doc-receipt" target="_blank" href="#">View</a></div>
       <div class="btn-row">

@@ -14,6 +14,18 @@ function hasQuoteId(item, idField) {
   return v !== undefined && v !== null && v !== "";
 }
 
+// IceCash's happy-path shape is { Result: 1, Quotes: [...] }, but a top-level failure (bad/expired
+// token, malformed request, etc.) comes back as just { Result, Message } with no Quotes array at
+// all. Guard for that here so it surfaces as a clear upstream error instead of a raw
+// "Cannot read properties of undefined" crash from blindly indexing Quotes[0].
+function firstQuote(result, functionName) {
+  if (!result || !Array.isArray(result.Quotes) || result.Quotes.length === 0) {
+    const detail = result?.Message ? result.Message.trim() : "no quote data returned";
+    throw new Error(`IceCash ${functionName} failed: ${detail}`);
+  }
+  return result.Quotes[0];
+}
+
 const router = express.Router();
 
 // GET /api/v2/motor/comprehensive/coverage-options
@@ -24,6 +36,12 @@ router.get("/comprehensive/coverage-options", (req, res) => {
 function num(v, d = 0) {
   const n = Number(v);
   return Number.isFinite(n) ? n : d;
+}
+
+// Real IceCash returns "TotalRadioTVAmt" (capital V); our mock simulator uses
+// "TotalRadioTvAmt" — read either casing so this isn't silently 0 against the real API.
+function radioTvAmt(obj) {
+  return num(obj?.TotalRadioTVAmt ?? obj?.TotalRadioTvAmt);
 }
 
 function personName(p) {
@@ -80,7 +98,7 @@ function buildInsuranceVehicle(v) {
     Owner_Town: o.town || "",
     Owner_BirthDate: o.birthDate || "",
     InsuranceType: String(v.insuranceType || "1"),
-    VehicleType: String(v.vehicleType || "1"),
+    VehicleType: v.vehicleType || "",
     VehicleValue: String(v.vehicleValue ?? "0"),
     DurationMonths: String(v.durationMonths || "4"),
     CustomerReference: v.customerReference || "",
@@ -95,7 +113,7 @@ function buildCombinedVehicle(v) {
     v.radioTvUsage || (v.radioTvFrequency ? deriveRadioTvUsage({ vehicleTypeCode: v.vehicleType, hasTV: false }) : "");
   return {
     VRN: v.vrn,
-    VehicleType: String(v.vehicleType || "1"),
+    VehicleType: v.vehicleType || "",
     VehicleValue: String(v.vehicleValue ?? "0"),
     InsuranceType: String(v.insuranceType || "1"),
     DurationMonths: String(v.durationMonths || "4"),
@@ -145,7 +163,7 @@ router.post("/quote/licence", async (req, res) => {
     const v = req.body.vehicle || {};
     const icVehicle = buildLicenceVehicle(v);
     const result = await icecash.licQuote(icVehicle);
-    const q = result.Quotes[0];
+    const q = firstQuote(result, "LICQuote");
     const masking = checkQuoteMasking(q);
     if (masking.blocked && !hasQuoteId(q, "LicenceID")) {
       // Hard failure — IceCash never generated a priceable quote. Out of scope for masking (R3).
@@ -183,8 +201,9 @@ router.post("/quote/licence", async (req, res) => {
             quoteId,
             vrn: v.vrn,
             referenceId: String(q.LicenceID),
+            currency: v.currency || "USD",
             licenseFee: num(q.TotalLicAmt),
-            radioFee: num(q.TotalRadioTvAmt),
+            radioFee: radioTvAmt(q),
             totalAmount: num(q.TotalAmount),
             status: "success",
             expiresAt: expiresAt(),
@@ -197,7 +216,7 @@ router.post("/quote/licence", async (req, res) => {
               penaltiesAmt: num(q.PenaltiesAmt),
               administrationAmt: num(q.AdministrationAmt),
               totalLicAmt: num(q.TotalLicAmt),
-              totalRadioTvAmt: num(q.TotalRadioTvAmt),
+              totalRadioTvAmt: radioTvAmt(q),
             },
             icecashRaw: { Licence: q },
           },
@@ -215,7 +234,7 @@ router.post("/quote/insurance", async (req, res) => {
     const v = req.body.vehicle || {};
     const icVehicle = buildInsuranceVehicle(v);
     const result = await icecash.tpiQuote(icVehicle);
-    const q = result.Quotes[0];
+    const q = firstQuote(result, "TPIQuote");
     const masking = checkQuoteMasking(q);
     if (masking.blocked && !hasQuoteId(q, "InsuranceID")) {
       return res.status(422).json({ success: false, message: masking.message });
@@ -249,6 +268,7 @@ router.post("/quote/insurance", async (req, res) => {
             quoteId,
             vrn: v.vrn,
             referenceId: String(q.InsuranceID),
+            currency: q.Policy.Currency,
             insurancePremium: grandTotal,
             licenseFee: 0,
             radioFee: 0,
@@ -268,7 +288,7 @@ router.post("/quote/insurance", async (req, res) => {
               premiumAmount: grandTotal,
             },
             customerReference: q.CustomerReference,
-            icecashRaw: { Policy: q.Policy, Vehicle: q.Vehicle },
+            icecashRaw: { Policy: q.Policy, Vehicle: q.Vehicle, Client: q.Client },
           },
         ],
       },
@@ -284,7 +304,7 @@ router.post("/quote/combined", async (req, res) => {
     const v = req.body.vehicle || {};
     const icVehicle = buildCombinedVehicle(v);
     const result = await icecash.tpilicQuote(icVehicle);
-    const q = result.Quotes[0];
+    const q = firstQuote(result, "TPILICQuote");
     const masking = checkQuoteMasking(q);
     if (masking.blocked && !hasQuoteId(q, "CombinedID")) {
       return res.status(422).json({ success: false, message: masking.message });
@@ -324,9 +344,10 @@ router.post("/quote/combined", async (req, res) => {
           {
             quoteId,
             referenceId: String(q.CombinedID),
+            currency: q.Policy.Currency,
             insurancePremium,
             licenseFee: num(q.Licence.TotalLicAmt),
-            radioFee: num(q.Licence.TotalRadioTvAmt),
+            radioFee: radioTvAmt(q.Licence),
             totalAmount: licenceAndRadioTotal,
             grandTotal,
             status: "success",
@@ -338,11 +359,11 @@ router.post("/quote/combined", async (req, res) => {
               penaltiesAmt: num(q.Licence.PenaltiesAmt),
               transactionAmt: num(q.Licence.TransactionAmt),
               totalLicAmt: num(q.Licence.TotalLicAmt),
-              totalRadioTvAmt: num(q.Licence.TotalRadioTvAmt),
+              totalRadioTvAmt: radioTvAmt(q.Licence),
               licenseExpiryDate: q.Licence.LicExpiryDate,
             },
             icecash: { combinedId: q.CombinedID, insuranceId: q.InsuranceID, licenceId: q.LicenceID },
-            icecashRaw: { Policy: q.Policy, Vehicle: q.Vehicle, Licence: q.Licence },
+            icecashRaw: { Policy: q.Policy, Vehicle: q.Vehicle, Licence: q.Licence, Client: q.Client },
           },
         ],
       },
@@ -365,7 +386,7 @@ router.post("/comprehensive/quote", async (req, res) => {
 
     const icVehicle = buildCombinedVehicle({ ...v, insuranceType: "1" });
     const result = await icecash.tpilicQuote(icVehicle);
-    const q = result.Quotes[0];
+    const q = firstQuote(result, "TPILICQuote");
     const masking = checkQuoteMasking(q);
     if (masking.blocked && !hasQuoteId(q, "CombinedID")) {
       return res.status(422).json({ success: false, message: masking.message });
@@ -402,6 +423,7 @@ router.post("/comprehensive/quote", async (req, res) => {
       data: {
         quoteId,
         referenceId: `CMP-${quoteId}`,
+        currency: v.currency || "USD",
         customerReference: req.body.customerReference,
         blocked: masking.blocked,
         blockedMessage: masking.message,
@@ -416,7 +438,7 @@ router.post("/comprehensive/quote", async (req, res) => {
         totals: {
           insuranceTotal: local.totalInsuranceAmount,
           licenceTotal: num(q.Licence.TotalLicAmt),
-          radioTotal: num(q.Licence.TotalRadioTvAmt),
+          radioTotal: radioTvAmt(q.Licence),
           grandTotal,
         },
         policy: {

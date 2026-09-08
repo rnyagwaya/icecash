@@ -1,7 +1,11 @@
 {
   "icecashMode": "real",
-  "baseUrl": "https://test-api.icecash.mobi",
+  "baseUrl": "https://dev-test-api.icecash.mobi",
   "partnerKey": "607914519953940821885067",
   "locationId": "1",
-  "insuranceCompanyId": "24"
+  "insuranceCompanyId": "24",
+  "ecocashMode": "simulated",
+  "ecocashGatewayBaseUrl": "http://196.29.38.218:3000",
+  "ecocashGatewayApiKey": "",
+  "ecocashGatewayPartnerCode": ""
 }

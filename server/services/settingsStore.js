@@ -11,6 +11,10 @@ const DEFAULTS = {
   partnerKey: process.env.ICECASH_PARTNER_KEY || "",
   locationId: process.env.ICECASH_LOCATION_ID || "",
   insuranceCompanyId: process.env.INSURANCE_COMPANY_ID || "24",
+  ecocashMode: process.env.ECOCASH_MODE || "simulated", // "simulated" | "real"
+  ecocashGatewayBaseUrl: process.env.ECOCASH_GATEWAY_BASE_URL || "http://196.29.38.218:3000",
+  ecocashGatewayApiKey: process.env.ECOCASH_GATEWAY_API_KEY || "",
+  ecocashGatewayPartnerCode: process.env.ECOCASH_GATEWAY_PARTNER_CODE || "",
 };
 
 let cache = null;
@@ -44,6 +48,8 @@ function getMasked() {
     ...s,
     partnerKey: s.partnerKey ? "••••••••" : "",
     partnerKeySet: Boolean(s.partnerKey),
+    ecocashGatewayApiKey: s.ecocashGatewayApiKey ? "••••••••" : "",
+    ecocashGatewayApiKeySet: Boolean(s.ecocashGatewayApiKey),
   };
 }
 
@@ -52,4 +58,9 @@ function isRealConfigured() {
   return Boolean(s.baseUrl && s.partnerKey && s.locationId);
 }
 
-module.exports = { get, getMasked, save, isRealConfigured, DEFAULTS };
+function isEcocashGatewayConfigured() {
+  const s = load();
+  return Boolean(s.ecocashGatewayBaseUrl && s.ecocashGatewayApiKey && s.ecocashGatewayPartnerCode);
+}
+
+module.exports = { get, getMasked, save, isRealConfigured, isEcocashGatewayConfigured, DEFAULTS };

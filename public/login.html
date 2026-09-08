@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sign in — Zimnat Motor Insurance</title>
+<style>
+:root{
+  --g:#00622F;--gd:#004A24;--gl:#EAF6EF;--gs:#BFE0CC;--gtext:#00401D;
+  --red:#A32D2D;--redBg:#FDF0F0;--redBorder:#EEB9B9;
+  --border:#E1E7E3;--border2:#CFDAD3;
+  --text:#141A17;--text2:#4B564F;--text3:#7C8880;
+  --surface:#F6F8F6;--white:#FFFFFF;
+  --radius:10px;--radiusLg:14px;
+  --shadow:0 10px 32px rgba(10,40,25,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;font-size:14.5px;color:var(--text);background:var(--surface)}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radiusLg);box-shadow:var(--shadow);padding:36px 34px;width:100%;max-width:360px}
+.brand{display:flex;gap:11px;align-items:center;margin-bottom:26px}
+.logo{height:32px;width:auto;display:block}
+.brand-text h1{margin:0;font-size:15px;font-weight:700}
+.brand-text p{margin:0;font-size:11px;color:var(--text3)}
+h2{font-size:19px;margin:0 0 4px;letter-spacing:-.2px}
+.sub{font-size:13px;color:var(--text2);margin:0 0 22px}
+.field{margin-bottom:14px}
+label{font-size:12px;font-weight:700;color:var(--text2);display:block;margin-bottom:6px}
+input{width:100%;border:1.5px solid var(--border2);border-radius:var(--radius);padding:11px 13px;font-size:14.5px;outline:none;color:var(--text);background:var(--white)}
+input:focus{border-color:var(--g);box-shadow:0 0 0 3px var(--gl)}
+button{width:100%;border:none;border-radius:var(--radius);padding:12px;font-size:14px;font-weight:700;cursor:pointer;background:var(--g);color:#fff;margin-top:6px;transition:background .12s}
+button:hover{background:var(--gd)}
+button:disabled{opacity:.6;cursor:default}
+.error{display:none;font-size:12.5px;color:var(--red);background:var(--redBg);border:1px solid var(--redBorder);border-radius:8px;padding:9px 12px;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">
+    <img class="logo" src="/assets/zimnat-logo.png" alt="Zimnat General Insurance">
+    <div class="brand-text"><h1>Zimnat Motor Insurance</h1><p>Staff portal</p></div>
+  </div>
+  <h2>Sign in</h2>
+  <p class="sub">Use your registered staff credentials to continue.</p>
+  <form id="loginForm">
+    <div class="field">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="username" required>
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+    </div>
+    <button type="submit" id="submitBtn">Sign in</button>
+    <div class="error" id="errorBox"></div>
+  </form>
+</div>
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  const errorBox = document.getElementById('errorBox');
+  errorBox.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+  try {
+    const res = await fetch('/api/v1/staff/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.message || 'Sign in failed');
+    }
+    const params = new URLSearchParams(location.search);
+    location.href = params.get('next') || '/';
+  } catch (err) {
+    errorBox.textContent = err.message;
+    errorBox.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Sign in';
+  }
+});
+</script>
+</body>
+</html>

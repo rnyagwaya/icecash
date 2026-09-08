@@ -8,11 +8,11 @@ const { insuranceCompanies } = require("../data/enums");
 // Known VRNs from the collection get their recorded vehicle details; unknown VRNs fall back
 // to plausible generated ones so any input can be quoted.
 const VRN_FIXTURES = {
-  ADA0010: { make: "CHANA", model: "CLUB CAB", vehicleValue: 25000, taxClass: 1 },
-  JAN00028: { make: "ADMIRAL", model: "LY 125 T 15", vehicleValue: 5000, taxClass: 4 },
-  ZBT66223: { make: "ALFA ROMEO", model: "145", vehicleValue: 25000, taxClass: 1 },
-  TRP63631: { make: "TOYOTA", model: "HILUX", vehicleValue: 18000, taxClass: 1, zbcExpired: true },
-  "250507P": { make: "NISSAN", model: "NP200", vehicleValue: 12000, taxClass: 99, invalidTaxClass: true },
+  ADA0010: { make: "CHANA", model: "CLUB CAB", vehicleValue: 25000, taxClass: 1, vehicleType: 8 },
+  JAN00028: { make: "ADMIRAL", model: "LY 125 T 15", vehicleValue: 5000, taxClass: 4, vehicleType: 19 },
+  ZBT66223: { make: "ALFA ROMEO", model: "145", vehicleValue: 25000, taxClass: 1, vehicleType: 1 },
+  TRP63631: { make: "TOYOTA", model: "HILUX", vehicleValue: 18000, taxClass: 1, zbcExpired: true, vehicleType: 8 },
+  "250507P": { make: "NISSAN", model: "NP200", vehicleValue: 12000, taxClass: 99, invalidTaxClass: true, vehicleType: 8 },
 };
 
 function fixtureFor(vrn) {
@@ -22,6 +22,7 @@ function fixtureFor(vrn) {
       model: "GENERIC MODEL",
       vehicleValue: 15000,
       taxClass: 1,
+      vehicleType: 1,
     }
   );
 }
@@ -136,7 +137,7 @@ async function tpiQuote(vehicle) {
           Model: fx.model,
           TaxClass: fx.taxClass,
           YearManufacture: "",
-          VehicleType: String(vehicle.VehicleType || vehicle.vehicleType || "1"),
+          VehicleType: String(vehicle.VehicleType || vehicle.vehicleType || fx.vehicleType || "1"),
           VehicleValue: String(fx.vehicleValue),
         },
       },
@@ -206,7 +207,7 @@ async function tpiPolicy(insuranceId) {
     Model: rec.vehicle.model,
     TaxClass: String(rec.vehicle.taxClass),
     YearManufacture: "2024",
-    VehicleType: String(c.VehicleType || c.vehicleType || "1"),
+    VehicleType: String(c.VehicleType || c.vehicleType || rec.vehicle.vehicleType || "1"),
     ValueAmount: String(rec.vehicle.vehicleValue),
     Rate: "0.0500",
     Customer_Reference: c.CustomerReference || c.customerReference || "",
@@ -399,7 +400,7 @@ async function tpilicQuote(vehicle) {
           Model: fx.model,
           TaxClass: fx.taxClass,
           YearManufacture: "",
-          VehicleType: String(vehicle.VehicleType || vehicle.vehicleType || "1"),
+          VehicleType: String(vehicle.VehicleType || vehicle.vehicleType || fx.vehicleType || "1"),
           VehicleValue: String(fx.vehicleValue),
         },
         Licence: licence,
@@ -468,7 +469,7 @@ async function tpilicResult(combinedId) {
     Model: rec.vehicle.model,
     TaxClass: String(rec.vehicle.taxClass),
     YearManufacture: "2024",
-    VehicleType: String(c.VehicleType || c.vehicleType || "1"),
+    VehicleType: String(c.VehicleType || c.vehicleType || rec.vehicle.vehicleType || "1"),
     ValueAmount: String(rec.vehicle.vehicleValue),
     Rate: "0.0500",
     Customer_Reference: c.CustomerReference || c.customerReference || "",

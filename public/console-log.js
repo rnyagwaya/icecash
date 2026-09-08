@@ -163,7 +163,10 @@
     ].join("");
     document.body.appendChild(drawer);
 
-    document.getElementById("dbgClose").onclick = () => drawer.classList.remove("open");
+    document.getElementById("dbgClose").onclick = () => {
+      drawer.classList.remove("open");
+      drawer.style.transform = "translateX(100%)"; // inline style always beats the CSS class rule
+    };
     document.getElementById("dbgClear").onclick = () => {
       log.length = 0;
       renderLog();

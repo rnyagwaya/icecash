@@ -1,42 +1,27 @@
 // ── Reference data (mirrors server/data/enums.js for client-side display) ──
-const VEH_MAP={
-  'Private Car':              [{u:'Private Use',c:1},{u:'Business use',c:2},{u:'Fleet',c:3},{u:'Private Hire (Car Hire)',c:4},{u:'Driving School',c:5}],
-  'Trailer':                  [{u:'Domestic Trailers',c:6},{u:'Caravans',c:7}],
-  'Commercial Vehicle':       [{u:'Own use',c:8},{u:'Hire and Reward',c:9},{u:'Fleet — Own use',c:10},{u:'Fleet — Hire and Reward',c:11},{u:'Driving School',c:12}],
-  'Taxis':                    [{u:'Public Hire',c:13}],
-  'Commercial Trailers':      [{u:'Own use',c:14},{u:'Hire and Reward',c:15},{u:'Fleet — Own use',c:16},{u:'Fleet — Hire and Reward',c:17},{u:'Agriculture',c:18}],
-  'Motor Cycles':             [{u:'SD&P use',c:19},{u:'Business use',c:20},{u:'Fleet',c:21}],
-  'Omnibus and Commuters':    [{u:'Up to 30 seats',c:22},{u:'Between 31–60 seats',c:23},{u:'More than 60 seats',c:24}],
-  'School Bus':               [{u:'Up to 30 seats',c:25},{u:'Between 31–60 seats',c:26},{u:'More than 60 seats',c:27}],
-  'Staff Bus':                [{u:'Up to 30 seats',c:28},{u:'Between 31–60 seats',c:29},{u:'More than 60 seats',c:30}],
-  'Tractors/Fork Lifts':      [{u:'Own use',c:31}],
-  'Tractors':                 [{u:'Hire and Reward',c:32}],
-  'Tractors/Combines':        [{u:'Agriculture — Own use',c:33},{u:'Agriculture — Hire & Reward',c:34}],
-  'Ambulance, Fire Engine, Hearse':[{u:'Various',c:35}],
-  'Agricultural Implements':  [{u:'Various',c:36}],
-  'Special Types':            [{u:'Contractors Plant and Equipment',c:37}]
-};
-const PRIVATE_CODES=new Set([1,2,3,4,5,6,7,19,20,21]);
-const INS={RTA:{code:1,label:'Road Traffic Act (RTA)'},FTP:{code:2,label:'Full Third Party'},COMP:{code:4,label:'Comprehensive Cover'}};
+const INS={RTA:{code:1,label:'Road Traffic Act (RTA)'},FTP:{code:2,label:'Full Third Party'},FTPF:{code:3,label:'Full Third Party, Fire & Theft'},COMP:{code:4,label:'Comprehensive Cover'}};
 const LIC_FREQ={4:1,5:4,6:2,7:5,8:6,9:7,10:8,11:9,12:3};
 const BUNDLE_LABELS={insurance:'Insurance only',licence:'Insurance + ZINARA Licence',radio:'Insurance + ZINARA + ZBC Radio'};
 const ANNUAL={WINDSCREEN:35,ACCESSORIES:50,EXCESS_BUYDOWN:80,CAR_HIRE:120};
 const INS_TYPE_LABELS={'1':'Road Traffic Act (RTA)','2':'Full Third Party','3':'Full Third Party, Fire & Theft','4':'Comprehensive Cover'};
-const VEH_TYPE_LABELS={1:'Private Car — Private Use',2:'Private Car — Business use',3:'Private Car — Fleet',4:'Private Car — Private Hire',5:'Private Car — Driving School',6:'Trailer — Domestic',7:'Trailer — Caravan',8:'Commercial Vehicle — Own use',9:'Commercial Vehicle — Hire and Reward',10:'Commercial Vehicle — Fleet Own use',11:'Commercial Vehicle — Fleet Hire/Reward',12:'Commercial Vehicle — Driving School',13:'Taxis — Public Hire',14:'Commercial Trailers — Own use',15:'Commercial Trailers — Hire and Reward',19:'Motor Cycle — SD&P use',20:'Motor Cycle — Business use',21:'Motor Cycle — Fleet'};
+// Populated from GET /api/v1/enums (server/data/enums.js has the complete 1-37 code list) —
+// vehicle type is no longer staff-selected, only known once IceCash returns it in the quote.
+let VEH_TYPE_LABELS={};
 
-const POLICY_HOLDER_BASE = {
-  idNumber: '63-184337B05', idType: '1',
-  firstName: 'Ropa', lastName: 'Nyagwaya',
-  address1: '14 Borrowdale Road', town: 'HARARE', suburbID: 28,
-  entityType: 'Personal', companyName: '',
-};
 function currentPolicyHolder(){
-  return { ...POLICY_HOLDER_BASE, email: S.email || 'rchirongoma@gmail.com', msisdn: S.mobile || '263775461117' };
+  return {
+    idNumber: S.idNumber, idType: '1',
+    firstName: S.firstName, lastName: S.lastName,
+    address1: S.address1, town: S.town, suburbID: S.suburbID,
+    entityType: S.entityType, companyName: S.companyName,
+    email: S.email, msisdn: S.mobile,
+  };
 }
 
 // ── State ─────────────────────────────────────────────────────────────────
-let S={vrn:'',type:'',use:'',vehCode:null,cover:null,value:null,bundle:null,hasTV:false,months:4,
-       email:'rchirongoma@gmail.com',mobile:'263775461117',
+let S={vrn:'',currency:'USD',cover:null,value:null,bundle:null,hasTV:false,usageCategory:'private',months:4,
+       email:'',mobile:'',
+       entityType:'Personal',companyName:'',firstName:'',lastName:'',idNumber:'',address1:'',town:'',suburbID:null,
        quoteId:null,quote:null,path:null,digitalPolicyNumber:null,policy:null};
 let selectedProvider='ecocash',numberEntered=true,consentGiven=false;
 let pollTimer=null,saveTimer=null,resumeToken=null,sheetExpanded=false;
@@ -47,12 +32,28 @@ function jumpTo(step){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('v-'+step).classList.add('active');
   updateProgress(step);
+
+  // Going back to edit a pre-quote step invalidates any quote already generated — clear it so
+  // the sticky summary panel doesn't keep showing a stale confirmed total for a vehicle/cover
+  // the user is actively changing. A fresh quote is fetched again once they reach Quote.
+  if(S.quote && STEPS.indexOf(step) < STEPS.indexOf('quote')){
+    S.quote=null; S.quoteId=null; S.path=null;
+  }
+
   S.currentStep = step;
   if(step==='cover') buildCoverSumm();
   if(step==='extras'){buildCoverSumm2();applyExtrasVis();}
   if(step==='details'){
-    document.getElementById('det-mobile').textContent = S.mobile || '—';
-    document.getElementById('det-email').textContent = S.email || '—';
+    document.getElementById('inpEmail').value = S.email||'';
+    document.getElementById('inpMobile').value = S.mobile||'';
+    document.getElementById('inpFirstName').value = S.firstName||'';
+    document.getElementById('inpLastName').value = S.lastName||'';
+    document.getElementById('inpIdNumber').value = S.idNumber||'';
+    document.getElementById('inpCompanyName').value = S.companyName||'';
+    document.getElementById('inpAddress1').value = S.address1||'';
+    document.getElementById('selSuburb').value = S.suburbID||'';
+    onContactType();
+    checkDetails();
   }
   if(step==='payment') syncPaymentScreen();
   if(step==='policy') loadPolicy();
@@ -97,33 +98,17 @@ function onContactType(){
   S.email=email; S.mobile=mobile;
   setFieldState('inpEmail','err-email', email.length===0?null:isValidEmail(email));
   setFieldState('inpMobile','err-mobile', mobile.length===0?null:isValidMobile(mobile));
-  checkVehBtn();
   scheduleAutoSave();
 }
-function onTypeChange(){
-  const t=document.getElementById('selType').value;S.type=t;S.use='';S.vehCode=null;
-  const sel=document.getElementById('selUse');
-  if(!t){sel.innerHTML='<option value="">Select type first…</option>';sel.disabled=true;checkVehBtn();return;}
-  const uses=VEH_MAP[t]||[];
-  sel.innerHTML='<option value="">Select use…</option>';
-  uses.forEach(u=>{const o=document.createElement('option');o.value=u.c;o.textContent=u.u;o.dataset.use=u.u;sel.appendChild(o);});
-  sel.disabled=false;
-  if(uses.length===1){sel.value=uses[0].c;onUseChange();}
-  checkVehBtn();
-}
-function onUseChange(){
-  const sel=document.getElementById('selUse');
-  const opt=sel.options[sel.selectedIndex];
-  S.vehCode=sel.value?parseInt(sel.value):null;
-  S.use=opt?opt.dataset.use||opt.textContent:'';
-  checkVehBtn();
+function toggleCurrency(cur){
+  S.currency=cur;
+  document.getElementById('cur-USD').classList.toggle('active',cur==='USD');
+  document.getElementById('cur-ZWG').classList.toggle('active',cur==='ZWG');
   renderSummary();
+  scheduleAutoSave();
 }
 function checkVehBtn(){
-  const vrnOk = isValidVRN(S.vrn);
-  const emailOk = isValidEmail(S.email||'');
-  const mobileOk = isValidMobile(S.mobile||'');
-  document.getElementById('veh-btn').disabled=!(vrnOk&&S.type&&S.vehCode&&emailOk&&mobileOk);
+  document.getElementById('veh-btn').disabled=!isValidVRN(S.vrn);
   renderSummary();
 }
 
@@ -131,8 +116,7 @@ function checkVehBtn(){
 function buildCoverSumm(){
   document.getElementById('veh-summ').innerHTML=
     `<div class="summ-chip"><span class="s-tick">✓</span>${S.vrn||'VRN'}</div>
-     <div class="summ-chip"><span class="s-tick">✓</span>${S.type}</div>
-     <div class="summ-chip"><span class="s-tick">✓</span>${S.use}</div>`;
+     <div class="summ-chip"><span class="s-tick">✓</span>${S.currency}</div>`;
   ['r-tv','r-cover','r-value','r-continue'].forEach(id=>document.getElementById(id)?.classList.remove('show'));
   ['seg-insurance','seg-licence','seg-radio'].forEach(id=>document.getElementById(id)?.classList.remove('active'));
   document.querySelectorAll('.cover-card').forEach(x=>x.classList.remove('active'));
@@ -146,7 +130,12 @@ function selectBundle(b){
   S.bundle=b;S.cover=null;S.value=null;
   ['insurance','licence','radio'].forEach(k=>document.getElementById('seg-'+k)?.classList.toggle('active',k===b));
   if(b==='radio'){document.getElementById('r-tv').classList.add('show');}
-  else{document.getElementById('r-tv').classList.remove('show');S.hasTV=false;document.getElementById('tvSwitch')?.classList.remove('on');document.getElementById('tvRow')?.classList.remove('on');}
+  else{
+    document.getElementById('r-tv').classList.remove('show');
+    S.hasTV=false;document.getElementById('tvSwitch')?.classList.remove('on');document.getElementById('tvRow')?.classList.remove('on');
+    S.usageCategory='private';document.getElementById('usageSwitch')?.classList.remove('on');document.getElementById('usageRow')?.classList.remove('on');
+    const urLbl=document.getElementById('usageRowLabel');if(urLbl)urLbl.textContent='Private use';
+  }
   document.getElementById('r-cover').classList.add('show');
   document.querySelectorAll('.cover-card').forEach(x=>x.classList.remove('active'));
   selectCover('RTA', document.getElementById('cc-RTA')); // default cover type — user can still change it
@@ -157,6 +146,13 @@ function toggleTV(){
   S.hasTV=!S.hasTV;
   document.getElementById('tvSwitch').classList.toggle('on',S.hasTV);
   document.getElementById('tvRow').classList.toggle('on',S.hasTV);
+  renderSummary();
+}
+function toggleUsageCategory(){
+  S.usageCategory = S.usageCategory==='private' ? 'commercial' : 'private';
+  document.getElementById('usageSwitch').classList.toggle('on',S.usageCategory==='commercial');
+  document.getElementById('usageRow').classList.toggle('on',S.usageCategory==='commercial');
+  document.getElementById('usageRowLabel').textContent = S.usageCategory==='commercial' ? 'Business/commercial use' : 'Private use';
   renderSummary();
 }
 function selectCover(c,el){
@@ -174,7 +170,7 @@ function onValueInput(){
   else{document.getElementById('r-continue').classList.remove('show');show('cover-back');}
   renderSummary();
 }
-function getRadioTVUsage(){if(S.hasTV)return 3;return PRIVATE_CODES.has(S.vehCode)?1:2;}
+function getRadioTVUsage(){if(S.hasTV)return 3;return S.usageCategory==='commercial'?2:1;}
 
 // ── Step 3: Extras ────────────────────────────────────────────────────────
 function buildCoverSumm2(){
@@ -210,18 +206,57 @@ function selectedExtras(){
   return S.cover==='COMP'?Object.keys(ANNUAL).filter(c=>document.getElementById('ex-'+c)?.classList.contains('checked')):[];
 }
 
+// ── Step 4: Customer details ─────────────────────────────────────────────
+async function loadEnums(){
+  try{
+    const res = await fetch('/api/v1/enums');
+    const { data } = await res.json();
+    const sel = document.getElementById('selSuburb');
+    Object.entries(data.suburbsTowns||{}).forEach(([id,label])=>{
+      const opt = document.createElement('option');
+      opt.value = id; opt.textContent = label;
+      sel.appendChild(opt);
+    });
+    VEH_TYPE_LABELS = data.vehicleTypes || {};
+  }catch(err){ /* Nice-to-have — leave placeholders/blank labels if this fails. */ }
+}
+
+function toggleEntityType(){
+  S.entityType = S.entityType==='Personal' ? 'Company' : 'Personal';
+  document.getElementById('entitySwitch').classList.toggle('on',S.entityType==='Company');
+  document.getElementById('entityRow').classList.toggle('on',S.entityType==='Company');
+  document.getElementById('entityRowLabel').textContent = S.entityType;
+  document.getElementById('companyNameBlock').style.display = S.entityType==='Company' ? 'block' : 'none';
+  document.getElementById('idRequiredHint').style.display = S.entityType==='Company' ? 'inline' : 'none';
+  checkDetails();
+}
+
+function checkDetails(){
+  S.firstName = document.getElementById('inpFirstName').value.trim();
+  S.lastName = document.getElementById('inpLastName').value.trim();
+  S.idNumber = document.getElementById('inpIdNumber').value.trim();
+  S.companyName = document.getElementById('inpCompanyName').value.trim();
+  S.address1 = document.getElementById('inpAddress1').value.trim();
+  const suburbSel = document.getElementById('selSuburb');
+  S.suburbID = suburbSel.value ? Number(suburbSel.value) : null;
+  S.town = suburbSel.value ? (suburbSel.selectedOptions[0]?.textContent || '') : '';
+
+  const ready = S.entityType==='Company' ? Boolean(S.idNumber && S.companyName) : true;
+  document.getElementById('genQuoteBtn').disabled = !ready;
+}
+
 // ── Step 4/5: Real quote request ─────────────────────────────────────────
 function buildVehiclePayload(){
   return {
     vrn: S.vrn,
-    vehicleType: String(S.vehCode),
+    vehicleType: '',
     insuranceType: String(INS[S.cover].code),
     vehicleValue: S.cover==='COMP' ? String(S.value||0) : '0',
     durationMonths: String(S.months),
     licFrequency: S.bundle!=='insurance' ? String(LIC_FREQ[S.months]||3) : undefined,
     radioTvUsage: S.bundle==='radio' ? String(getRadioTVUsage()) : undefined,
     radioTvFrequency: S.bundle==='radio' ? '1' : undefined,
-    currency: 'USD',
+    currency: S.currency,
     owner: currentPolicyHolder(),
     policyHolder: currentPolicyHolder(),
   };
@@ -274,8 +309,9 @@ function fmtDate(d){
   const dt=new Date(d); if(isNaN(dt)) return d;
   return dt.toDateString();
 }
-function fmtAmt(v){const n=parseFloat(v);return isNaN(n)?'—':'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function fmtTotal(v){const n=parseFloat(v);return isNaN(n)?'—':'USD '+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function currentCurrency(){return (S.quote&&S.quote.currency)||S.currency||'USD';}
+function fmtAmt(v){const n=parseFloat(v);return isNaN(n)?'—':currentCurrency()+' '+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtTotal(v){const n=parseFloat(v);return isNaN(n)?'—':currentCurrency()+' '+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
 
 function grandTotalOf(){
   if(S.path==='comprehensive') return S.quote.totals.grandTotal;
@@ -293,24 +329,40 @@ function renderQuote(){
   const grand = grandTotalOf();
 
   document.getElementById('q-ref').textContent = S.quoteId;
-  document.getElementById('q-quote-id').textContent = S.quoteId;
   document.getElementById('q-valid').textContent = 'Valid until ' + fmtDate(S.quote.expiresAt);
   document.getElementById('q-expires').textContent = 'Expires ' + fmtDate(S.quote.expiresAt);
 
   const year = p.YearManufacture && String(p.YearManufacture).trim() ? p.YearManufacture : 'Year not recorded';
   document.getElementById('q-vrn-make').textContent = S.vrn + (v.Make? ' · '+v.Make+' '+v.Model : '');
   document.getElementById('q-year').textContent = year;
-  document.getElementById('q-veh-type').textContent = VEH_TYPE_LABELS[S.vehCode] || S.type;
+  const vt = VEH_TYPE_LABELS[Number(v.VehicleType)];
+  document.getElementById('q-veh-type').textContent = vt ? `${vt.type} — ${vt.use}` : (v.VehicleType || '—');
   document.getElementById('q-ins-type').textContent = INS_TYPE_LABELS[String(p.InsuranceType)] || S.cover;
   document.getElementById('q-period').textContent = fmtDate(p.StartDate)+' → '+fmtDate(p.EndDate);
   document.getElementById('q-dur').textContent = (p.DurationMonths||S.months)+' months';
-  document.getElementById('q-cover-amt').textContent = p.CoverAmount!=null ? 'USD '+parseFloat(p.CoverAmount).toLocaleString('en-US',{minimumFractionDigits:2}) : '—';
+  document.getElementById('q-cover-amt').textContent = p.CoverAmount!=null ? fmtAmt(p.CoverAmount) : '—';
+
+  // Owner/policyholder info as IceCash actually returned it — masked in real mode, shown as-is
+  // per the "show exactly what the API returns" rule (no unmasking from locally-submitted values).
+  const c = raw.Client || {};
+  const hasOwnerInfo = Boolean(c.EntityType || c.LastName || c.IDNumber);
+  document.getElementById('q-owner-divider').style.display = hasOwnerInfo ? 'block' : 'none';
+  document.getElementById('q-owner-entity-row').style.display = c.EntityType ? 'flex' : 'none';
+  document.getElementById('q-owner-entity').textContent = c.EntityType || '—';
+  document.getElementById('q-owner-lastname-row').style.display = c.LastName ? 'flex' : 'none';
+  document.getElementById('q-owner-lastname').textContent = c.LastName || '—';
+  document.getElementById('q-owner-id-row').style.display = c.IDNumber ? 'flex' : 'none';
+  document.getElementById('q-owner-id').textContent = c.IDNumber || '—';
 
   document.getElementById('q-amt-lbl').textContent = combined ? 'Total due (ins + licence)' : 'Total due';
   document.getElementById('q-total-fig').textContent = parseFloat(grand).toLocaleString('en-US',{minimumFractionDigits:2});
+  document.getElementById('qa-currency').textContent = currentCurrency();
 
   document.getElementById('q-ins-hdr').textContent = 'Motor Insurance · ' + S.vrn;
-  document.getElementById('q-premium').textContent = fmtAmt(p.PremiumAmount);
+  // Premium amount is the base cover BEFORE stamp duty/levy (CoverAmount) — PremiumAmount/Amount
+  // is already the grand total (CoverAmount + StampDuty + GovernmentLevy), so showing it here
+  // would make the breakdown look like it double-counts when read top to bottom.
+  document.getElementById('q-premium').textContent = fmtAmt(p.CoverAmount);
   document.getElementById('q-stamp').textContent = fmtAmt(p.StampDuty);
   document.getElementById('q-levy').textContent = fmtAmt(p.GovernmentLevy);
   document.getElementById('q-ins-total').textContent = fmtAmt(p.Amount);
@@ -337,7 +389,9 @@ function renderQuote(){
     document.getElementById('q-penalties').textContent = fmtAmt(l.PenaltiesAmt);
     document.getElementById('q-admin').textContent = fmtAmt(l.AdministrationAmt);
     document.getElementById('q-lic-total').textContent = fmtAmt(l.TotalLicAmt);
-    document.getElementById('q-radio').textContent = fmtAmt(l.TotalRadioTvAmt);
+    // Real IceCash returns "TotalRadioTVAmt" (capital V); our mock simulator uses
+    // "TotalRadioTvAmt" — read either casing so this displays correctly in both modes.
+    document.getElementById('q-radio').textContent = fmtAmt(l.TotalRadioTVAmt ?? l.TotalRadioTvAmt);
     document.getElementById('q-lic-radio-total').textContent = fmtAmt(l.TotalAmount);
   }
 
@@ -370,31 +424,58 @@ function syncPaymentScreen(){
   document.getElementById('pay-lic-row').style.display = combined ? 'flex':'none';
   if(combined && l){document.getElementById('pay-lic-amt').textContent = fmtAmt(l.TotalAmount);}
   document.getElementById('pay-total').textContent = grandFmt;
+  document.getElementById('pay-total-lbl').textContent = 'Total due today';
+  document.getElementById('pay-receipt-row').style.display='none';
+  document.getElementById('pay-digital-row').style.display='none';
+  document.getElementById('pay-licence-receipt-row').style.display='none';
   document.getElementById('consent-amt').textContent = grandFmt;
   document.getElementById('pay-btn-amt').textContent = grandFmt;
   resetPaymentCard();
 }
 
-// ── Payment — one unified method list: EcoCash / InnBucks / OneMoney / Cash / Card ──
+// ── Payment — one unified method list: EcoCash / Cash / Card ──
 var PROVIDERS={
   ecocash:{label:'EcoCash', kind:'wallet'},
-  innbucks:{label:'InnBucks', kind:'wallet'},
-  onemoney:{label:'OneMoney', kind:'wallet'},
   cash:{label:'Cash', kind:'cash'},
   card:{label:'Card', kind:'card'},
 };
 let cashReady=false, cardReady=false;
 
+// Bank + terminal ID as physically labeled on each POS machine — extend this list as more
+// terminals come into service.
+const POS_TERMINALS=[
+  {bank:'NMB', terminalId:'66756'},
+  {bank:'STANBIC', terminalId:'334265'},
+];
+function loadPosTerminals(){
+  const sel=document.getElementById('pos-terminal');
+  if(!sel || sel.options.length>1) return;
+  POS_TERMINALS.forEach(t=>{
+    const opt=document.createElement('option');
+    opt.value=`${t.bank}-${t.terminalId}`;
+    opt.textContent=`${t.bank}-${t.terminalId}`;
+    sel.appendChild(opt);
+  });
+}
+
 function resetPaymentCard(){
-  selectedProvider='ecocash';numberEntered=true;consentGiven=false;cashReady=false;cardReady=false;
+  selectedProvider='ecocash';consentGiven=false;cashReady=false;cardReady=false;
   document.getElementById('paymentCard').style.display='block';
+  document.getElementById('paymentBackRow').style.display='flex';
   hide('cashierOrch'); hide('payWaiting'); hide('payFailed'); hide('payFinalising');
   Object.keys(PROVIDERS).forEach(k=>document.getElementById('badge-'+k)?.classList.remove('selected'));
   document.getElementById('badge-ecocash').classList.add('selected');
+  document.getElementById('mob-num').value=S.mobile||'';
+  document.getElementById('cash-currency-label').textContent=currentCurrency();
   document.getElementById('cash-amount').value='';
+  document.getElementById('change-due-row').style.display='none';
+  document.getElementById('card-currency-label').textContent=currentCurrency();
+  document.getElementById('card-amount').value='';
+  document.getElementById('pos-terminal').value='';
   document.getElementById('card-rrn').value='';
   document.getElementById('consent-cb').checked=false;
   selectProvider('ecocash');
+  checkNumber();
 }
 
 function selectProvider(id){
@@ -426,11 +507,26 @@ function checkNumber(){
 function checkConsent(){consentGiven=document.getElementById('consent-cb').checked;checkPayReady();}
 function checkCashReady(){
   const v=parseFloat(document.getElementById('cash-amount').value);
-  cashReady = v>0;
+  const total=grandTotalOf();
+  const row=document.getElementById('change-due-row');
+  if(!v || isNaN(v)){
+    row.style.display='none';
+    cashReady=false;
+  } else {
+    const change=v-total;
+    row.style.display='flex';
+    row.classList.toggle('insufficient', change<0);
+    document.getElementById('change-due-val').textContent =
+      change<0 ? `Short by ${currentCurrency()} ${Math.abs(change).toFixed(2)}` : `${currentCurrency()} ${change.toFixed(2)}`;
+    cashReady = change>=0;
+  }
   checkPayReady();
 }
 function checkCardReady(){
-  cardReady = document.getElementById('card-rrn').value.trim().length>=4;
+  const amount=parseFloat(document.getElementById('card-amount').value);
+  const terminal=document.getElementById('pos-terminal').value;
+  const rrn=document.getElementById('card-rrn').value.trim();
+  cardReady = Boolean(amount>0 && terminal && rrn.length>=4);
   checkPayReady();
 }
 function checkPayReady(){
@@ -450,6 +546,7 @@ function handlePayClick(){
 
 async function handlePay(){
   document.getElementById('paymentCard').style.display='none';
+  document.getElementById('paymentBackRow').style.display='none';
   show('payWaiting'); hide('payFailed'); hide('payFinalising');
   document.getElementById('pollList').innerHTML='';
 
@@ -457,9 +554,15 @@ async function handlePay(){
   const amount = grandTotalOf();
 
   const initBody = { quoteId: S.quoteId, customerMsisdn: msisdn, amount };
-  await fetch('/api/v1/payments/ecocash/initiate', {
+  const initRes = await fetch('/api/v1/payments/ecocash/initiate', {
     method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(initBody)
   });
+  if(!initRes.ok){
+    const initJson = await initRes.json().catch(()=>({}));
+    document.getElementById('payFailedMsg').textContent = initJson.message || 'Could not start the EcoCash payment.';
+    hide('payWaiting'); show('payFailed');
+    return;
+  }
 
   let attempts=0;
   const maxAttempts=20;
@@ -468,6 +571,13 @@ async function handlePay(){
     try{
       const res = await fetch(`/api/v1/payments/ecocash/status/quote/${S.quoteId}`);
       const json = await res.json();
+
+      if(json.paymentStatus==='FAILED'){
+        clearInterval(pollTimer);
+        document.getElementById('payFailedMsg').textContent = json.message || 'The customer did not approve the EcoCash prompt.';
+        hide('payWaiting'); hide('payFinalising'); show('payFailed');
+        return;
+      }
 
       if(json.paymentStatus==='SUCCESS' && json.policyStatus==='PROCESSING'){
         hide('payWaiting'); show('payFinalising');
@@ -482,10 +592,12 @@ async function handlePay(){
       }
       if(attempts>=maxAttempts){
         clearInterval(pollTimer);
+        document.getElementById('payFailedMsg').textContent = 'No policy was created — you have not been charged.';
         hide('payWaiting'); hide('payFinalising'); show('payFailed');
       }
     }catch(err){
       clearInterval(pollTimer);
+      document.getElementById('payFailedMsg').textContent = 'No policy was created — you have not been charged.';
       hide('payWaiting'); show('payFailed');
     }
   }, 1500);
@@ -493,68 +605,70 @@ async function handlePay(){
 function retryPay(){
   hide('payFailed');hide('payWaiting');hide('payFinalising');
   document.getElementById('paymentCard').style.display='block';
+  document.getElementById('paymentBackRow').style.display='flex';
 }
 
 // ── Cash / Card — branch-confirmed, 2-step orchestration (accept + poll) ──
-function setOrchStep(step, state, detailText){
-  // state: 'pending' | 'ok' | 'fail'
-  const badge = document.getElementById('orch-step'+step+'-badge');
-  const detail = document.getElementById('orch-step'+step+'-detail');
-  badge.className = 'cbadge cbadge-'+state;
-  badge.textContent = state==='ok' ? 'Approved' : state==='fail' ? 'Failed' : 'In progress';
-  if(detailText) detail.textContent = detailText;
-}
-
 async function handleCounterPayment(){
   const kind = PROVIDERS[selectedProvider]?.kind; // 'cash' | 'card'
   document.getElementById('paymentCard').style.display='none';
+  document.getElementById('paymentBackRow').style.display='none';
   show('cashierOrch');
-  hide('orchResultOk'); hide('orchResultFail'); hide('orchActions');
+  hide('orchResultFail'); hide('orchActions');
+  document.getElementById('pay-total-lbl').textContent = 'Total due today';
+  document.getElementById('pay-receipt-row').style.display='none';
+  document.getElementById('pay-digital-row').style.display='none';
+  document.getElementById('pay-licence-receipt-row').style.display='none';
+  document.getElementById('orchRetryBtn').style.display='none';
   document.getElementById('orchViewPolicyBtn').style.display='none';
-  setOrchStep(1,'pending','Submitting acceptance to IceCash…');
-  setOrchStep(2,'pending','Waiting on step 1…');
+  show('orchPending');
+  document.getElementById('orchPendingDetail').textContent = 'Submitting your payment to IceCash…';
 
   const body = kind==='cash'
-    ? { quoteId: S.quoteId, paymentSource: 'CASH', amountTendered: document.getElementById('cash-amount').value.trim() }
-    : { quoteId: S.quoteId, paymentSource: 'CARD_SWIPE', cardReference: document.getElementById('card-rrn').value.trim() };
-
-  // Cosmetic stage transition — the confirm endpoint performs both the accept
-  // call and the poll loop server-side in one request; this just reflects
-  // that two-step reality back to the cashier as it happens.
-  const stage2Timer = setTimeout(()=>{
-    setOrchStep(1,'ok','Accepted by IceCash.');
-    setOrchStep(2,'pending','Polling IceCash for policy confirmation…');
-  }, 900);
+    ? {
+        quoteId: S.quoteId, paymentSource: 'CASH',
+        amountTendered: document.getElementById('cash-amount').value.trim(),
+        changeDue: (parseFloat(document.getElementById('cash-amount').value)-grandTotalOf()).toFixed(2),
+      }
+    : {
+        quoteId: S.quoteId, paymentSource: 'CARD_SWIPE',
+        amountPaid: document.getElementById('card-amount').value.trim(),
+        posTerminal: document.getElementById('pos-terminal').value,
+        cardReference: document.getElementById('card-rrn').value.trim(),
+      };
 
   try{
     const res = await fetch('/api/v1/motor/payments/confirm', {
       method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
     });
     const json = await res.json();
-    clearTimeout(stage2Timer);
-    setOrchStep(1,'ok','Accepted by IceCash.');
+    hide('orchPending');
 
     if(res.ok && json.success){
-      setOrchStep(2,'ok','Policy confirmed.');
       S.digitalPolicyNumber = json.digitalPolicyNumber;
-      document.getElementById('orchResultOkText').textContent =
-        `Receipt ${json.paymentTransactionId} — digital policy ${json.digitalPolicyNumber}${json.licenceReceiptId ? ' · licence receipt '+json.licenceReceiptId : ''}.`;
-      show('orchResultOk');
+      document.getElementById('pay-total-lbl').textContent = 'Payment recorded';
+      document.getElementById('pay-receipt-no').textContent = json.paymentTransactionId;
+      document.getElementById('pay-receipt-row').style.display='flex';
+      document.getElementById('pay-digital-no').textContent = json.digitalPolicyNumber;
+      document.getElementById('pay-digital-row').style.display='flex';
+      if(json.licenceReceiptId){
+        document.getElementById('pay-licence-receipt-no').textContent = json.licenceReceiptId;
+        document.getElementById('pay-licence-receipt-row').style.display='flex';
+      }
       document.getElementById('orchViewPolicyBtn').style.display='block';
       show('orchActions');
     } else {
-      setOrchStep(2,'fail', json.opsAlert?.detail || json.message || 'No response from IceCash within the retry window.');
       document.getElementById('orchResultFailText').textContent =
         json.opsAlert ? `${json.opsAlert.reason}: ${json.opsAlert.detail}` : (json.message || 'Please retry — no charge has been reversed automatically.');
       show('orchResultFail');
+      document.getElementById('orchRetryBtn').style.display='block';
       show('orchActions');
     }
   }catch(err){
-    clearTimeout(stage2Timer);
-    setOrchStep(1,'fail','Could not reach the gateway.');
-    setOrchStep(2,'fail','Not attempted.');
+    hide('orchPending');
     document.getElementById('orchResultFailText').textContent = err.message;
     show('orchResultFail');
+    document.getElementById('orchRetryBtn').style.display='block';
     show('orchActions');
   }
 }
@@ -580,13 +694,12 @@ async function loadPolicy(){
   document.getElementById('pol-period').textContent = fmtDate(policy.cover.startDate)+' → '+fmtDate(policy.cover.endDate);
   document.getElementById('pol-icecash-no').textContent = policy.icecash.policyNumber || '—';
   document.getElementById('pol-digital-no').textContent = policy.digitalPolicyNumber;
+  document.getElementById('pol-processed-by').textContent = policy.processedBy?.name || '—';
 
   const hasReceipt = Boolean(policy.icecash.licenceReceiptId);
-  document.getElementById('pol-receipt').style.display = hasReceipt ? 'block':'none';
+  document.getElementById('pol-receipt').style.display = hasReceipt ? 'flex':'none';
   if(hasReceipt) document.getElementById('pol-receipt-id').textContent = policy.icecash.licenceReceiptId;
 
-  document.getElementById('pol-doc-name').textContent = 'Cover Note — ' + policy.vehicle.vrn;
-  document.getElementById('pol-doc-cover').href = policy.documents.coverNote;
   document.getElementById('pol-doc-schedule').href = policy.documents.schedule;
   document.getElementById('pol-doc-receipt').href = policy.documents.receipt;
   document.getElementById('pol-doc-receipt-sub').textContent = `${policy.payment.paymentSource} · ${policy.payment.paymentTransactionId}`;
@@ -623,7 +736,7 @@ function renderSummary(){
 
   const lines = [];
   if(S.vrn) lines.push(['Vehicle', S.vrn]);
-  if(S.type) lines.push(['Type', S.use ? `${S.type} — ${S.use}` : S.type]);
+  lines.push(['Currency', S.currency]);
   if(S.bundle) lines.push(['Includes', BUNDLE_LABELS[S.bundle]]);
   if(S.cover) lines.push(['Cover', INS[S.cover]?INS[S.cover].label:S.cover]);
   if(S.vrn && S.months) lines.push(['Duration', S.months+' months']);
@@ -644,19 +757,22 @@ function renderSummary(){
     const figure = grandTotalOf();
     totalBox.style.display='block';
     totalLabel.textContent = (S.currentStep==='payment') ? 'Total due today' : 'Your quote total';
-    totalFig.textContent = 'USD '+figure.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    totalFig.textContent = currentCurrency()+' '+figure.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
     totalNote.textContent = 'Confirmed price from your quote.';
     totalNote.style.color = 'var(--gm)';
-    if(sheetFig){ sheetFig.textContent = 'USD '+figure.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); sheetFig.classList.remove('pending'); }
+    if(sheetFig){ sheetFig.textContent = currentCurrency()+' '+figure.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); sheetFig.classList.remove('pending'); }
   } else {
     totalBox.style.display='none';
     if(sheetFig){ sheetFig.textContent = 'Get your quote to see pricing'; sheetFig.classList.add('pending'); }
   }
 
   // Hide the sticky panel once the policy is issued — its own summary takes over.
-  const hideOnPolicy = S.currentStep==='policy';
-  document.getElementById('summaryPanel').classList.toggle('force-hide', hideOnPolicy);
-  document.getElementById('summarySheet').classList.toggle('force-hide', hideOnPolicy);
+  // The Quote step is itself the full quotation — no need for the sticky recap alongside it.
+  // The Policy step has its own dedicated summary card too.
+  const hideSummary = S.currentStep==='policy' || S.currentStep==='quote' || S.currentStep==='payment';
+  document.getElementById('summaryPanel').classList.toggle('force-hide', hideSummary);
+  document.getElementById('summarySheet').classList.toggle('force-hide', hideSummary);
+  document.getElementById('wizardLayout').classList.toggle('full-width', hideSummary);
 }
 
 function toggleSheet(){
@@ -706,18 +822,8 @@ async function tryResume(){
     Object.assign(S, saved);
 
     document.getElementById('inpVRN').value = S.vrn||'';
-    document.getElementById('inpEmail').value = S.email||'';
-    document.getElementById('inpMobile').value = S.mobile||'';
-    if(S.type){
-      const savedVehCode = S.vehCode; // onTypeChange() below resets S.vehCode/S.use as a side effect
-      document.getElementById('selType').value = S.type;
-      onTypeChange();
-      if(savedVehCode){
-        document.getElementById('selUse').value = savedVehCode;
-        onUseChange(); // .value alone doesn't fire onchange — call directly so S.use/S.vehCode resync
-      }
-    }
-    onVRNType(); onContactType();
+    toggleCurrency(S.currency||'USD');
+    onVRNType();
 
     const banner = document.getElementById('resumeBanner');
     document.getElementById('resumeBannerSub').textContent = `Resuming your ${S.vrn||'saved'} quote from where you left off.`;
@@ -740,6 +846,36 @@ function closeSettings(){
   document.getElementById('settingsModal').classList.remove('open');
 }
 
+function toggleProfileMenu(){
+  document.getElementById('profileDropdown').classList.toggle('open');
+}
+function closeProfileMenu(){
+  document.getElementById('profileDropdown').classList.remove('open');
+}
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('profileMenu');
+  if (menu && !menu.contains(e.target)) closeProfileMenu();
+});
+
+async function loadProfile(){
+  try {
+    const res = await fetch('/api/v1/staff/me');
+    if (!res.ok) { location.href = '/login.html'; return; }
+    const { user } = await res.json();
+    const initials = (user.name || user.email).split(/[\s.@]+/).filter(Boolean).slice(0,2).map(p=>p[0].toUpperCase()).join('');
+    document.getElementById('profileAvatar').textContent = initials || '?';
+    document.getElementById('profileName').textContent = user.name || user.email;
+    document.getElementById('profileEmail').textContent = user.email;
+  } catch (err) {
+    // Non-fatal — leave the placeholder avatar rather than blocking the wizard on this.
+  }
+}
+
+async function logout(){
+  await fetch('/api/v1/staff/logout', { method: 'POST' });
+  location.href = '/login.html';
+}
+
 // ── Misc ──────────────────────────────────────────────────────────────────
 function show(id){const e=document.getElementById(id);if(e)e.style.display='block';}
 function hide(id){const e=document.getElementById(id);if(e)e.style.display='none';}
@@ -758,21 +894,35 @@ function resetDemo(){
   localStorage.removeItem('zgi_resume_token');
   history.replaceState(null,'',location.pathname);
   document.getElementById('resumeBanner').classList.remove('show');
-  S={vrn:'',type:'',use:'',vehCode:null,cover:null,value:null,bundle:null,hasTV:false,months:4,
-     email:'rchirongoma@gmail.com',mobile:'263775461117',
+  S={vrn:'',currency:'USD',cover:null,value:null,bundle:null,hasTV:false,usageCategory:'private',months:4,
+     email:'',mobile:'',
+     entityType:'Personal',companyName:'',firstName:'',lastName:'',idNumber:'',address1:'',town:'',suburbID:null,
      quoteId:null,quote:null,path:null,digitalPolicyNumber:null,policy:null};
-  selectedProvider='ecocash';numberEntered=true;consentGiven=false;
+  selectedProvider='ecocash';consentGiven=false;
   document.getElementById('inpVRN').value='';
-  document.getElementById('inpEmail').value='rchirongoma@gmail.com';
-  document.getElementById('inpMobile').value='263775461117';
+  document.getElementById('inpEmail').value='';
+  document.getElementById('inpMobile').value='';
+  document.getElementById('inpFirstName').value='';
+  document.getElementById('inpLastName').value='';
+  document.getElementById('inpIdNumber').value='';
+  document.getElementById('inpCompanyName').value='';
+  document.getElementById('inpAddress1').value='';
+  document.getElementById('selSuburb').value='';
+  document.getElementById('cur-USD').classList.add('active');
+  document.getElementById('cur-ZWG').classList.remove('active');
+  document.getElementById('entitySwitch').classList.remove('on');
+  document.getElementById('entityRow').classList.remove('on');
+  document.getElementById('entityRowLabel').textContent='Personal';
+  document.getElementById('companyNameBlock').style.display='none';
+  document.getElementById('idRequiredHint').style.display='none';
+  document.getElementById('usageSwitch').classList.remove('on');
+  document.getElementById('usageRow').classList.remove('on');
+  document.getElementById('usageRowLabel').textContent='Private use';
   setFieldState('inpVRN','err-vrn',null);
   setFieldState('inpEmail','err-email',null);
   setFieldState('inpMobile','err-mobile',null);
   document.getElementById('saveNote').classList.remove('saved');
   document.getElementById('saveNoteText').textContent="We'll save your progress so you can pick up where you left off.";
-  document.getElementById('selType').value='';
-  document.getElementById('selUse').innerHTML='<option value="">Select type first…</option>';
-  document.getElementById('selUse').disabled=true;
   document.getElementById('veh-btn').disabled=true;
   if(document.getElementById('inpValue'))document.getElementById('inpValue').value='';
   document.querySelectorAll('.dur-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
@@ -792,6 +942,8 @@ function resetDemo(){
 
 checkNumber();
 onVRNType();
-onContactType();
 jumpTo('vehicle');
 tryResume();
+loadProfile();
+loadEnums();
+loadPosTerminals();

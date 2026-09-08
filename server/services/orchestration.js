@@ -128,6 +128,7 @@ async function confirmPayment(quoteId, paymentInfo) {
     policyType: quote.path.toUpperCase(),
     masterId: quote.customerReference,
     status: "ACTIVE",
+    processedBy: paymentInfo.processedBy || null,
     vehicle: quote.vehicleSummary,
     policyHolder: quote.policyHolder,
     cover: {
@@ -148,6 +149,11 @@ async function confirmPayment(quoteId, paymentInfo) {
       paymentTransactionId: paymentInfo.paymentTransactionId,
       currency: quote.currency,
       grandTotal: quote.grandTotal,
+      amountTendered: paymentInfo.amountTendered || null,
+      changeDue: paymentInfo.changeDue || null,
+      amountPaid: paymentInfo.amountPaid || null,
+      posTerminal: paymentInfo.posTerminal || null,
+      cardReference: paymentInfo.cardReference || null,
     },
   };
 

@@ -11,9 +11,16 @@ const policyRoutes = require("./routes/policy");
 const notifyRoutes = require("./routes/notify");
 const sessionsRoutes = require("./routes/sessions");
 const icecashLogRoutes = require("./routes/icecashLog");
+const authRoutes = require("./routes/auth");
+const { requireAuth } = require("./middleware/auth");
 
 const app = express();
 app.use(express.json());
+
+// requireAuth lets POST /api/v1/staff/login and /login.html through with no session;
+// everything else (API and pages) needs a valid session cookie.
+app.use(requireAuth);
+app.use("/api/v1/staff", authRoutes);
 
 // Public gateway layer — see Motor_Insurance_Gateway_Technical_Reference_v1.html
 app.use("/api/v1", settingsRoutes);

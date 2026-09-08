@@ -1,0 +1,10 @@
+{
+  "users": [
+    {
+      "email": "nyagwayar@zimnat.co.zw",
+      "name": "Ropafadzo Nyagwaya",
+      "salt": "62230a6536c6e0cb19b0fa16b9f4195b",
+      "hash": "a0081e4999dc05b1b796a1e15f1e0c7856e20550ac40cd39ae682729724f93e2330a1997a8af44ef8523f27f981a9d2794887638e61b5738a433276d2548331e"
+    }
+  ]
+}

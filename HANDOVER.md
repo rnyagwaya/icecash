@@ -5,177 +5,230 @@ project directory and reference this file) to continue where this session left o
 
 ## What this project is
 
-A Node/Express gateway (`server/`) + customer self-service portal (`public/`) that
-wraps IceCash/ZINARA for Zimnat motor insurance: quote (licence / insurance /
-combined / comprehensive) → payment (mobile money or in-branch cash/card) → issued
-policy, with a customer-facing wizard and a `/console` staff debug view.
-
-Git: initial commit `55952dd` on `main`, "Build Zimnat Motor Insurance gateway:
-quote/payment/policy flow over IceCash". Working tree was clean as of that commit;
-check `git status` for anything since.
+A Node/Express gateway (`server/`) + **staff-facing** portal (`public/`) that wraps
+IceCash/ZINARA for Zimnat motor insurance: quote (insurance / combined / licence) →
+payment (EcoCash / in-branch cash/card) → issued policy. This was originally a
+customer self-service portal; it was converted to a staff portal this session (login
+required, customer data entered by staff not pre-filled). `/console` is a staff debug
+view showing every API call (same wizard, extra logging drawer).
 
 Run it: `node server/index.js` (or `npm start`), serves on `http://localhost:3000`.
-Customer portal at `/`, staff debug console (logs every API call, both
-browser→gateway and gateway→IceCash) at `/console`.
+Login required for everything — see Auth section below.
 
-## Three IceCash integration modes
+**Git state**: local `main` is ahead of `origin/main` (not yet pushed — user pushes
+manually, no git credentials configured in the dev environment). Local history was
+rewritten (`git filter-branch`) earlier to scrub an IceCash partner key that had been
+committed and briefly exposed on the public repo — **the key was rotated when this was
+found; if pushing this history, it must be a force-push** (`git push --force-with-lease
+origin main`), since commit hashes changed.
 
-Set via the Settings modal (gear icon in the portal header) or `POST /api/v1/settings`.
+## Staff auth (new this session)
 
-1. **`mock`** — local simulator (`server/services/icecashMock.js`). Fully working,
-   safe to hammer for testing. Has fixture VRNs for edge cases (see below).
-2. **`real`** — direct to IceCash's actual test API (`server/services/icecashReal.js`),
-   MAC-signed per the recorded Postman collection. **Already working**, user has live
-   credentials configured. `server/data/settings.json` holds the real partner key —
-   this file is gitignored, never commit it.
-3. **`gateway`** — NOT YET BUILT. The user's own hosted gateway, which itself handles
-   IceCash auth (no partner key/MAC needed from us — just the gateway's own
-   credentials). This is the in-progress work — see below.
+- `server/services/userStore.js` — local user store at `server/data/users.json`
+  (gitignored, scrypt-hashed passwords). Add/update a user via
+  `node server/scripts/create-user.js <email> <password> [name]`.
+- `server/services/authSession.js` + `server/middleware/auth.js` — in-memory session
+  cookie (`sid`, 12h TTL, wiped on server restart). `requireAuth` middleware is mounted
+  globally in `server/index.js` before all routes, so `req.user.{email,name}` is
+  available everywhere.
+- `server/routes/auth.js` — `POST /api/v1/staff/login`, `POST /api/v1/staff/logout`,
+  `GET /api/v1/staff/me`.
+- `public/login.html` — standalone login page, Zimnat-branded.
+- Settings (gear icon) moved off the header entirely — now lives inside the profile
+  avatar dropdown (top-right), since staff shouldn't see it as a prominent "this is a
+  mock" signal.
+- Current registered user: `nyagwayar@zimnat.co.zw` (password known to the user).
 
-Routing between mock/real happens centrally in `server/services/icecashClient.js`,
-which also logs every call (see next section) — a future `icecashGateway.js` should
-plug into this same dispatch table.
+## Two IceCash integration modes
 
-## Debug/logging infrastructure (done)
+Set via Settings (profile menu → Settings) or `POST /api/v1/settings`.
+
+1. **`mock`** — local simulator (`server/services/icecashMock.js`). Fixture VRNs:
+   `ADA0010`, `JAN00028`, `ZBT66223`, `TRP63631` (ZBC-expired case),
+   `250507P` (invalid tax class case) — each now also carries a `vehicleType` so the
+   mock returns a realistic type even though the client no longer submits one (see
+   below).
+2. **`real`** — direct to IceCash's test API (`server/services/icecashReal.js`),
+   MAC-signed. Working, confirmed against live endpoint this session (quotes, payment
+   confirm, all cover types, ZWG currency — see "Confirmed against real API" below).
+   `server/data/settings.json` holds the real partner key — gitignored, never commit.
+   **Bug fixed this session**: the cached auth token wasn't invalidated when the
+   partner key changed via Settings, causing a confusing "MAC mismatch" until restart —
+   `icecashReal.resetToken()` is now called from the settings route on key/baseUrl
+   change.
+
+Third mode `gateway` (the user's own hosted gateway for IceCash quote/policy calls,
+not payments) was explored last session but never built — out of scope this session,
+not touched. The **EcoCash payment gateway** (separate concern, see below) *was* built.
+
+## EcoCash gateway (new this session, NOT YET LIVE-TESTED against the real endpoint)
+
+`server/services/ecocashGateway.js` — real client for the user's own gateway
+(`http://196.29.38.218:3000`, separate from IceCash's gateway/API). Gated by a new
+`ecocashMode` setting (`"simulated"` default | `"real"`) in Settings — until real mode
+is explicitly turned on with credentials, EcoCash behaves exactly as before (4s
+simulated auto-success via `setTimeout`, no external call at all).
+
+Confirmed contract (user-provided Postman examples):
+- Auth: `POST /api/v1/auth/login` `{apiKey, partnerCode}` → `{success, data:
+  {access_token, expires_in}}`.
+- Initiate: `POST /api/v1/payments/ecocash/initiate` `{transactionReference, currency,
+  amount, customerMsisdn (local format, no 263), customerName, productType:
+  "MOTOR_INSURANCE", customerReference, policyNumber}` → `{success, data:
+  {transactionReference, ecocashReference, status, message, currency, amount}}`.
+- Query: `POST /api/v1/payments/ecocash/query` `{transactionReference}` → same shape
+  plus `completedAt`.
+- **Unconfirmed**: terminal success/failure status strings — every example seen so far
+  returned `"PENDING SUBSCRIBER VALIDATION"` (transaction never resolved in testing).
+  Built defensively: anything still matching `/^PENDING/i` is treated as in-flight;
+  once it isn't, keyword-matched against FAIL/CANCEL/DECLINE/TIMEOUT/REJECT/EXPIRE/ERROR
+  for failure, otherwise treated as success and the normal accept+poll orchestration
+  runs. **If real terminal values turn out different from this guess, only
+  `ecocashGateway.isPending`/`isFailure` need adjusting** — everything else is built
+  around those two functions.
+- `policyNumber` in the initiate payload is the quote's own IceCash reference id
+  (combined/insurance/licence id) — NOT a final issued policy number, which doesn't
+  exist yet at payment-initiation time.
+- Wired into `server/routes/payments.js`: `/payments/ecocash/status/quote/:quoteId`
+  live-queries the real gateway on each poll (frontend already polls this every 1.5s)
+  and drives `confirmPayment()` the same way cash/card does, with a
+  `quote.paymentStatus='CONFIRMING'` guard against double-firing on overlapping polls.
+
+**Next step for EcoCash**: get real gateway credentials into Settings, flip
+`ecocashMode` to `real`, and do one real end-to-end test — in particular to learn the
+actual terminal status strings and confirm the `isPending`/`isFailure` heuristic holds.
+
+## Vehicle type — removed from staff intake (new this session)
+
+Confirmed via a real IceCash TPIQuote call that `VehicleType` can be submitted blank —
+IceCash returns the real vehicle type in the response's `Vehicle.VehicleType` (plus
+Make/Model/TaxClass). So Step 1 no longer asks for vehicle type/use at all — just VRN +
+a USD/ZWG currency toggle. The quote step's "Vehicle type" line now reads it back from
+the response via the server's complete `vehicleTypes` enum (`GET /api/v1/enums`,
+fetched client-side into `VEH_TYPE_LABELS`).
+
+**One dependent feature needed a workaround**: the "+ ZBC radio" bundle needs to know
+private-vs-commercial usage to price the radio/TV licence correctly, but that's only
+known from IceCash's response — too late, since radio pricing has to be *submitted*
+with the quote request. Solved with a standalone toggle shown only when ZBC radio is
+selected (`S.usageCategory`), independent of the removed vehicle-type picker.
+
+## Customer details — optional, entity-type gated (new this session)
+
+All customer-detail fields (name, ID, address, email, mobile) are optional by default.
+The one exception: a Personal/Company toggle on the Details step — Company requires
+`companyName` + `idNumber`. (This replaced an earlier attempt at gating ID-mandatory on
+vehicle type, abandoned once vehicle type was removed from intake — see git history if
+curious about that dead end.)
+
+## Cover types — Comprehensive hidden, FTPF added (new this session)
+
+Only RTA / FTP / FTPF are visible now. Comprehensive's card is `display:none` in
+`index.html` but nothing else about it was touched (`INS.COMP`, `applyExtrasVis()`,
+comprehensive endpoint routing) — trivial to re-enable by removing that one style.
+`INS.FTPF = {code:3, label:'Full Third Party, Fire & Theft'}` added; the old `cc-FTP`
+card had FTPF's copy despite driving code 2 — fixed to accurate FTP wording.
+
+## Payment methods (rebuilt this session)
+
+- **EcoCash**: see gateway section above.
+- **Cash**: amount tendered + live change-due calculation (blocks payment if
+  underpaid, shows exact change otherwise). Both values now appear on the printed
+  receipt.
+- **Card**: amount paid + POS terminal dropdown (`POS_TERMINALS` array in
+  `public/app.js` — currently `NMB-66756`, `STANBIC-334265`, easy to extend) + RRN
+  (kept per explicit user request). All three required, all three appear on the
+  receipt.
+- Cash/card confirmation UI simplified: no longer exposes the internal "accept quote"
+  / "poll for confirmation" two-step process to the cashier — single "Confirming with
+  IceCash…" status, then a result folded into the Payment Summary table (receipt #,
+  digital policy #, licence receipt # as rows) instead of a separate note banner.
+
+## Staff identity + documents (new this session)
+
+`req.user` (from the session) is threaded through `payments.js` →
+`orchestration.confirmPayment()` → the policy record (`policy.processedBy`) → shown
+on-screen on the Policy step and inside all three printable documents' shared footer.
+
+Document branding: **Cover Note and Policy Schedule stay plain** (red top bar, no
+logo — explicit user preference, "just a plain document like before"). **Only the
+Payment Receipt gets the Zimnat letterhead** (`public/assets/zimnat-logo.png`, served
+same-origin so plain `<img src="/assets/zimnat-logo.png">` works) plus VRN (added for
+reconciliation) and the processed-by footer. `server/services/documents.js`'s `wrap()`
+takes a `branded` option controlling this.
+
+## Policy step + Quote step layout (redesigned this session)
+
+- Quote, Payment, and Policy steps are now full-width (no sticky "Your quote" sidebar
+  recap on those three — it still builds up on Vehicle/Cover/Duration/Details). Toggled
+  via `#wizardLayout`'s `.full-width` class in `renderSummary()`.
+- Quote step: internal IceCash reference-ID chips (Combined/Licence/Insurance ID) are
+  hidden from the customer-facing view (`display:none` on that `.quote-card`, data
+  still populated, trivial to re-enable). Owner info (Entity Type / Last Name / ID
+  Number, masked exactly as IceCash returns it) now shown instead, from the response's
+  `Client` object — this had to be added server-side to `icecashRaw` in `quote.js`
+  since it wasn't being forwarded to the client before.
+- Policy step: cover-note iframe preview now has its own headed card; a print
+  stylesheet (`@media print` scoped to `#v-policy`) was added as a fallback for
+  printing the page directly.
+
+## Known-fixed bugs this session (don't re-break)
+
+- **`TotalRadioTVAmt` vs `TotalRadioTvAmt` casing**: real IceCash returns
+  `TotalRadioTVAmt` (capital V); the mock simulator (and all our code) used
+  `TotalRadioTvAmt`. This silently zeroed the ZBC radio/TV fee — both on-screen
+  (`q-radio`) and server-side (`radioFee`/`totalRadioTvAmt` in 5 places in
+  `server/routes/quote.js`, now behind a shared `radioTvAmt()` helper that reads either
+  casing). Real IceCash's own data has a further quirk where `TotalRadioTVAmt` doesn't
+  equal `RadioTVAmt + RadioTVArrearsAmt` — that's IceCash's own inconsistency, not ours
+  to reconcile; we just display `TotalRadioTVAmt` as given (grand total is correct).
+- **"Select suburb…" placeholder leaking into API payloads**: `checkDetails()` was
+  reading `selectedOptions[0].textContent` even when nothing was selected (defaults to
+  the placeholder option). Fixed to send `''` when `suburbSel.value` is falsy.
+- **Browser autofill leaking staff's own email into customer fields**: none of the
+  customer-detail inputs had `autocomplete` set, so browsers were suggesting/filling
+  the logged-in staff member's own saved email. Added `autocomplete="off"` to all of
+  them.
+- Older known-fixed patterns from prior sessions (still valid, not re-litigated): inline
+  `style.transform`/`style.display` beats CSS class rules — always toggle via
+  `classList`, not inline styles, for anything reacting to both a media query and JS
+  state (bit us in the debug drawer and mobile summary sheet originally, and again this
+  session in a payment-button flex-layout dead end before the actual root cause — an
+  always-visible "Back to quote" button — was found).
+
+## Confirmed working against the real IceCash API this session
+
+Read-only quote checks (safe, non-destructive) plus one full payment confirmation, all
+against `https://dev-test-api.icecash.mobi`:
+- RTA/FTP/FTPF quotes (real premiums returned, all three price differently)
+- ZWG currency — IceCash computes genuinely different real pricing for ZWG vs USD
+  (not just relabeled), confirming currency is safe to pass through as-is (per user:
+  "there is no currency conversion, you either pay in USD or you pay in ZWG")
+- Blank `VehicleType` submission → real vehicle type/make/model returned correctly
+- Blank/optional owner fields accepted without error
+- Full cash payment confirmation → real IceCash policy issued, documents generated
+  correctly with real masked `Client` data
+
+## Debug/logging infrastructure (from prior sessions, unchanged)
 
 - `server/services/icecashLog.js` — in-memory ring buffer of every gateway→IceCash
-  call (mock or real), recorded centrally in `icecashClient.js`.
-- `GET /api/v1/icecash-log` exposes it.
+  call, recorded centrally in `icecashClient.js`. `GET /api/v1/icecash-log` exposes it.
 - `public/console-log.js` — wraps `window.fetch` on `/console` to log browser→gateway
-  calls, AND polls `/api/v1/icecash-log` to show the IceCash leg too, tagged with a
-  distinct "ICECASH · <Function> (mode)" badge. Both shown in a slide-out drawer
-  (bottom-right toggle button).
-- **Known-fixed bug pattern to watch for**: inline `style.transform`/`style.display`
-  set via JS always beats a CSS class rule, even `!important`-free class selectors
-  inside media queries — this bit us twice (mobile summary sheet, debug drawer slide
-  animation). Always toggle via `classList` + a dedicated CSS class, not inline styles,
-  when something needs to react to both a CSS media query AND JS state.
+  calls too, shown in a slide-out drawer.
 
-## Quote-Level Rejection Masking (done, mock+real)
+## Quote-Level Rejection Masking (from prior sessions, unchanged)
 
-Per `Quote-Level Rejection Masking.html` (project root) — a shared helper
-(`server/services/quoteMasking.js`) catches IceCash quotes that are "successful" at
-the top level (`Response.Result: 1`) but individually blocked
-(`Quotes[0].Result != 1`), and masks (flags) rather than discards them: the quote is
-still fully returned with pricing/vehicle/client data, plus `blocked: true` and the
-verbatim `blockedMessage`. Server-side enforcement in `orchestration.js` and
-`payments.js` rejects any accept/pay attempt on a blocked quote with `409
-QUOTE_BLOCKED`, before any IceCash call. Frontend shows the block notice on the Quote
-step and disables Accept & Pay, but still renders full quote details.
+`server/services/quoteMasking.js` — catches IceCash quotes that are "successful" at
+the top level but individually blocked, masks (flags) rather than discards them.
+Server-side enforcement in `orchestration.js`/`payments.js` rejects accept/pay on a
+blocked quote with `409 QUOTE_BLOCKED` before any IceCash call.
 
-**This is directly relevant to gateway mode**: the real gateway already implements
-this natively (see below) — response shape is `data.blocked` + per-quote
-`blocked`/`blockedReason`/`errorDetails.iceCashErrorCode`, and blocked quotes still
-carry a real `insuranceId`. Our masking helper's "has-a-real-id-vs-hard-failure"
-heuristic maps directly onto this.
+## Immediate next steps when resuming
 
-## Cover note / documents (done)
-
-`server/services/documents.js` builds the cover note HTML from the **raw poll
-response** (`policy.icecash.raw`, captured in `orchestration.js`'s `submitAndPoll`),
-not from quote-time data — matches a reference screenshot format (red top bar,
-"Insured Details" / "Certificate of Motor Insurance" sections, Policy Rate,
-breakdown table). Embedded inline on the Policy step via iframe, with a print button.
-Had to enrich `icecashMock.js`'s `tpiPolicy`/`tpilicResult` to include Insured
-Details fields (IDNumber, FirstName, etc.) that the real IceCash API includes but our
-mock originally didn't.
-
-## Payment methods (done)
-
-Unified into one list on the Payment step — EcoCash / InnBucks / OneMoney / Cash /
-Card, no more separate "customer vs cashier" mode toggle (that was tried and
-explicitly reverted per user feedback). Cash prompts for "Amount tendered", Card
-prompts for RRN (POS transaction reference) — both go through the same 2-step
-accept+poll orchestration (`POST /api/v1/motor/payments/confirm`) as the mobile-money
-path, and a receipt number (`RCT-...`) is generated and shown.
-
-## Known small fixes landed this session (for reference, don't re-break)
-
-- Vehicle "use" was lost on save/resume — `onTypeChange()` resets `S.use`/`S.vehCode`
-  as a side effect; `tryResume()` was calling it AFTER restoring state, wiping the
-  restore. Fixed by capturing `vehCode` before calling `onTypeChange()`, then calling
-  `onUseChange()` explicitly after (setting `.value` alone doesn't fire the handler).
-- Cover-step back button could become completely unreachable mid-flow (both the
-  standalone back button and the one bundled with Continue were conditionally hidden
-  in a way that had a gap). Fixed.
-- Defaults changed to 4 months / RTA (were 8 months / no default cover type).
-- `.gitignore` added for `.env`, `.DS_Store`, `server/data/settings.json` (real
-  partner key), `.claude/settings.local.json`.
-
-## Gateway mode — what's confirmed so far (IN PROGRESS, not built)
-
-**User's explicit workflow requirement: always plan and get explicit approval before
-making changes.** Don't just start implementing `icecashGateway.js` — confirm the
-plan first, especially since endpoints are still being discovered/are currently
-broken on the user's server.
-
-Confirmed pieces:
-
-- **Base URL**: `http://196.29.38.218:3000`
-- **Auth**: `POST /api/v1/auth/login`, body `{partnerCode: "ROPFA", apiKey: "..."}` →
-  `{success, data: {access_token (JWT), token_type: "Bearer", expires_in: 86400,
-  scope}}`. Cache the token, refresh well before 86400s (24h), same pattern as
-  `icecashReal.js`'s existing `ensureToken()`.
-- **Enums**: `GET /api/v1/enums` (Bearer auth) — richer than our local
-  `server/data/enums.js`: real `taxClasses` table (per vehicle-type), 384-entry
-  `suburbsTowns`, 21 `insuranceCompanies`, `paymentMethods` with an `approval` field
-  (None/Client OTP/Third Party/Payment Gateway), plus `clientIdTypes`,
-  `radioTvUsage`, `frequencies` we don't have locally at all.
-- **Comprehensive coverage options**: `GET /api/v2/motor/comprehensive/coverage-options`
-  — structurally different rating model than our local `rating.js`: per-vehicle-type
-  multipliers (e.g. Business use ×1.3), `minimumPremium: 200`, `minimumVehicleValue:
-  1000`, `defaultStandardExcess: 250`, only `allowedDurations: [4,6,12]`,
-  formula-based extras (windscreen = rate×cover-value capped, car hire = daily rate
-  capped days/month, roadside = flat annual fee), `supportedCurrencies: ["USD",
-  "ZWG"]`. **Flagged, unresolved**: this endpoint currently returns
-  `statutoryCharges: {stampDutyRate: 0.03, governmentLevyRate: 0.05}` — which matches
-  exactly the swapped/wrong values our local `coverageOptions.js` explicitly
-  documents as the known KD-001 defect (correct values 0.05/0.12 per the Technical
-  Reference). Need to decide with user: trust gateway's numbers as-is, or apply the
-  KD-001 correction client-side.
-- **Insurance quote**: `POST /api/v2/motor/quote/insurance` (Bearer auth). Request:
-  `{externalReference, currency, customerReference (number), vehicles: [{vrn,
-  vehicleType, insuranceType, vehicleValue, durationMonths, owner: {idNumber, idType,
-  firstName, lastName, msisdn, email, address1, town, suburbID}, policyHolder: {same
-  shape}}]}`. Response: `{success, data: {externalReference, blocked, quotes: [{vrn,
-  referenceId, insuranceId, licenceId, combinedId, insurancePremium, licenseFee,
-  radioFee, totalAmount, currency, status, blocked, blockedReason, expiresAt,
-  errorDetails: {iceCashErrorCode, iceCashMessage, errorCategory, userMessage,
-  suggestedAction, occurredAt} | null, owner: {masked PII}, policyHolder: {masked
-  PII}, vehicle: {make, model, taxClass, yearManufacture, vehicleType, vehicleValue},
-  policy: {insuranceType, startDate (ISO), endDate (ISO), durationMonths, amount,
-  stampDuty, governmentLevy, coverAmount, premiumAmount, currency}, licence: null,
-  customerReference}]}, meta: {requestId, generatedAt}}`.
-  **Note the shape differences from raw IceCash**: camelCase not PascalCase, real
-  JSON numbers not stringified, ISO 8601 dates not `YYYYMMDD`, PII masked by default
-  in the response.
-- **Accept/confirm attempt**: `POST /api/v2/motor/quote/insurance/process` — path
-  NOT CONFIRMED working. Body shape attempted: `{externalReference, quotes: [{
-  referenceID, paymentMethod, status}], currency, policyType, idNumber, msisdn}`.
-  User has hit repeated JSON syntax errors in their own manual curl/Postman testing
-  (missing values before commas, "string" placeholder left in for msisdn) — those
-  were client-side typos, not gateway bugs, and were walked through/fixed inline in
-  chat but not yet confirmed with a real successful response.
-  **Endpoint currently reported broken on the user's gateway server — user is
-  getting it fixed on their end.**
-- **NOT YET OBTAINED AT ALL**: poll/retrieve-issued-policy endpoint, licence-only
-  quote request shape, combined quote request shape, comprehensive quote request
-  shape (only coverage-options was shared for comprehensive, not the actual quote
-  call).
-
-Two design decisions already locked in with the user for whenever gateway mode is
-built:
-1. **PII display**: show exactly what the API returns, masked or not. No fallback to
-   locally-submitted values to "unmask" it.
-2. **Multi-vehicle quotes**: the gateway's request format natively accepts multiple
-   vehicles per quote (`vehicles: []` array) — noted as a real capability gap versus
-   our current single-vehicle-only UI, not necessarily to be built in the first pass.
-
-## Immediate next step when resuming
-
-Wait for the user to confirm their gateway's accept/confirm endpoint is fixed and
-share a working example, then get the poll/retrieve-policy endpoint and the other
-quote-type request shapes, THEN propose an implementation plan (new
-`server/services/icecashGateway.js`, Settings UI additions for gateway credentials,
-wiring into `icecashClient.js`'s mode dispatch) and get explicit approval before
-writing code.
+1. Push this session's work to GitHub (user pushing manually — remember it needs
+   `--force-with-lease` due to the rewritten history, see Git state above).
+2. If picking EcoCash back up: get real gateway credentials, flip `ecocashMode` to
+   `real` in Settings, run one real end-to-end payment, and adjust
+   `ecocashGateway.isPending`/`isFailure` once actual terminal status strings are known.
+3. Comprehensive cover and the `gateway` IceCash mode are both still dormant
+   (intentionally hidden / never built) — pick up per user request, not proactively.

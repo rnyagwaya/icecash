@@ -51,7 +51,11 @@ function requireConfig() {
   return s;
 }
 
-async function callIceCash(functionName, fields, { withToken = true } = {}) {
+// IceCash Result 25 = "Partner Token has expired." — observed in practice to happen well
+// inside our own TOKEN_TTL_MS cache window, i.e. IceCash's real token lifetime can be shorter
+// than what we assume client-side. Self-heal: drop the cached token and retry once with a
+// fresh one, rather than surfacing a stale-token failure to the caller.
+async function callIceCash(functionName, fields, { withToken = true, _retryingAfterExpiry = false } = {}) {
   const settings = requireConfig();
   const token = withToken ? await ensureToken() : undefined;
 
@@ -78,7 +82,21 @@ async function callIceCash(functionName, fields, { withToken = true } = {}) {
     throw new Error(`IceCash HTTP ${res.status} calling ${functionName}`);
   }
   const json = await res.json();
-  return json.Response;
+  const response = json.Response;
+
+  if (withToken && !_retryingAfterExpiry && Number(response?.Result) === 25) {
+    cachedToken = null;
+    return callIceCash(functionName, fields, { withToken, _retryingAfterExpiry: true });
+  }
+
+  return response;
+}
+
+// Called whenever the partner key changes via Settings — a cached token issued under the old
+// key is invalid for calls signed with the new one, and IceCash reports that mismatch back as
+// a confusing "MAC mismatch" rather than a token/auth error.
+function resetToken() {
+  cachedToken = null;
 }
 
 async function ensureToken() {
@@ -161,4 +179,5 @@ module.exports = {
   tpilicQuote,
   tpilicUpdate,
   tpilicResult,
+  resetToken,
 };
